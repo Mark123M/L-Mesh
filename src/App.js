@@ -10,11 +10,13 @@ import {
   theme,
 } from '@chakra-ui/react';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
+import Plant from './plants/Plant';
 
 function App() {
   return (
     <ChakraProvider theme={theme}>
       <ColorModeSwitcher justifySelf="flex-end" /> 
+      <Plant/>
     </ChakraProvider>
   );
 }
