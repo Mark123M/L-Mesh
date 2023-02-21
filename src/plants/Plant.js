@@ -9,7 +9,8 @@ const width = 600;
 const height = 600;
 
 let drawRules;
-let word = "X";
+let symbols = "X";
+//let symbols = [{type: "!", params: {F}  }]
 
 let rules = {
   X: [
@@ -87,17 +88,17 @@ function sketch(p5) {
     p5.background(28);
     
     // Generate our L-System from the start
-    word = "X";
+    symbols = "X";
     for(let i = 0; i < numGens; i ++) {
-      word = generate();
-      console.log(word);
+      symbols = generate();
+      console.log(symbols);
     }
     
     // Draw L-System
-    p5.push(); //save previous
+    p5.push(); //save previous state
     p5.translate(width/2, height);
-    for(let i = 0; i < word.length; i ++) {
-      let c = word[i];
+    for(let i = 0; i < symbols.length; i ++) {
+      let c = symbols[i];
       if(c in drawRules) {
         drawRules[c]();
       }  
@@ -112,8 +113,8 @@ function sketch(p5) {
   function generate() {
     let next = ""
     
-    for(let i = 0; i < word.length; i ++) {
-      let c = word[i];
+    for(let i = 0; i < symbols.length; i ++) {
+      let c = symbols[i];
       if(c in rules) {
         let rule = rules[c];
         
