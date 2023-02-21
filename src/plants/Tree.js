@@ -65,13 +65,13 @@ const generateRules = (symbol) =>{
 
               {type: "["},
               {type: "-", angle: a/3},
-              {type: "F", len: 80}, //middle branch from extension (tilted left)
+              {type: "F", len: 80}, //middle branch from extension (tilted right)
               {type: "A"},
               {type: "]"},
 
               {type: "["},
               {type: "-", angle: a},
-              {type: "F", len: 80}, //left branch from extension 
+              {type: "F", len: 80}, //right branch from extension 
               {type: "A"},
               {type: "]"},
       ], prob: 1.0}
@@ -177,7 +177,7 @@ function sketch(p5) {
     return next;
   }
 
-  p5.draw = () => {
+  p5.draw = async () => {
     p5.background(28);
     
     // Generate our L-System from the start
@@ -193,6 +193,7 @@ function sketch(p5) {
     p5.translate(width/2, height);
     for(let i = 0; i < symbols.length; i ++) {
       let s = symbols[i];
+      await sleep(3);
       applyRule(s);
     }
     p5.pop(); 
@@ -202,7 +203,9 @@ function sketch(p5) {
     p5.draw();
   }
   
-  
+  const sleep = (millis) => { 
+    return new Promise(resolve => setTimeout(resolve, millis)) 
+  }
 
 }
 
