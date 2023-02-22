@@ -4,13 +4,13 @@ import {Flex} from '@chakra-ui/react'
 
 const len = 4;
 const ang = 25;
-const numGens = 6;
-const width = 600;
-const height = 600;
+const numGens = 5;
+const width = 1440;
+const height = 800;
 
 let drawRules;
 //let symbols = "X";
-let symbols = [{type: "!", width: 1,}, {type: "F", len: 120}, {type: "+", angle: 25}, {type: "A"}]
+let symbols = [{type: "!", width: 2,}, {type: "F", len: 120}, {type: "+", angle: 10}, {type: "A"}]
 
 /*
 F Move forward and draw a line. 
@@ -29,9 +29,10 @@ $ Rotate the turtle to vertical.
 
 const d1 = 94.74; //divergence angle 1
 const d2 = 132.63 //divergence angle 2
-const a = 18.95 //branching angle
+const a = 30 //branching angle
 const lr = 1.109 //elongation rate
 const vr = 1.732 //diameter increase rate.
+
 
 
 const generateRules = (symbol) =>{
@@ -53,24 +54,24 @@ const generateRules = (symbol) =>{
   }
   else if (symbol.type == "A") {
     const ruleSet = [
-      {rule: [{type: "!", width: vr},
-              {type: "F", len: 50 }, //initial extension
+      {rule: [{type: "!", width: 2},
+              //{type: "F", len: 50 }, //initial extension
 
               {type: "["},
               {type: "+", angle: a}, 
-              {type: "F", len: 50}, //left branch from extension
+              {type: "F", len: 90}, //left branch from extension
               {type: "A"},
               {type: "]"}, 
 
               {type: "["},
               {type: "-", angle: a/3},
-              {type: "F", len: 50}, //middle branch from extension (tilted left)
+              {type: "F", len: 80}, //middle branch from extension (tilted right)
               {type: "A"},
               {type: "]"},
 
               {type: "["},
               {type: "-", angle: a},
-              {type: "F", len: 50}, //left branch from extension 
+              {type: "F", len: 80}, //right branch from extension 
               {type: "A"},
               {type: "]"},
       ], prob: 1.0}
@@ -93,7 +94,7 @@ function chooseOne(ruleSet) {
 
 function sketch(p5) {
   p5.setup =() => {
-    p5.createCanvas(600, 600);
+    p5.createCanvas(width, height);
     p5.strokeWeight(2);
     drawRules = {
       "A": () => {
@@ -133,6 +134,30 @@ function sketch(p5) {
     };
     p5.noLoop();
   }
+
+  function applyRule(symbol) {
+    if(symbol.type == "!") {
+      p5.strokeWeight(symbol.width);
+    }
+    else if (symbol.type == "F") {
+      p5.stroke("#9ea93f");
+      p5.line(0, 0, 0, -1* symbol.len);
+      p5.translate(0, -1 * symbol.len);
+    }
+    else if (symbol.type == "+") {
+      p5.rotate(Math.PI/180 * -1* symbol.angle);
+    }
+    else if (symbol.type == "-") {
+      p5.rotate(Math.PI/180 * symbol.angle);
+    }
+    else if (symbol.type == "[") {
+      p5.push();
+    }
+    else if (symbol.type == "]") {
+      p5.pop();
+    }
+    
+  }
   
   function generate() {
     let next = [];
@@ -152,34 +177,35 @@ function sketch(p5) {
     return next;
   }
 
-  p5.draw = () => {
+  p5.draw = async () => {
     p5.background(28);
     
     // Generate our L-System from the start
-    symbols = [{type: "!", width: 10,}, {type: "F", len: 50}, {type: "+", angle: 25}, {type: "A"}];
+    symbols = [{type: "!", width: 2}, {type: "F", len: 120}, {type: "+", angle: 10}, {type: "A"}];
     console.log(symbols, "CURRENT SYMBOLS");
     for(let i = 0; i < numGens; i ++) {
       symbols = generate();
       console.log(symbols, "NEW SYMBOLS");
     }
     
-  /*  // Draw L-System
+    // Draw L-System
     p5.push(); //save previous state
     p5.translate(width/2, height);
     for(let i = 0; i < symbols.length; i ++) {
-      let c = symbols[i];
-      if(c in drawRules) {
-        drawRules[c]();
-      }  
+      let s = symbols[i];
+      await sleep(3);
+      applyRule(s);
     }
-    p5.pop(); */
+    p5.pop(); 
   }
   
   p5.mouseReleased=()=> {
     p5.draw();
   }
   
-  
+  const sleep = (millis) => { 
+    return new Promise(resolve => setTimeout(resolve, millis)) 
+  }
 
 }
 
