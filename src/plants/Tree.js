@@ -140,7 +140,7 @@ function sketch(p5) {
       p5.strokeWeight(symbol.width);
     }
     else if (symbol.type == "F") {
-      p5.stroke("#9ea93f");
+      p5.stroke("#9a704e");
       p5.line(0, 0, 0, -1* symbol.len);
       p5.translate(0, -1 * symbol.len);
     }
@@ -182,10 +182,10 @@ function sketch(p5) {
     
     // Generate our L-System from the start
     symbols = [{type: "!", width: 2}, {type: "F", len: 120}, {type: "+", angle: 10}, {type: "A"}];
-    console.log(symbols, "CURRENT SYMBOLS");
+   // console.log(symbols, "CURRENT SYMBOLS");
     for(let i = 0; i < numGens; i ++) {
       symbols = generate();
-      console.log(symbols, "NEW SYMBOLS");
+   //   console.log(symbols, "NEW SYMBOLS");
     }
     
     // Draw L-System
