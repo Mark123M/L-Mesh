@@ -54,12 +54,12 @@ const generateRules = (symbol) =>{
   }
   else if (symbol.type == "A") {
     const ruleSet = [
-      {rule: [{type: "!", width: 2},
+      {rule: [{type: "!", width: 2.5},
               //{type: "F", len: 50 }, //initial extension
 
               {type: "["},
               {type: "+", angle: a}, 
-              {type: "F", len: 90}, //left branch from extension
+              {type: "F", len: 80}, //left branch from extension
               {type: "A"},
               {type: "]"}, 
 
@@ -74,7 +74,39 @@ const generateRules = (symbol) =>{
               {type: "F", len: 80}, //right branch from extension 
               {type: "A"},
               {type: "]"},
-      ], prob: 1.0}
+      ], prob: 0.6},
+      {rule: [{type: "!", width: 2.5},
+              //{type: "F", len: 50 }, //initial extension
+
+              {type: "["},
+              {type: "+", angle: a}, 
+              {type: "F", len: 80}, //left branch from extension
+              {type: "A"},
+              {type: "]"}, 
+
+              {type: "["},
+              {type: "-", angle: a/3},
+              {type: "F", len: 80}, //middle branch from extension (tilted right)
+              {type: "A"},
+              {type: "]"},
+
+             
+      ], prob: 0.2},
+      {rule: [{type: "!", width: 2.5},
+              //{type: "F", len: 50 }, //initial extension
+
+              {type: "["},
+              {type: "-", angle: a/3},
+              {type: "F", len: 80}, //middle branch from extension (tilted right)
+              {type: "A"},
+              {type: "]"},
+
+              {type: "["},
+              {type: "-", angle: a},
+              {type: "F", len: 80}, //right branch from extension 
+              {type: "A"},
+              {type: "]"},
+      ], prob: 0.2},
     ]
     return chooseOne(ruleSet);
   }
@@ -96,43 +128,29 @@ function sketch(p5) {
   p5.setup =() => {
     p5.createCanvas(width, height);
     p5.strokeWeight(2);
-    drawRules = {
-      "A": () => {
-        // Draw circle at current location
-        p5.noStroke();
-        p5.fill("#E5CEDC");
-        p5.circle(0, 0, len*2);
-      },  
-      "B": () => {
-        // Draw circle at current location
-        p5.noStroke();
-        p5.fill("#FCA17D");
-        p5.circle(0, 0, len*2);
-      },
-      "F": () => {
-        // Draw line forward, then move to end of line
-        p5.stroke("#9ea93f");
-        p5.line(0, 0, 0, -len);
-        p5.translate(0, -len);
-      },
-      "+": () => {
-        // Rotate right
-        p5.rotate(Math.PI/180 * -ang);
-      },
-      "-": () => {
-        // Rotate right
-        p5.rotate(Math.PI/180 * ang);
-      },
-      // Save current location
-      "[": () => {
-        p5.push();
-      },
-      // Restore last location
-      "]": () => {
-        p5.pop();
-      }
-    };
+    
     p5.noLoop();
+  }
+
+  function drawLeaf(sz) {
+    p5.push();
+    p5.scale(sz * 0.5);
+    p5.noStroke();
+    p5.beginShape();
+    for(let i = 45; i < 135; i++) {
+      var rad = 15;
+      var x = rad * Math.cos(i * Math.PI/180);
+      var y = rad * Math.sin(i * Math.PI/180);
+      p5.vertex(x, y)
+    }
+    for(let i = 135; i > 40; i--) {
+      var rad = 15;
+      var x = rad * Math.cos(i * Math.PI/180);
+      var y = rad * Math.sin(-1 * i * Math.PI/180) + 20;
+      p5.vertex(x, y)
+    }
+    p5.endShape(p5.CLOSE);
+    p5.pop();
   }
 
   function applyRule(symbol) {
@@ -140,15 +158,18 @@ function sketch(p5) {
       p5.strokeWeight(symbol.width);
     }
     else if (symbol.type == "F") {
-      p5.stroke("#9a704e");
-      p5.line(0, 0, 0, -1* symbol.len);
-      p5.translate(0, -1 * symbol.len);
+      const factor = p5.random(10);
+      p5.stroke("#805333");
+      p5.line(0, 0, 0, -1* ( symbol.len + factor));
+      p5.translate(0, -1 * (symbol.len + factor));
     }
     else if (symbol.type == "+") {
-      p5.rotate(Math.PI/180 * -1* symbol.angle);
+      const factor = p5.random(5);
+      p5.rotate(Math.PI/180 * -1* ( symbol.angle + factor));
     }
     else if (symbol.type == "-") {
-      p5.rotate(Math.PI/180 * symbol.angle);
+      const factor = p5.random(5);
+      p5.rotate(Math.PI/180 * (symbol.angle + factor));
     }
     else if (symbol.type == "[") {
       p5.push();
@@ -178,10 +199,10 @@ function sketch(p5) {
   }
 
   p5.draw = async () => {
-    p5.background(28);
+    p5.background("#FFFFFF");
     
     // Generate our L-System from the start
-    symbols = [{type: "!", width: 2}, {type: "F", len: 120}, {type: "+", angle: 10}, {type: "A"}];
+    symbols = [{type: "!", width: 2.5}, {type: "F", len: 120}, {type: "+", angle: p5.random(-10, 10)}, {type: "A"}];
    // console.log(symbols, "CURRENT SYMBOLS");
     for(let i = 0; i < numGens; i ++) {
       symbols = generate();
