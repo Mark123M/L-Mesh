@@ -5,7 +5,7 @@ import React from "react";
 import { ReactP5Wrapper } from "react-p5-wrapper";
 import {Flex} from '@chakra-ui/react'
 
-const numGens = 0;
+const numGens = 9;
 const width = 1440;
 const height = 800;
 
@@ -28,37 +28,37 @@ $ Rotate the turtle to vertical.
 ` Increment the current color index. 
 % Cut off the remainder of the branch.  */
 
-const r1 = 0.95;
-const r2 = 0.75;
+const r1 = 0.96;
+const r2 = 0.96;
 const a1 = 5;
 const a2 = -30;
 
-const p1 = -90;
-const p2 = 70;
+const p1 = 90;
+const p2 = 90;
 
-const w0 = 40;
-const q = 0.6
-const e = 0.45
-const min = 25.0
+const w0 = 30;
+const q = 0.6;
+const e = 0.45;
+const min = 20.0;
 
 const leaf_gen = 3; //generation where leaf starts growing.
 
 const generateRules = (symbol) =>{
-  if (symbol.type == "A") {
+  if (symbol.type == "A" && symbol.len >= min) {
 
     const ruleSet = [
       {rule: [
         {type: "!", width: symbol.wid},
-        {type: "F", len: symbol.len},
+        {type: "F", len: turn_and_roll_len(0, symbol.roll_angle, symbol.len)}, //creates new internode
 
         {type: "["},
-        {type: "+", angle: a1},
-        {type: "A", len: roll_and_pitch_len(p1, symbol.len) *r1, wid: symbol.wid * (Math.pow(q, e))},
+        {type: "+", angle: turn_and_roll_angle(a1, p1, symbol.len)}, //rotates for new apex
+        {type: "A", len: symbol.len *r1, wid: symbol.wid * (Math.pow(q, e)), roll_angle: p1}, //creates new apex, updating len, wid, roll_angle
         {type: "]"},
 
         {type: "["},
-        {type: "+", angle: a2},
-        {type: "A", len: roll_and_pitch_len(p2, symbol.len) *r2, wid: symbol.wid * (Math.pow((1-q), e))},
+        {type: "+", angle: -1 * turn_and_roll_angle(a2, p2, symbol.len)}, //rotates for new apex
+        {type: "A", len: symbol.len *r2, wid: symbol.wid * (Math.pow((1-q), e)), roll_angle: p2}, //sdoijfosidjfoi
         {type: "]"},
 
       ], prob: 1.0},
@@ -111,7 +111,13 @@ function turn_and_roll_angle(turn_angle, roll_angle, len) {
   }
 
   const a = l * Math.cos(delta * (Math.PI/180));
-  const new_angle = Math.atan(a/len) * (180 / Math.PI);
+  let new_angle = Math.atan(a/len) * (180 / Math.PI);
+  if (roll_angle <= 180) {
+    new_angle *= -1;
+  }
+  else if (roll_angle <= 270) {
+    new_angle *= -1;
+  }
 
   return new_angle;
 }
@@ -237,10 +243,18 @@ function sketch(p5) {
     p5.background("#FFFFFF");
     
     // Generate our L-System from the start
-    symbols = [{type: "A", len: 300, wid: w0}];
+    /*symbols = [{type: "F", len: 200}, {type: "["}, {type: "-", angle: 45}, {type: "F", len: 100}, {type: "["}, {type: "-", angle:45},
+               {type: "F", len: 100}, {type: "]"}, {type:"F", len: 100}, {type: "]"}, {type: "F", len: 150}, 
+               {type: "["}, {type: "-", angle: turn_and_roll_angle(45, 137.5, 100)}, {type: "F", len:100}, {type:"]"},
+               {type: "F", len: turn_and_roll_len(45, 137.5, 100)}
+              ]; */
+
+    symbols = [{type: "A", len: 100, wid: w0, roll_angle: 0}];
+
    // console.log(symbols, "CURRENT SYMBOLS");
     for(let i = 0; i < numGens; i ++) {
       symbols = generate();
+
    //   console.log(symbols, "NEW SYMBOLS");
     }
     
@@ -270,7 +284,10 @@ function sketch(p5) {
 export default function Plant() {
   //console.log(Math.cos(Math.PI/2));
  // roll_and_pitch(30, 120, 5, "TESTING ROLL AND PITCH FUNCTION");
-  console.log(roll_and_pitch_angle(30, 120, 5));
+ // console.log(roll_and_pitch_angle(30, 120, 5));
+  console.log(turn_and_roll_angle(30, 137, 100));
+  console.log(turn_and_roll_angle(-20, 137, 100));
+  console.log(turn_and_roll_angle(-20, 274, 100));
   return(
     <ReactP5Wrapper sketch={sketch}/>
   )
