@@ -12,13 +12,15 @@ import {
 import { ColorModeSwitcher } from './ColorModeSwitcher';
 import Plant from './plants/Plant';
 import Tree from './plants/Tree';
+import Tree2 from './plants/Tree2';
 import Flower from './plants/Flower'
 
 function App() {
   return (
     <ChakraProvider theme={theme}>
       <ColorModeSwitcher justifySelf="flex-end" /> 
-    {  <Tree/> }
+    { /* <Tree/>  */}
+      <Tree2/>
       <Flower/>
     </ChakraProvider>
   );
