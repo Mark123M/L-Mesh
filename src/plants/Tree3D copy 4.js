@@ -9,12 +9,9 @@ const numGens = 9;
 const width = 1440;
 const height = 800;
 
-let drawRules;
-//let symbols = "X";
 let symbols;
 
-/*
-F Move forward and draw a line. 
+/*F Move forward and draw a line. 
 f Move forward without drawing a line. 
 + Turn left. 
 − Turn right. 
@@ -28,68 +25,71 @@ $ Rotate the turtle to vertical.
 ` Increment the current color index. 
 % Cut off the remainder of the branch.  */
 
-const r1 = 0.95;
-const r2 = 0.75;
-const a1 = 10;
-const a2 = -20;
-
-const p1 = -70;
-const p2 = 70;
-
-const w0 = 40;
-const q = 0.6
-const e = 0.45
-const min = 25.0
+const a = 1.0;
+const b = 0.90;
+const e = 0.80;
+const c = 50;
+const d = 50;
+const h = 0.707;
+const i = 137.5
+const min = 10;
 
 const leaf_gen = 3; //generation where leaf starts growing.
 
 const generateRules = (symbol) =>{
-  if (symbol.type == "A") {
-
+  if (symbol.type == "A" && symbol.len >= min) {
     const ruleSet = [
       {rule: [
         {type: "!", width: symbol.wid},
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "+", angle: a1},
-        {type: "A", len: roll_and_pitch_len(p1, symbol.len) *r1, wid: symbol.wid * (Math.pow(q, e))},
+        {type: "&", angle: c},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
+        {type: "/", angle: i},
+        {type: "A", len: symbol.len * a, wid: symbol.wid * h}
+
+      ], prob: 1.0},
+    ]
+    return chooseOne(ruleSet);
+  }
+  else if (symbol.type == "B" && symbol.len >= min) {
+    const ruleSet = [
+      {rule: [
+        {type: "!", width: symbol.wid},
+        {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "+", angle: a2},
-        {type: "A", len: roll_and_pitch_len(p2, symbol.len) *r2, wid: symbol.wid * (Math.pow((1-q), e))},
+        {type: "-", angle: d},
+        {type: "/", angle: -1 * i/2},
+        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
+        {type: "C", len: symbol.len * b, wid: symbol.wid * h},
+      ], prob: 1.0},
+    ]
+    return chooseOne(ruleSet);
+  }
+  else if (symbol.type == "C" && symbol.len >= min) {
+    const ruleSet = [
+      {rule: [
+        {type: "!", width: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "+", angle: d},
+        {type: "/", angle: -1 * i/2},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+
+        {type: "B", len: symbol.len * b, wid: symbol.wid * h},
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }
 }
 
-//this function transforms a roll followed by a pitch to 2d coordinates
-//returns the length of the resulting branch and the angle w.r.t the 2d plane 
-//will double check for correctness.
-
-function roll_and_pitch_angle(roll_angle, pitch_angle, len) {
-  let new_angle, new_length;
-  const a = Math.sqrt(len*len + len*len - 2 *len*len*Math.cos(roll_angle * (Math.PI/180)))
-  const b = Math.sqrt(len*len + len*len - 2 *len*len*Math.cos(pitch_angle * (Math.PI/180)))
- 
-  const c = Math.sqrt(a*a + b*b);
-  //console.log(a +" "+b+" "+c);
-
-  new_angle = Math.acos((len*len + len*len - c*c) / (2*len*len))
-  new_length = len * Math.sin(pitch_angle * (Math.PI/180));
-  
-  return new_angle * (180/Math.PI);
- // console.log("New angle: "+new_angle +"New length: "+new_length);
-}
-
-function roll_and_pitch_len(pitch_angle, len) {
-  let new_length = len * Math.sin(pitch_angle * (Math.PI/180));
-  return new_length;
-}
 
 function chooseOne(ruleSet) {
   let n = Math.random(); // Random number between 0-1
@@ -106,7 +106,7 @@ function chooseOne(ruleSet) {
 
 function sketch(p5) {
   p5.setup =() => {
-    p5.createCanvas(width, height);
+    p5.createCanvas(width, height, p5.WEBGL);
     p5.strokeWeight(2);
     
     p5.noLoop();
@@ -139,18 +139,21 @@ function sketch(p5) {
       p5.strokeWeight(symbol.width);
     }
     else if (symbol.type == "F") {
-      const factor = 0 // p5.random(-10, 10);
       p5.stroke("#805333");
-      p5.line(0, 0, 0, -1* ( symbol.len + factor));
-      p5.translate(0, -1 * (symbol.len + factor));
+      p5.line(0, 0, 0, 0, -1* (symbol.len), 0);
+      p5.translate(0, -1 * (symbol.len), 0);
     }
     else if (symbol.type == "+") {
-      const factor = 0 // p5.random(-5, 5);
-      p5.rotate(Math.PI/180 * -1* ( symbol.angle + factor));
+      p5.rotateZ(Math.PI/180 * -1 * (symbol.angle));
     }
     else if (symbol.type == "-") {
-      const factor = 0//p5.random(-5, 5);
-      p5.rotate(Math.PI/180 * (symbol.angle + factor));
+      p5.rotateZ(Math.PI/180 * (symbol.angle));
+    }
+    else if (symbol.type == "/") {
+        p5.rotateY(Math.PI/180 * (symbol.angle));
+    }
+    else if (symbol.type == "\\") {
+        p5.rotateY(Math.PI/180 * -1 * (symbol.angle));
     }
     else if (symbol.type == "[") {
       p5.push();
@@ -159,20 +162,20 @@ function sketch(p5) {
       p5.pop();
     }
     else if (symbol.type == "L") {
-      //p5.triangle(0, 0, 5, 0, 3, 2);
       drawLeaf(symbol.sz);
+    }
+    else if (symbol.type == "&") {
+      p5.rotateX(Math.PI/180 * (symbol.angle));
     }
     
   }
   
   function generate() {
     let next = [];
-    //console.log(symbols, "CURRENT SYMBOLS");
 
-    for(let i = 0; i < symbols.length; i ++) {
+    for(let i = 0; i < symbols.length; i++) {
       let s = symbols[i];
       let s2 = generateRules(s);
-      //console.log(s + "SYMBOL "+i+ "TURNS TO " + s2);
       if(s2){
         next = next.concat(s2);
       }
@@ -187,26 +190,31 @@ function sketch(p5) {
   p5.draw = async () => {
     p5.background("#FFFFFF");
     
-    // Generate our L-System from the start
-    symbols = [{type: "A", len: 300, wid: w0}];
-   // console.log(symbols, "CURRENT SYMBOLS");
+    // L-System AXIOMS:
+    symbols = [{type: "A", len: 100, wid: 20}];
+   // symbols = [{type: "!", width: 5},{type: "F", len: 200}, {type: "["}, {type: "-", angle: 45}, {type: "F", len: 100}, {type: "["}, {type: "-", angle:45},
+   //         {type: "F", len: 100}, {type: "]"}, {type:"F", len: 100}, {type: "]"}, {type: "F", len: 150}, 
+   //     ]; 
+
     for(let i = 0; i < numGens; i ++) {
       symbols = generate();
    //   console.log(symbols, "NEW SYMBOLS");
     }
     
-    // Draw L-System
     p5.push(); //save previous state
-    p5.translate(width/2, height);
+    p5.translate(0, width/4, 0);
+   // p5.rotateY(60 * -1 * (Math.PI/180));
+    p5.scale(0.8);
     for(let i = 0; i < symbols.length; i ++) {
       let s = symbols[i];
-      await sleep(3);
+      await sleep(1);
       applyRule(s);
     }
     p5.pop(); 
   }
   
   p5.mouseReleased=()=> {
+    p5.clear();
     p5.draw();
   }
   
@@ -220,8 +228,6 @@ function sketch(p5) {
 
 export default function Plant() {
   //console.log(Math.cos(Math.PI/2));
- // roll_and_pitch(30, 120, 5, "TESTING ROLL AND PITCH FUNCTION");
-  console.log(roll_and_pitch_angle(30, 120, 5));
   return(
     <ReactP5Wrapper sketch={sketch}/>
   )
