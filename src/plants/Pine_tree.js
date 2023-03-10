@@ -5,7 +5,7 @@ import React from "react";
 import { ReactP5Wrapper } from "react-p5-wrapper";
 import {Flex} from '@chakra-ui/react'
 
-const numGens = 5;
+const numGens = 9;
 const width = 1440;
 const height = 800;
 
@@ -25,58 +25,65 @@ $ Rotate the turtle to vertical.
 ` Increment the current color index. 
 % Cut off the remainder of the branch.  */
 
-const d1 = 94.74;
-const d2 = 132.63;
-const a = 18.95;
-const lr = 1.109;
-const vr = 1.732
-
+const a = 1.0;
+const b = 0.90;
+const e = 0.80;
+const c = 50;
+const d = 50;
+const h = 0.707;
+const i = 137.5
+const min = 0;
 
 const leaf_gen = 3; //generation where leaf starts growing.
 
 const generateRules = (symbol) =>{
-  if (symbol.type == "A") {
+  if (symbol.type == "A" && symbol.len >= min) {
     const ruleSet = [
       {rule: [
-        {type: "!", width: vr},
-        {type: "F", len: 50},
+        {type: "!", width: symbol.wid},
+        {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "&", angle: a},
-        {type: "F", len: 50},
-        {type: "A"},
+        {type: "&", angle: c/2},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
-        {type: "/", angle: d1},
-
-        {type: "["},
-        {type: "&", angle: a},
-        {type: "F", len: 50},
-        {type: "A"},
-        {type: "]"},
-        {type: "/", angle: d2},
-
-        {type: "["},
-        {type: "&", angle: a},
-        {type: "F", len: 50},
-        {type: "A"},
-        {type: "]"},
+        {type: "/", angle: i},
+        {type: "A", len: symbol.len * a, wid: symbol.wid * h}
 
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }
-  else if(symbol.type == "F") {
+  else if (symbol.type == "B" && symbol.len >= min) {
     const ruleSet = [
       {rule: [
-        {type: "F", len: symbol.len * lr},
+        {type: "!", width: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "-", angle: d},
+        {type: "/", angle: -1 * i/2},
+        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+
+        {type: "C", len: symbol.len * b, wid: symbol.wid * h},
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }
-  else if(symbol.type == "!") {
+  else if (symbol.type == "C" && symbol.len >= min) {
     const ruleSet = [
       {rule: [
-        {type: "!", width: symbol.width * vr},
+        {type: "!", width: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "+", angle: d},
+        {type: "/", angle: -1 * i/2},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+
+        {type: "B", len: symbol.len * b, wid: symbol.wid * h},
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
@@ -184,7 +191,7 @@ function sketch(p5) {
     p5.background("#FFFFFF");
     
     // L-System AXIOMS:
-    symbols = [{type: "!", width: 1},{type: "F", len: 100},{type: "A"}];
+    symbols = [{type: "A", len: 100, wid: 20}];
    // symbols = [{type: "!", width: 5},{type: "F", len: 200}, {type: "["}, {type: "-", angle: 45}, {type: "F", len: 100}, {type: "["}, {type: "-", angle:45},
    //         {type: "F", len: 100}, {type: "]"}, {type:"F", len: 100}, {type: "]"}, {type: "F", len: 150}, 
    //     ]; 
