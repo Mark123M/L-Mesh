@@ -1,5 +1,5 @@
 //3D turtle interpreter
-
+//standard basis vectors
 const ex = {x: 1, y: 0, z: 0}; 
 const ey = {x: 0, y: 1, z: 0};
 const ez = {x: 0, y: 0, z: 1};
@@ -9,7 +9,14 @@ let turtle = {
     heading: ey, //default turtle orientation
     left: ex,
     up: ez,
+    x: 0, 
+    y: 0, 
+    z: 0,
+    color: "brown", 
+    width: 1,
 }
+
+let state = [turtle,]; //use push and pop to add and remove from the end of array
 
 let test = {
     heading: {x: -2, y: 1, z: 6},
@@ -20,7 +27,7 @@ let test = {
 // 4 5 6
 // 7 8 9
 
-const rotate_u = (turtle, angle) =>{ //turn
+const rotate_u = (turtle, angle) =>{ //turn + -
     const m = JSON.parse(JSON.stringify(turtle));
     turtle.heading = matrix_vector_mult(m, {x: Math.cos(angle), y: -1 * Math.sin(angle), z: 0});
     print_vector(turtle.heading);
@@ -29,7 +36,7 @@ const rotate_u = (turtle, angle) =>{ //turn
     turtle.up = matrix_vector_mult(m, {x: 0, y: 0, z: 1});
     print_vector(turtle.up);
 }
-const rotate_l = (turtle, angle) =>{ //pitch
+const rotate_l = (turtle, angle) =>{ //pitch & ^
     const m = JSON.parse(JSON.stringify(turtle));
     turtle.heading = matrix_vector_mult(m, {x: Math.cos(angle), y: 0, z: Math.sin(angle)});
     print_vector(turtle.heading);
@@ -38,7 +45,7 @@ const rotate_l = (turtle, angle) =>{ //pitch
     turtle.up = matrix_vector_mult(m, {x: -1 * Math.sin(angle), y: 0, z: Math.cos(angle)});
     print_vector(turtle.up);
 }
-const rotate_h = (turtle, angle) =>{ //roll
+const rotate_h = (turtle, angle) =>{ //roll \ /
     const m = JSON.parse(JSON.stringify(turtle));
     turtle.heading = matrix_vector_mult(m, {x: 1, y: 0, z: 0});
     print_vector(turtle.heading);
@@ -47,7 +54,31 @@ const rotate_h = (turtle, angle) =>{ //roll
     turtle.up = matrix_vector_mult(m, {x: 0, y: -1 * Math.sin(angle), z: Math.cos(angle)});
     print_vector(turtle.up);
 }
-// 
+const rotate_vertical = (turtle) => { //$ rotates turtle so up vector is ey = (0, 1, 0)
+
+}
+
+
+
+const draw = (turtle, len, p5) => { //F draw and move turtle in the current HLU direction with len
+    p5.stroke("#805333");
+    p5.line(turtle.x, turtle.y, turtle.z, 0, -1* (5), 0);
+}
+const move = (turtle, len) => { //f move turtle in the current HLT direction with len
+
+}
+const push = (turtle) => {
+    state.push(JSON.parse(JSON.stringify(turtle))); //push the current turtle state
+}
+const pop = (turtle) => {
+    turtle = JSON.parse(JSON.stringify(state.pop(turtle))); //remove the previous saved state and assign it to the current turtle.
+}
+const width = (turtle, factor) => { //! increase or decrease turtle width
+    turtle.width *= factor;
+}
+
+
+
 const matrix_vector_mult = (m, v) =>{
     return vector_add(scalar_mult(v.x, m.heading), vector_add(scalar_mult(v.y, m.left), scalar_mult(v.z, m.up)));
 }
