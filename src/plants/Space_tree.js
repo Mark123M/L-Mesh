@@ -30,7 +30,7 @@ const p = 60;
 const a = 30;
 const b = 30;
 
-const c = 0.88; 
+const c = 0.887; 
 const h = 0.8;  
 
 const leaf_gen = 3; //generation where leaf starts growing.
@@ -56,7 +56,7 @@ const generateRules = (symbol) =>{
       {rule: [
         {type: "!", width: symbol.wid},
         {type: "/", angle: p},
-        {type: "B"}, //dormant bud
+        {type: "B", step: symbol.step}, //dormant bud
         {type: "-", angle: b},
         {type: "F", len: symbol.len},
         {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
@@ -106,26 +106,28 @@ function sketch(p5) {
     p5.noLoop();
   }
 
-  function drawLeaf(sz) {
-    p5.push();
-    p5.scale(sz * 0.5);
-    p5.noStroke();
-    p5.beginShape();
-    p5.fill(0, p5.random(100, 255), 0, 180);
-    for(let i = 45; i < 135; i++) {
-      var rad = 15;
-      var x = rad * Math.cos(i * Math.PI/180);
-      var y = rad * Math.sin(i * Math.PI/180);
-      p5.vertex(x, y)
+  function drawLeaf(sz, prob) {
+    if(Math.random() <= prob){
+      p5.push();
+      p5.scale(sz * 0.5);
+      p5.noStroke();
+      p5.beginShape();
+      p5.fill(0, p5.random(100, 255), 0, 180);
+      for(let i = 45; i < 135; i++) {
+        var rad = 15;
+        var x = rad * Math.cos(i * Math.PI/180);
+        var y = rad * Math.sin(i * Math.PI/180);
+        p5.vertex(x, y)
+      }
+      for(let i = 135; i > 40; i--) {
+        var rad = 15;
+        var x = rad * Math.cos(i * Math.PI/180);
+        var y = rad * Math.sin(-1 * i * Math.PI/180) + 20;
+        p5.vertex(x, y)
+      }
+      p5.endShape(p5.CLOSE);
+      p5.pop();
     }
-    for(let i = 135; i > 40; i--) {
-      var rad = 15;
-      var x = rad * Math.cos(i * Math.PI/180);
-      var y = rad * Math.sin(-1 * i * Math.PI/180) + 20;
-      p5.vertex(x, y)
-    }
-    p5.endShape(p5.CLOSE);
-    p5.pop();
   }
 
   function applyRule(symbol) {
@@ -135,7 +137,7 @@ function sketch(p5) {
     else if (symbol.type == "F") {
       p5.stroke("#805333");
       p5.line(0, 0, 0, 0, -1* (symbol.len), 0);
-      p5.translate(0, -1 * (symbol.len), 0);
+      p5.translate(0, -1 * (symbol.len)+2, 0);
     }
     else if (symbol.type == "+") {
       p5.rotateZ(Math.PI/180 * -1 * (symbol.angle));
@@ -156,7 +158,7 @@ function sketch(p5) {
       p5.pop();
     }
     else if (symbol.type == "B") {
-      drawLeaf(3);
+      drawLeaf(Math.max(1.6, 2.2 * (numGens/symbol.step)), symbol.step/(numGens*1.2));
     }
     else if (symbol.type == "&") {
       p5.rotateX(Math.PI/180 * (symbol.angle));
@@ -185,7 +187,7 @@ function sketch(p5) {
     p5.background("#FFFFFF");
     
     // L-System AXIOMS:
-    symbols = [{type: "!", width: 28}, {type: "F", len: 200}, {type: "A", step: 1, len: 100 * c, wid: 30 * h}];
+    symbols = [{type: "!", width: 28}, {type: "F", len: 240}, {type: "A", step: 1, len: 110 * c, wid: 30 * h}];
    // symbols = [{type: "!", width: 5},{type: "F", len: 200}, {type: "["}, {type: "-", angle: 45}, {type: "F", len: 100}, {type: "["}, {type: "-", angle:45},
    //         {type: "F", len: 100}, {type: "]"}, {type:"F", len: 100}, {type: "]"}, {type: "F", len: 150}, 
    //     ]; 

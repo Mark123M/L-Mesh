@@ -191,7 +191,7 @@ function sketch(p5) {
     p5.background("#FFFFFF");
     
     // L-System AXIOMS:
-    symbols = [{type: "A", len: 120, wid: 20}];
+    symbols = [{type: "A", len: 120, wid: 25}];
    // symbols = [{type: "!", width: 5},{type: "F", len: 200}, {type: "["}, {type: "-", angle: 45}, {type: "F", len: 100}, {type: "["}, {type: "-", angle:45},
    //         {type: "F", len: 100}, {type: "]"}, {type:"F", len: 100}, {type: "]"}, {type: "F", len: 150}, 
    //     ]; 
