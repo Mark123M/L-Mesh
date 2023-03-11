@@ -223,7 +223,7 @@ function sketch(p5) {
     p5.translate(width/2, height);
     for(let i = 0; i < symbols.length; i ++) {
       let s = symbols[i];
-      await sleep(3);
+     // await sleep(3);
       applyRule(s);
     }
     p5.pop(); 

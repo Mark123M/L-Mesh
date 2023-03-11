@@ -17,12 +17,14 @@ import Tree3D from './plants/Tree3D'
 import Flower from './plants/Flower'
 import Pine_tree from './plants/Pine_tree'
 import Turtle from './plants/Turtle';
+import Space_tree from './plants/Space_tree'
 
 function App() {
   return (
     <ChakraProvider theme={theme}>
       <ColorModeSwitcher justifySelf="flex-end" /> 
     { /* <Tree2/>  */}
+      <Space_tree/>
       <Pine_tree/>
       <Tree3D/>
       <Tree/>
