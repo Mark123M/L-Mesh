@@ -4,9 +4,9 @@ Generates trees using a MONOPODIAL MODEL with a stochastic parametric L-system
 import React from "react";
 import { ReactP5Wrapper } from "react-p5-wrapper";
 import {Flex} from '@chakra-ui/react'
+import {rotate_u, rotate_l, rotate_h, rotate_vertical} from './Turtle'
 
-const numGens = 12;
-
+const numGens = 8;
 const width = 1440;
 const height = 800;
 
@@ -26,48 +26,36 @@ $ Rotate the turtle to vertical.
 ` Increment the current color index. 
 % Cut off the remainder of the branch.  */
 
-const p = 70;
-const a = 30;
-const b = 30;
-
-const c = 0.86; 
-const h = 0.72;  
-
-const dec = 0.24;
+const a = 1.0;
+const b = 0.90;
+const e = 0.80;
+const c = 50;
+const d = 50;
+const h = 0.707;
+const i = 137.5
+const min = 0;
 
 const leaf_gen = 3; //generation where leaf starts growing.
 
 const generateRules = (symbol) =>{
-  if (symbol.type == "A") {
+  if (symbol.type == "A" && symbol.len >= min) {
     const ruleSet = [
       {rule: [
         {type: "!", width: symbol.wid},
-        {type: "/", angle: p},
+        {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "+", angle: Math.min(a, a/(dec * symbol.step))},
-        {type: "F", len: symbol.len},
-        {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
+        {type: "&", angle: c/2},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h, rotate_l(A)},
         {type: "]"},
+        {type: "/", angle: i},
+        {type: "A", len: symbol.len * a, wid: symbol.wid * h,}
 
-        {type: "-", angle: Math.min(b, b/(dec * symbol.step))},
-        {type: "F", len: symbol.len},
-        {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
-
-      ], prob: Math.min(1, 1.2*(2*symbol.step + 1) / (symbol.step * symbol.step) )},
-      {rule: [
-        {type: "!", width: symbol.wid},
-        {type: "/", angle: p},
-        {type: "B", step: symbol.step}, //dormant bud
-        {type: "-", angle: Math.min(b, b/(dec * symbol.step))},
-        {type: "F", len: symbol.len},
-        {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
-
-      ], prob: Math.max(0, 1 - 1.2*(2*symbol.step + 1) / (symbol.step * symbol.step) )},
+      ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }
-/*  else if (symbol.type == "B" && symbol.len >= min) {
+  else if (symbol.type == "B" && symbol.len >= min) {
     const ruleSet = [
       {rule: [
         {type: "!", width: symbol.wid},
@@ -83,7 +71,24 @@ const generateRules = (symbol) =>{
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
-  } */
+  }
+  else if (symbol.type == "C" && symbol.len >= min) {
+    const ruleSet = [
+      {rule: [
+        {type: "!", width: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "+", angle: d},
+        {type: "/", angle: -1 * i/2},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+
+        {type: "B", len: symbol.len * b, wid: symbol.wid * h},
+      ], prob: 1.0},
+    ]
+    return chooseOne(ruleSet);
+  }
 }
 
 
@@ -108,28 +113,26 @@ function sketch(p5) {
     p5.noLoop();
   }
 
-  function drawLeaf(sz, prob) {
-    if(Math.random() <= prob){
-      p5.push();
-      p5.scale(sz * 0.5);
-      p5.noStroke();
-      p5.beginShape();
-      p5.fill(0, p5.random(100, 255), 0, 180);
-      for(let i = 45; i < 135; i++) {
-        var rad = 15;
-        var x = rad * Math.cos(i * Math.PI/180);
-        var y = rad * Math.sin(i * Math.PI/180);
-        p5.vertex(x, y)
-      }
-      for(let i = 135; i > 40; i--) {
-        var rad = 15;
-        var x = rad * Math.cos(i * Math.PI/180);
-        var y = rad * Math.sin(-1 * i * Math.PI/180) + 20;
-        p5.vertex(x, y)
-      }
-      p5.endShape(p5.CLOSE);
-      p5.pop();
+  function drawLeaf(sz) {
+    p5.push();
+    p5.scale(sz * 0.5);
+    p5.noStroke();
+    p5.beginShape();
+    p5.fill(0, 255, 0);
+    for(let i = 45; i < 135; i++) {
+      var rad = 15;
+      var x = rad * Math.cos(i * Math.PI/180);
+      var y = rad * Math.sin(i * Math.PI/180);
+      p5.vertex(x, y)
     }
+    for(let i = 135; i > 40; i--) {
+      var rad = 15;
+      var x = rad * Math.cos(i * Math.PI/180);
+      var y = rad * Math.sin(-1 * i * Math.PI/180) + 20;
+      p5.vertex(x, y)
+    }
+    p5.endShape(p5.CLOSE);
+    p5.pop();
   }
 
   function applyRule(symbol) {
@@ -139,7 +142,7 @@ function sketch(p5) {
     else if (symbol.type == "F") {
       p5.stroke("#805333");
       p5.line(0, 0, 0, 0, -1* (symbol.len), 0);
-      p5.translate(0, -1 * (symbol.len)+2, 0);
+      p5.translate(0, -1 * (symbol.len), 0);
     }
     else if (symbol.type == "+") {
       p5.rotateZ(Math.PI/180 * -1 * (symbol.angle));
@@ -159,8 +162,8 @@ function sketch(p5) {
     else if (symbol.type == "]") {
       p5.pop();
     }
-    else if (symbol.type == "B") {
-      drawLeaf(Math.max(1.6, 2.2 * (numGens/symbol.step)), symbol.step/(numGens*1.2));
+    else if (symbol.type == "L") {
+      drawLeaf(symbol.sz);
     }
     else if (symbol.type == "&") {
       p5.rotateX(Math.PI/180 * (symbol.angle));
@@ -189,7 +192,7 @@ function sketch(p5) {
     p5.background("#FFFFFF");
     
     // L-System AXIOMS:
-    symbols = [{type: "!", width: 28}, {type: "F", len: 200}, {type: "A", step: 1, len: 120 * c, wid: 30 * h}];
+    symbols = [{type: "A", len: 120, wid: 25, turtle: {heading: {x: 0, y: 1, z: 0}, left: {x: 1, y: 0, z: 0}, up: {x: 0, y: 0, z: 1}} }];
    // symbols = [{type: "!", width: 5},{type: "F", len: 200}, {type: "["}, {type: "-", angle: 45}, {type: "F", len: 100}, {type: "["}, {type: "-", angle:45},
    //         {type: "F", len: 100}, {type: "]"}, {type:"F", len: 100}, {type: "]"}, {type: "F", len: 150}, 
    //     ]; 
@@ -205,7 +208,7 @@ function sketch(p5) {
     p5.scale(0.8);
     for(let i = 0; i < symbols.length; i ++) {
       let s = symbols[i];
-      //await sleep(1);
+      await sleep(1);
       applyRule(s);
     }
     p5.pop(); 
