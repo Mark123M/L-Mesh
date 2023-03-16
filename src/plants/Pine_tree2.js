@@ -4,7 +4,7 @@ Generates trees using a MONOPODIAL MODEL with a stochastic parametric L-system
 import React from "react";
 import { ReactP5Wrapper } from "react-p5-wrapper";
 import {Flex} from '@chakra-ui/react'
-import {rotate_u, rotate_l, rotate_h, rotate_vertical} from './Turtle'
+import {rotate_u, rotate_l, rotate_h, cross_product, len, get_angle, reset_vertical, reset_vertical_angle} from './Turtle'
 
 const numGens = 8;
 const width = 1440;
@@ -34,6 +34,7 @@ const d = 50;
 const h = 0.707;
 const i = 137.5
 const min = 0;
+const V = {x: 0, y: 1, z: 0};
 
 const leaf_gen = 3; //generation where leaf starts growing.
 
@@ -45,11 +46,11 @@ const generateRules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "&", angle: c/2},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h, rotate_l(A)},
+        {type: "&", angle: c},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h, turtle: rotate_l(symbol.turtle, c)},
         {type: "]"},
         {type: "/", angle: i},
-        {type: "A", len: symbol.len * a, wid: symbol.wid * h,}
+        {type: "A", len: symbol.len * a, wid: symbol.wid * h, turtle: rotate_h(symbol.turtle, i)}
 
       ], prob: 1.0},
     ]
@@ -63,7 +64,7 @@ const generateRules = (symbol) =>{
 
         {type: "["},
         {type: "-", angle: d},
-        {type: "/", angle: -1 * i/2},
+        {type: "$", angle: -1 * i/2},
         {type: "C", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
@@ -90,7 +91,6 @@ const generateRules = (symbol) =>{
     return chooseOne(ruleSet);
   }
 }
-
 
 function chooseOne(ruleSet) {
   let n = Math.random(); // Random number between 0-1
