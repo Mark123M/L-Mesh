@@ -70,7 +70,7 @@ export const reset_vertical = (turtle) => {
     console.log('NEW VERTICAL L IS: ');
     print_vector(new_l);
     const angle = get_angle(turtle.left, new_l);
-    return rotate_h(turtle, -1 * angle);
+    return rotate_h(turtle, -1 * angle); //LETS FUCK GO IT WORKED
 }
 export const reset_vertical_angle = (turtle) => {
     let new_l = cross_product(ey, turtle.heading); 
