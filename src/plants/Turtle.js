@@ -14,9 +14,14 @@ let turtle = {
 //let state = [turtle,]; //use push and pop to add and remove from the end of array
 
 const test = {
-    heading: {x: -2, y: 1, z: 6},
-    left: {x: 5, y: 4, z: 0},
-    up: {x: 0, y: 2, z: 1},
+    heading: {x: 0, y: 2, z: 3},
+    left: {x: 9, y: 0, z: 7},
+    up: {x: 3, y: 4, z: 0},
+}
+const test2 = {
+    heading: {x: -5, y: 4, z: 3},
+    left: {x: 3, y: 5, z: 7},
+    up: {x: -3, y: -6, z: 0},
 }
 // 1 2 3
 // 4 5 6
@@ -67,19 +72,61 @@ export const rotate_h = (turtle, angle) =>{ //roll \ /
 export const reset_vertical = (turtle) => {
     let new_l = cross_product(ey, turtle.heading); 
     new_l = scalar_mult(1 / len(cross_product(ey, turtle.heading)), new_l);
-    console.log('NEW VERTICAL L IS: ');
-    print_vector(new_l);
+   // console.log('NEW VERTICAL L IS: ');
+   // print_vector(new_l);
     const angle = get_angle(turtle.left, new_l);
     return rotate_h(turtle, -1 * angle); //LETS FUCK GO IT WORKED
 }
 export const reset_vertical_angle = (turtle) => {
     let new_l = cross_product(ey, turtle.heading); 
     new_l = scalar_mult(1 / len(cross_product(ey, turtle.heading)), new_l);
-    console.log('NEW VERTICAL L IS: ');
-    print_vector(new_l);
+    //console.log('NEW VERTICAL L IS: ');
+    // print_vector(new_l);
     return get_angle(turtle.left, new_l);
 }  
 
+//heading:  left:  up:
+//x         x      x
+//y         y      y
+//z         z      z
+export const get_inverse = (turtle) => {
+    const cofactor = {
+        heading: {
+            x: (turtle.left.y * turtle.up.z - turtle.left.z * turtle.up.y), 
+            y: -1 * (turtle.left.x * turtle.up.z - turtle.left.z * turtle.up.x),
+            z: (turtle.left.x * turtle.up.y - turtle.left.y * turtle.up.x),
+        },
+        left: {
+            x: -1 * (turtle.heading.y * turtle.up.z - turtle.heading.z * turtle.up.y),
+            y: (turtle.heading.x * turtle.up.z - turtle.heading.z * turtle.up.x),
+            z: -1 * (turtle.heading.x * turtle.up.y - turtle.heading.y * turtle.up.x),
+        },
+        up: {
+            x: (turtle.heading.y * turtle.left.z - turtle.heading.z * turtle.left.y),
+            y: -1 * (turtle.heading.x * turtle.left.z - turtle.heading.z * turtle.left.x),
+            z: (turtle.heading.x * turtle.left.y - turtle.heading.y * turtle.left.x),
+        }
+    }
+    const adjugate = {
+        heading: {
+
+        },
+        left: {
+
+        },
+        up: {
+            
+        }
+    }
+    const determinant = turtle.heading.x * (turtle.left.y * turtle.up.z - turtle.left.z * turtle.up.y)
+                        - turtle.left.x * (turtle.heading.y * turtle.up.z - turtle.heading.z * turtle.up.y)
+                        + turtle.up.x * (turtle.heading.y * turtle.left.z - turtle.heading.z * turtle.left.y);
+    console.log("COFACTOR: ");
+    print_vector(cofactor.heading);
+    print_vector(cofactor.left);
+    print_vector(cofactor.up);
+    console.log("DETERMINANT: ", determinant);
+}
 
 export const cross_product = (v1, v2) => {
     return {
@@ -117,53 +164,8 @@ const print_vector = (v) => {
 }
 
 export default function Turtle() {
-    //console.log(Math.cos(Math.PI/2));
-  //  console.log("SOME TESTS");
-  //  print_vector(matrix_vector_mult(test, {x: 2, y:3, z: 4}));
-  //  print_vector(matrix_vector_mult(test, {x: -5, y:1, z: 6}));
-
-   // print_vector(matrix_vector_mult(turtle, {x: Math.sin(Math.PI/3), y: Math.cos(Math.PI/3), z: 0})); //WHAT THE FUCK 
-   // print_vector(matrix_vector_mult(turtle, {x: Math.sin(Math.PI/3), y: Math.cos(Math.PI/3), z: 0}));
-  
-   
-   // turtle = rotate_u(turtle, Math.PI/3);
-    turtle = rotate_l(turtle, Math.PI/6);
-   // turtle = rotate_h(turtle, 170 * (Math.PI/180));
-
-    print_vector(turtle.heading);
-    print_vector(turtle.left);
-    print_vector(turtle.up);
-
-/*    turtle = rotate_vertical(turtle);
-    print_vector(turtle.heading);
-    print_vector(turtle.left);
-    print_vector(turtle.up); 
-
-    turtle = rotate_l(turtle, Math.PI/3);
-    print_vector(turtle.heading);
-    print_vector(turtle.left);
-    print_vector(turtle.up); */
-
-    console.log('AFTER ROTATING ON H');
-    turtle = rotate_h(turtle, Math.PI / 4);
-    print_vector(turtle.heading);
-    print_vector(turtle.left);
-    print_vector(turtle.up); 
-
-    turtle = reset_vertical(turtle);
-    console.log("AFTER RESETTING TO VERTICAL");
-    print_vector(turtle.heading);
-    print_vector(turtle.left);
-    print_vector(turtle.up);
-
-   
-    
-
-   // print_vector(turtle.heading);
-   // print_vector(turtle.left);
-   // print_vector(turtle.up);
-   console.log("DSIUFHSUDHFUISDHFUIFHSDFHUISDHF");
-   print_vector(cross_product({x: -1, y: -2, z: 3}, {x: 4, y: 0, z: -8}));
+    get_inverse(test);
+    get_inverse(test2);
 
     return(
       <>

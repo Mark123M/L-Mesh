@@ -144,16 +144,70 @@ function sketch(p5) {
       p5.translate(0, -1 * (symbol.len), 0);
     }
     else if (symbol.type == "+") {
-      p5.rotateZ(Math.PI/180 * -1 * (symbol.angle));
+      //p5.rotateZ(Math.PI/180 * -1 * (symbol.angle));
+      const ct = Math.cos(-1 * Math.PI/180 * (symbol.angle));
+      const st = Math.sin(-1 * Math.PI/180 * (symbol.angle));
+      p5.applyMatrix(
+        ct, st,  0.0,  0.0,
+        -st, ct, 0.0,  0.0,
+        0.0, 0.0,  1.0,  0.0,
+        0.0, 0.0, 0.0,  1.0
+      ); 
     }
     else if (symbol.type == "-") {
-      p5.rotateZ(Math.PI/180 * (symbol.angle));
-    }
+      // p5.rotateZ(Math.PI/180 * (symbol.angle));
+       const ct = Math.cos(Math.PI/180 * (symbol.angle));
+       const st = Math.sin(Math.PI/180 * (symbol.angle));
+       p5.applyMatrix(
+         ct, st,  0.0,  0.0,
+         -st, ct, 0.0,  0.0,
+         0.0, 0.0,  1.0,  0.0,
+         0.0, 0.0, 0.0,  1.0
+       ); 
+     }
     else if (symbol.type == "/") {
-        p5.rotateY(Math.PI/180 * (symbol.angle));
+       // p5.rotateY(Math.PI/180 * (symbol.angle));
+        const ct = Math.cos(-1 * Math.PI/180 * (symbol.angle));
+        const st = Math.sin(-1 * Math.PI/180 * (symbol.angle));
+        p5.applyMatrix(
+          ct, 0.0,  -st,  0.0,
+          0.0, 1.0, 0.0,  0.0,
+          st, 0.0,  ct,  0.0,
+          0.0, 0.0, 0.0,  1.0
+        );
     }
     else if (symbol.type == "\\") {
-        p5.rotateY(Math.PI/180 * -1 * (symbol.angle));
+       // p5.rotateY(Math.PI/180 * -1 * (symbol.angle));
+        const ct = Math.cos(Math.PI/180 * (symbol.angle));
+        const st = Math.sin(Math.PI/180 * (symbol.angle));
+        p5.applyMatrix(
+          ct, 0.0,  -st,  0.0,
+          0.0, 1.0, 0.0,  0.0,
+          st, 0.0,  ct,  0.0,
+          0.0, 0.0, 0.0,  1.0
+        );
+    }
+    else if (symbol.type == "&") {
+      // p5.rotateX(Math.PI/180 * (symbol.angle));
+       const ct = Math.cos(Math.PI/180 * (symbol.angle));
+       const st = Math.sin(Math.PI/180 * (symbol.angle));
+       p5.applyMatrix(
+         1.0, 0.0,  0.0,  0.0,
+         0.0, ct, -st,  0.0,
+         0.0, st,  ct,  0.0,
+         0.0, 0.0, 0.0,  1.0
+       );   
+    }
+    else if (symbol.type == "^") {
+      // p5.rotateX(Math.PI/180 * (symbol.angle));
+       const ct = Math.cos(-1 * Math.PI/180 * (symbol.angle));
+       const st = Math.sin(-1 * Math.PI/180 * (symbol.angle));
+       p5.applyMatrix(
+         1.0, 0.0,  0.0,  0.0,
+         0.0, ct, -st,  0.0,
+         0.0, st,  ct,  0.0,
+         0.0, 0.0, 0.0,  1.0
+       );   
     }
     else if (symbol.type == "[") {
       p5.push();
@@ -163,9 +217,6 @@ function sketch(p5) {
     }
     else if (symbol.type == "L") {
       drawLeaf(symbol.sz);
-    }
-    else if (symbol.type == "&") {
-      p5.rotateX(Math.PI/180 * (symbol.angle));
     }
     
   }
