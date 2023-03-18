@@ -1,3 +1,5 @@
+import { ReactP5Wrapper } from "react-p5-wrapper";
+
 //3D turtle interpreter
 //standard basis vectors
 const ex = {x: 1, y: 0, z: 0}; 
@@ -115,9 +117,10 @@ export const get_inverse = (turtle) => {
 
         },
         up: {
-            
+
         }
     }
+
     const determinant = turtle.heading.x * (turtle.left.y * turtle.up.z - turtle.left.z * turtle.up.y)
                         - turtle.left.x * (turtle.heading.y * turtle.up.z - turtle.heading.z * turtle.up.y)
                         + turtle.up.x * (turtle.heading.y * turtle.left.z - turtle.heading.z * turtle.left.y);
@@ -136,18 +139,21 @@ export const cross_product = (v1, v2) => {
     }
 }
 
-const matrix_vector_mult = (m, v) =>{
+export const matrix_vector_mult = (m, v, p5) =>{
+    //let vector = p5.createVector(0, 0, 0);
+    //vector = vector.add()
+   // ans.add(m.heading.mult)
+
+   // return p5.Vector.mult(m.heading, v.x), p5.Vector.add(p5.Vector.mult(m.left, v.y), p5.Vector.mult(m.up, v.z));
     return vector_add(scalar_mult(v.x, m.heading), vector_add(scalar_mult(v.y, m.left), scalar_mult(v.z, m.up)));
 }
 
-const scalar_mult = (c, v) =>{
-    return {x: c*v.x, y: c*v.y, z: c*v.z};
+export const scalar_mult = (c, v, p5) =>{
+    return p5.createVector(c * v.x, c * v.y, c * v.z);
 }
-
-const vector_add =(v1, v2) =>{
-    return {x: v1.x + v2.x, y: v1.y + v2.y, z: v1.z + v2.z};
+export const vector_add = (v1, v2, p5) => {
+    return p5.createVector(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
 }
-
 
 export const len = (v1) =>{
    return Math.sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
