@@ -24,7 +24,7 @@ const Cube = () =>{
 
 }
 
-export default function ThreeJs() {
+export default function Plant3D() {
 
     return (
         <div style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"}}>
