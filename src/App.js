@@ -10,7 +10,7 @@ import {
   theme,
 } from '@chakra-ui/react';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
-import Plant from './plants/Plant';
+import Plant from './plants/old models/Plant';
 import Tree from './plants/Tree';
 import Tree2 from './plants/Tree2';
 import Tree3D from './plants/Tree3D'
@@ -20,13 +20,18 @@ import Turtle from './plants/Turtle';
 import Space_tree from './plants/Space_tree'
 import Pine_tree2 from './plants/Pine_tree2'
 
+import ThreeJs from './plants/ThreeJs';
+
 function App() {
   return (
     <ChakraProvider theme={theme}>
       <ColorModeSwitcher justifySelf="flex-end" /> 
-      <Pine_tree/>
+      <ThreeJs/>
+      
     { /* <Tree2/>  
-      <Pine_tree2/>*/}
+      <Pine_tree2/>
+      <Pine_tree/>
+      */}
    {/*   <Space_tree/> 
       <Tree3D/>
      
