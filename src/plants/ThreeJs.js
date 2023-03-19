@@ -1,5 +1,5 @@
 import { Canvas, useFrame } from "@react-three/fiber";
-import { PerspectiveCamera } from "@react-three/drei";
+import { PerspectiveCamera, OrbitControls } from "@react-three/drei";
 import {useRef} from "react";
 
 const Cube = () =>{
@@ -29,12 +29,13 @@ export default function ThreeJs() {
     return (
         <div style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"}}>
             <Canvas>
+                <OrbitControls/>
                 <axesHelper renderOrder={1} scale={[5, 5, 5]}/>
                 <ambientLight />
                 <pointLight position={[10, 10, 10]} />
-                <PerspectiveCamera position={[0, 0, 0]}>
-                    <Cube/>
-                </PerspectiveCamera>
+                {/*<PerspectiveCamera position={[0, 0, 0]}> */}
+                <Cube/>
+                {/*</PerspectiveCamera>*/}
             </Canvas>
         </div>
     )
