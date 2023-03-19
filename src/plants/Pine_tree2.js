@@ -279,9 +279,10 @@ function sketch(p5) {
 
   p5.draw = async () => {
     p5.background("#FFFFFF");
+    //p5.rotateX(-1 *Math.PI/2);
     
     // L-System AXIOMS:
-    symbols = [{type: "A", len: 150, wid: 15, matrix: {heading: p5.createVector(0, 1, 0), left: p5.createVector(-1, 0, 0), up: p5.createVector(0, 0, 1)}}];
+    symbols = [{type: "A", len: 150, wid: 15, matrix: {left: p5.createVector(1, 0, 0), heading: p5.createVector(0, 1, 0), up: p5.createVector(0, 0, 1)}}];
 
    /* const mat = {heading: p5.createVector(1, 4, 8), left: p5.createVector(2, -5, 10), up: p5.createVector(3, 6, 4)};
     const test = p5.createVector(1, 4, -5);
@@ -321,6 +322,8 @@ function sketch(p5) {
   }
   
   p5.mouseReleased=()=> {
+   // p5.resetMatrix();
+    //p5.rotateX(Math.PI/2);
     p5.clear();
     p5.draw();
   }

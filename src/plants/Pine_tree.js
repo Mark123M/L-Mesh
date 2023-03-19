@@ -255,12 +255,18 @@ function sketch(p5) {
     p5.push(); //save previous state
     p5.translate(0, width/4, 0);
    // p5.rotateY(60 * -1 * (Math.PI/180));
+    let count_branch = 0;
     p5.scale(0.8);
     for(let i = 0; i < symbols.length; i ++) {
       let s = symbols[i];
-      await sleep(1);
+      if(s.type == 'F'){
+        count_branch++;
+      }
+      //await sleep(1);
       applyRule(s);
     }
+
+    console.log(count_branch, "BRANCHES");
     p5.pop(); 
   }
   

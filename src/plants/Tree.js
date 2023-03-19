@@ -209,6 +209,7 @@ function sketch(p5) {
 
   p5.draw = async () => {
     p5.background("#FFFFFF");
+    //p5.rotate(p5.millis/100000);
     
     // Generate our L-System from the start
     symbols = [{type: "!", width: 2.5}, {type: "F", len: 100, gen: 1}, {type: "+", angle: p5.random(-10, 10)}, {type: "A", gen: 1}];

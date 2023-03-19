@@ -25,13 +25,14 @@ function App() {
     <ChakraProvider theme={theme}>
       <ColorModeSwitcher justifySelf="flex-end" /> 
       <Pine_tree/>
-    { /* <Tree2/>  */}
-      <Pine_tree2/>
+    { /* <Tree2/>  
+      <Pine_tree2/>*/}
    {/*   <Space_tree/> 
       <Tree3D/>
-      <Tree/>
+     
       <Flower/>*/}
-      <Turtle/> 
+     {/*  <Tree/>
+      <Turtle/>  */}
     </ChakraProvider>
   );
 }

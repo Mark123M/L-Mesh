@@ -145,7 +145,7 @@ export const matrix_vector_mult = (m, v, p5) =>{
    // ans.add(m.heading.mult)
 
    // return p5.Vector.mult(m.heading, v.x), p5.Vector.add(p5.Vector.mult(m.left, v.y), p5.Vector.mult(m.up, v.z));
-    return vector_add(scalar_mult(v.x, m.heading), vector_add(scalar_mult(v.y, m.left), scalar_mult(v.z, m.up)));
+    return vector_add(scalar_mult(v.x, m.heading, p5), vector_add(scalar_mult(v.y, m.left, p5), scalar_mult(v.z, m.up, p5)), p5);
 }
 
 export const scalar_mult = (c, v, p5) =>{
