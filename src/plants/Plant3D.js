@@ -6,22 +6,22 @@ import {Vector3, Matrix4} from "three";
 
 //3D turtle interpreter
 //standard basis vectors
-const ex = [-1, 0, 0]; 
-const ey = [0, 1, 0];
-const ez = [0, 0, 1];
+let rotation = new Matrix4();
+let direction = new Matrix4();
+const ex = new Vector3(-1, 0, 0); 
+const ey = new Vector3(0, 1, 0);
+const ez = new Vector3(0, 0, 1);
 
-const init_state = {
+let init_state = {
     pos: [0, 0, 0],
-    H: ey, //default orientation
-    L: ex, //left vector
-    U: ez, //up vector
+    direction: direction,
     pen: ['brown', 30, true], 
 }
 
 let state = [init_state];
-let rotation = new Matrix4();
 
-const get_rotation_u = (angle) =>{
+
+const get_rotation_u = (angle) => {
     const st = Math.sin(angle);
     const ct = Math.cos(angle);
     rotation.set(
@@ -30,8 +30,30 @@ const get_rotation_u = (angle) =>{
         0, 0, 1, 0,
         0, 0, 0, 1
         )
-    console.log(rotation);
 }
+
+const get_rotation_l = (angle) => {
+    const st = Math.sin(angle);
+    const ct = Math.cos(angle);
+    rotation.set(
+        ct, 0, -st, 0,
+        0, 1, 0, 0,
+        st, 0, ct, 0,
+        0, 0, 0, 1
+    )
+}
+
+const get_rotation_h = (angle) => {
+    const st = Math.sin(angle);
+    const ct = Math.cos(angle);
+    rotation.set(
+        1, 0, 0, 0,
+        0, ct, -st, 0,
+        0, st, ct, 0,
+        0, 0, 0, 1
+    )
+}
+
 
 const Branch = ({pos, heading, radius, height}) => {
     const meshRef = useRef(null);
@@ -42,7 +64,9 @@ const Branch = ({pos, heading, radius, height}) => {
         if(!meshRef.current){
             return;
         }
-        meshRef.current.rotation.x = t; 
+       // get_rotation_u();
+      //  meshRef.current.rotation.x = t; 
+        meshRef.current.applyMatrix4(direction);
     })
 
     return (
@@ -51,7 +75,6 @@ const Branch = ({pos, heading, radius, height}) => {
             <meshStandardMaterial color="blue"/>
         </mesh>
     )
-
 }
 
 const Cube = ({pos, heading}) =>{
@@ -81,10 +104,31 @@ const Cube = ({pos, heading}) =>{
 
 }
 
+const print_matrix = (m) => {
+    let v1 = new Vector3();
+    let v2 = new Vector3();
+    let v3 = new Vector3();
+    console.log(m.extractBasis(v1, v2, v3))
+    console.log(v1);
+    console.log(v2);
+    console.log(v3);
+}
+
 export default function Plant3D() {
     const canvas_ref = useRef(null);
 
+    direction.makeBasis(ey, ex, ez);   
+    print_matrix(direction);
+
     get_rotation_u(Math.PI/3);
+    direction.multiply(rotation);
+    get_rotation_l(Math.PI/6);
+    direction.multiply(rotation);
+    get_rotation_h(170 * (Math.PI/180));
+    direction.multiply(rotation);
+
+    print_matrix(direction);
+
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
             <Canvas>
@@ -92,8 +136,8 @@ export default function Plant3D() {
                 <axesHelper renderOrder={1} scale={[5, 5, 5]}/>
                 <ambientLight />
                 <pointLight position={[10, 10, 10]} />
-                <Cube/>
-                <Branch pos={[0, 0, -10]} radius={1} height={10}/>
+                {/*<Cube/> */}
+                <Branch pos={[0, 0, 0]} radius={0.2} height={1}/>
             </Canvas>
         </div>
     )
