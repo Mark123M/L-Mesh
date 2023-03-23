@@ -13,8 +13,9 @@ const Cube = () =>{
         }
         meshRef.current.rotation.x = Math.sin(t);
         meshRef.current.rotation.y = Math.sin(t)/3; 
+       
     })
-
+    console.log("difjidjfdifj");
     return (
         <mesh ref = {meshRef} position={[0, 0, 0]}>
             <boxGeometry args={[1, 1, 1]}/>

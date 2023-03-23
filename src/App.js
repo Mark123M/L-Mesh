@@ -16,17 +16,20 @@ import Pine_tree from './plants/Pine_tree'
 import Space_tree from './plants/Space_tree'
 import Pine_tree2 from './plants/Pine_tree2'
 
-import ThreeJs from './plants/ThreeJs';
+//import ThreeJs from './plants/old models/ThreeJs';
 import Plant3D from './plants/Plant3D';
+import Turtle from './plants/Turtle';
 
 function App() {
   return (
     <ChakraProvider theme={theme}>
       <ColorModeSwitcher justifySelf="flex-end" /> 
       <Plant3D/>
-      <ThreeJs/>
+      <Turtle/>
       
-    { /* <Tree2/>  
+    { /*
+      <ThreeJs/> 
+      <Tree2/>  
       <Pine_tree2/>
       <Pine_tree/>
       <Space_tree/> 
@@ -34,7 +37,7 @@ function App() {
       <Flower/>
       <Tree/>
       <Turtle/>  */}
-      
+
     </ChakraProvider>
   );
 }
