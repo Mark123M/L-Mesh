@@ -1,62 +1,94 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { PerspectiveCamera, OrbitControls } from "@react-three/drei";
-import {useRef} from "react";
-import Turtle from "./Turtle";
-import {Vector3, Matrix4} from "three";
+import {useRef, useEffect} from "react";
+import * as THREE from "three"
 
 //3D turtle interpreter
 //standard basis vectors
-let rotation = new Matrix4();
-let direction = new Matrix4();
-const ex = new Vector3(-1, 0, 0); 
-const ey = new Vector3(0, 1, 0);
-const ez = new Vector3(0, 0, 1);
+let rotation_matrix = new THREE.Matrix4();
+let direction_matrix = new THREE.Matrix4();
+
+let q = new THREE.Quaternion();
+const ey = new THREE.Vector3(0, 1, 0);
+let heading_vector = new THREE.Vector3();
+
 
 let init_state = {
     pos: [0, 0, 0],
-    direction: direction,
+    direction: [
+      0,-1, 0, 0,
+      1, 0, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    ],
     pen: ['brown', 30, true], 
 }
 
 let state = [init_state];
 
 
-const get_rotation_u = (angle) => {
+const rotate_u = (direction_array, angle) => {
     const st = Math.sin(angle);
     const ct = Math.cos(angle);
-    rotation.set(
+    rotation_matrix.set(
         ct, st, 0, 0,
         -st, ct, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
-        )
+    )
+    direction_matrix.set(
+      ...direction_array
+    )
+    direction_matrix.multiply(rotation_matrix);
+    return direction_matrix.toArray();
 }
 
-const get_rotation_l = (angle) => {
+const rotate_l = (direction_array, angle) => {
     const st = Math.sin(angle);
     const ct = Math.cos(angle);
-    rotation.set(
+    rotation_matrix.set(
         ct, 0, -st, 0,
         0, 1, 0, 0,
         st, 0, ct, 0,
         0, 0, 0, 1
     )
+    direction_matrix.set(
+      ...direction_array
+    )
+    direction_matrix.multiply(rotation_matrix);
+    return direction_matrix.toArray();
 }
 
-const get_rotation_h = (angle) => {
+const rotate_h = (direction_array, angle) => {
     const st = Math.sin(angle);
     const ct = Math.cos(angle);
-    rotation.set(
+    rotation_matrix.set(
         1, 0, 0, 0,
         0, ct, -st, 0,
         0, st, ct, 0,
         0, 0, 0, 1
     )
+    direction_matrix.set(
+      ...direction_array
+    )
+    direction_matrix.multiply(rotation_matrix);
+    return direction_matrix.toArray();
 }
 
 
 const Branch = ({pos, heading, radius, height}) => {
     const meshRef = useRef(null);
+  
+
+    useEffect(()=>{
+      heading_vector.set(heading[0], heading[1], heading[2]);
+      heading_vector.normalize();
+      q.setFromUnitVectors(ey, heading_vector);
+      meshRef.current.position.set(pos[0], pos[1], pos[2]);
+      meshRef.current.setRotationFromQuaternion(q);
+      //meshRef.current.rotation.set(Math.PI/6, 0, 0);
+      
+    }, [meshRef]);
 
     let t;
     useFrame((state)=>{
@@ -66,59 +98,43 @@ const Branch = ({pos, heading, radius, height}) => {
         }
        // get_rotation_u();
       //  meshRef.current.rotation.x = t; 
-        meshRef.current.applyMatrix4(direction);
+        //meshRef.current.applyMatrix4(direction);
+       // console.log(meshRef.current.lookAt);
     })
 
     return (
-        <mesh ref = {meshRef} position={pos}> 
+        <mesh ref = {meshRef}> 
             <cylinderGeometry args={[radius, radius, height, 6]}/>
             <meshStandardMaterial color="blue"/>
         </mesh>
     )
 }
 
-const Cube = ({pos, heading}) =>{
-    //set position in the mesh
-    //maintain a separate orientation matrix [H, L, U]
-    //the orientation gets updated for each rotation to keep track of math, but the actual rotation is done with 
-    //use arrays instead of the local matricies, then in three js, apply the transformation matricies (from $ operations etc.)
-    const meshRef = useRef(null);
 
-    let t;
-    useFrame((state)=>{
-        t = state.clock.getElapsedTime();
-        if(!meshRef.current){
-            return;
-        }
-       // meshRef.current.rotation.x = Math.sin(t);
-        //meshRef.current.rotation.y = t;
-        meshRef.current.rotation.x = t; 
-    })
 
-    return (
-        <mesh ref = {meshRef} position={pos}> 
-            <boxGeometry args={[1, 1, 1]}/>
-            <meshStandardMaterial color="blue"/>
-        </mesh>
-    )
-
-}
-
-const print_matrix = (m) => {
-    let v1 = new Vector3();
-    let v2 = new Vector3();
-    let v3 = new Vector3();
-    console.log(m.extractBasis(v1, v2, v3))
-    console.log(v1);
-    console.log(v2);
-    console.log(v3);
+const print_matrix_array = (m) => {
+    console.log(m[0], m[1], m[2], m[3]);
+    console.log(m[4], m[5], m[6], m[7]);
+    console.log(m[8], m[9], m[10], m[11]);
+    console.log(m[12], m[13], m[14], m[15]);
 }
 
 export default function Plant3D() {
     const canvas_ref = useRef(null);
 
-    direction.makeBasis(ey, ex, ez);   
-    print_matrix(direction);
+    let m = [
+      0,-1, 0, 0,
+      1, 0, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    ];
+    m = rotate_u(m, Math.PI / 3);
+    m = rotate_l(m, Math.PI / 6);
+    m = rotate_h(m, 170 * (Math.PI / 180));
+    print_matrix_array(m);
+
+
+   /* print_matrix(direction);
 
     get_rotation_u(Math.PI/3);
     direction.multiply(rotation);
@@ -127,17 +143,18 @@ export default function Plant3D() {
     get_rotation_h(170 * (Math.PI/180));
     direction.multiply(rotation);
 
-    print_matrix(direction);
+    print_matrix(direction); */
 
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
             <Canvas>
-                <OrbitControls enableZoom={false} enablePan={false} enableRotate={false}/>
+                <PerspectiveCamera makeDefault position={[0, 0, 10]} />
+                {/*<OrbitControls enableZoom={false} enablePan={false} enableRotate={false}/> */}
                 <axesHelper renderOrder={1} scale={[5, 5, 5]}/>
                 <ambientLight />
                 <pointLight position={[10, 10, 10]} />
-                {/*<Cube/> */}
-                <Branch pos={[0, 0, 0]} radius={0.2} height={1}/>
+
+                <Branch pos={[1, 1, 0]} heading = {[1, 1, 0]} radius={0.2} height={1}/>
             </Canvas>
         </div>
     )
