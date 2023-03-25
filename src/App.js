@@ -25,7 +25,8 @@ function App() {
   return (
     <ChakraProvider theme={theme}>
       <ColorModeSwitcher justifySelf="flex-end" /> 
-      <Plant3D/>
+      {/*<Plant3D/> */}
+      <Monopodial/>
       
     { /*
       <ThreeJs/> 

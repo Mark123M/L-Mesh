@@ -23,13 +23,12 @@ let init_state = {
 let state_stack = [init_state];
 let objects = [];
 let symbols;
-let num_gens = 9;
+let num_gens = 10;
 
-const a = 1.0;
 const b = 0.90;
-const e = 0.80;
-const c = 50;
-const d = 50;
+const e = 0.70;
+const c = 30;
+const d = -30;
 const h = 0.707;
 const i = 137.5
 const min = 0;
@@ -42,11 +41,11 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "&", angle: c/2},
+        {type: "&", angle: c},
         {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
         {type: "/", angle: i},
-        {type: "A", len: symbol.len * a, wid: symbol.wid * h}
+        {type: "A", len: symbol.len * b, wid: symbol.wid * h}
 
       ], prob: 1.0},
     ]
@@ -60,7 +59,7 @@ const generate_rules = (symbol) =>{
 
         {type: "["},
         {type: "-", angle: d},
-        {type: "/", angle: -1 * i/2},
+        {type: "$"},
         {type: "C", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
@@ -77,7 +76,7 @@ const generate_rules = (symbol) =>{
 
         {type: "["},
         {type: "+", angle: d},
-        {type: "/", angle: -1 * i/2},
+        {type: "$"},
         {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
@@ -161,6 +160,11 @@ function applyRule(symbol) {
   }
   else if (symbol.type == '$') {
     console.log("$ NOT IMPLEMENTED YET");
+    //L = (V x H) / ||V x H||
+    last_state.left = cross_product([0, 1, 0], last_state.heading);
+    last_state.left = scalar_mult((1 / vector_len(last_state.left)), last_state.left);
+    //U = H x L
+    last_state.up = cross_product(last_state.heading, last_state.left); 
 
     //rotate_u(last_state, Math.PI);
   }
@@ -184,11 +188,13 @@ const cross_product = (a, b) => {
   return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 }
 const scalar_mult = (c, v) =>{
-  
   return [c * v[0], c * v[1], c * v[2]];
 }
 const vector_add =(v1, v2) =>{
   return [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]];
+}
+const vector_len = (v) =>{
+  return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 }
 const rotate_u = (state, angle) =>{ //turn + -
   const m = JSON.parse(JSON.stringify(state));
@@ -273,6 +279,10 @@ export default function Monopodial() {
     }
 
     console.log(objects);
+
+    const v1 = [5, 3, -10];
+    const v2 = [-4, -5, 7];
+    console.log(cross_product(v1, v2));
 
 
     return (
