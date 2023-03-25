@@ -22,7 +22,7 @@ let init_state = {
 let state_stack = [init_state];
 let objects = [];
 let symbols;
-let num_gens = 10;
+let num_gens = 9;
 
 const a = 1.0;
 const b = 0.90;
@@ -125,7 +125,7 @@ function applyRule(symbol) {
   else if (symbol.type == "F") {
     //each new object stores: position, direction vector, length, width/radius
     //draw object
-    objects.push([last_state.pos, last_state.heading, symbol.len, last_state.pen[1]]);
+    objects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1]]);
     //translate state
     last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
   }
@@ -258,6 +258,7 @@ export default function Plant3D() {
     console.log(state_stack[0].up); */
 
     symbols = [{type: "A", len: 1, wid: 0.2}];
+    //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();
         //  console.log(symbols, "NEW SYMBOLS");
