@@ -28,19 +28,22 @@ let state = [init_state];
 
 
 const rotate_u = (direction_array, angle) => {
-    const st = Math.sin(angle);
-    const ct = Math.cos(angle);
-    rotation_matrix.set(
-        ct, st, 0, 0,
-        -st, ct, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-    )
-    direction_matrix.set(
-      ...direction_array
-    )
-    direction_matrix.multiply(rotation_matrix);
-    return direction_matrix.toArray();
+  const st = Math.sin(angle);
+  const ct = Math.cos(angle);
+  rotation_matrix.set(
+      ct, st, 0, 0,
+      -st, ct, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+  )
+
+  direction_matrix.set(...direction_array);
+  console.log('BEFORE ROTATING ON U AXIS BY ANGLE:', angle)
+  print_matrix_array(direction_matrix.toArray());
+  direction_matrix.multiply(rotation_matrix);
+  console.log('AFTER ROTATING ON U AXIS BY ANGLE:', angle)
+  print_matrix_array(direction_matrix.toArray());
+  return direction_matrix.toArray();
 }
 
 const rotate_l = (direction_array, angle) => {
@@ -52,10 +55,12 @@ const rotate_l = (direction_array, angle) => {
         st, 0, ct, 0,
         0, 0, 0, 1
     )
-    direction_matrix.set(
-      ...direction_array
-    )
+    direction_matrix.set(...direction_array);
+    console.log('BEFORE ROTATING ON L AXIS BY ANGLE:', angle)
+    print_matrix_array(direction_matrix.toArray());
     direction_matrix.multiply(rotation_matrix);
+    console.log('AFTER ROTATING ON L AXIS BY ANGLE:', angle)
+    print_matrix_array(direction_matrix.toArray());
     return direction_matrix.toArray();
 }
 
@@ -68,10 +73,12 @@ const rotate_h = (direction_array, angle) => {
         0, st, ct, 0,
         0, 0, 0, 1
     )
-    direction_matrix.set(
-      ...direction_array
-    )
+    direction_matrix.set(...direction_array);
+    console.log('BEFORE ROTATING ON H AXIS BY ANGLE:', angle)
+    print_matrix_array(direction_matrix.toArray());
     direction_matrix.multiply(rotation_matrix);
+    console.log('AFTER ROTATING ON H AXIS BY ANGLE:', angle)
+    print_matrix_array(direction_matrix.toArray());
     return direction_matrix.toArray();
 }
 
@@ -121,29 +128,33 @@ const print_matrix_array = (m) => {
 
 export default function Plant3D() {
     const canvas_ref = useRef(null);
-
     let m = [
       0,-1, 0, 0,
       1, 0, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1
     ];
+
     m = rotate_u(m, Math.PI / 3);
-    m = rotate_l(m, Math.PI / 6);
-    m = rotate_h(m, 170 * (Math.PI / 180));
     print_matrix_array(m);
 
+    m = rotate_l(m, Math.PI / 6);
+    print_matrix_array(m);
 
-   /* print_matrix(direction);
+    /*const st = Math.sin(Math.PI / 3);
+    const ct = Math.cos(Math.PI / 3);
+    rotation_matrix.set(
+        ct, st, 0, 0,
+        -st, ct, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    )
 
-    get_rotation_u(Math.PI/3);
-    direction.multiply(rotation);
-    get_rotation_l(Math.PI/6);
-    direction.multiply(rotation);
-    get_rotation_h(170 * (Math.PI/180));
-    direction.multiply(rotation);
+    let mat = new THREE.Matrix4().set(...m);
+    console.log('before', mat);
+    mat.multiply(rotation_matrix);
+    console.log('after', mat); */
 
-    print_matrix(direction); */
 
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
