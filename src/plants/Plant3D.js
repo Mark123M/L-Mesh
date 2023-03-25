@@ -16,10 +16,166 @@ let init_state = {
     heading: [0, 1, 0],
     left: [-1, 0, 0], 
     up: [0, 0, 1],
-    pen: ['brown', 30, true], 
+    pen: ["#805333", 30, true], 
 }
 
 let state_stack = [init_state];
+let objects = [];
+let symbols;
+let num_gens = 8;
+
+const a = 1.0;
+const b = 0.90;
+const e = 0.80;
+const c = 50;
+const d = 50;
+const h = 0.707;
+const i = 137.5
+const min = 0;
+
+const generate_rules = (symbol) =>{
+  if (symbol.type == "A" && symbol.len >= min) {
+    const ruleSet = [
+      {rule: [
+        {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "&", angle: c/2},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+        {type: "/", angle: i},
+        {type: "A", len: symbol.len * a, wid: symbol.wid * h}
+
+      ], prob: 1.0},
+    ]
+    return chooseOne(ruleSet);
+  }
+  else if (symbol.type == "B" && symbol.len >= min) {
+    const ruleSet = [
+      {rule: [
+        {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "-", angle: d},
+        {type: "/", angle: -1 * i/2},
+        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+
+        {type: "C", len: symbol.len * b, wid: symbol.wid * h},
+      ], prob: 1.0},
+    ]
+    return chooseOne(ruleSet);
+  }
+  else if (symbol.type == "C" && symbol.len >= min) {
+    const ruleSet = [
+      {rule: [
+        {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "+", angle: d},
+        {type: "/", angle: -1 * i/2},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+
+        {type: "B", len: symbol.len * b, wid: symbol.wid * h},
+      ], prob: 1.0},
+    ]
+    return chooseOne(ruleSet);
+  }
+}
+
+function chooseOne(ruleSet) {
+  let n = Math.random(); // Random number between 0-1
+  let t = 0;
+  for(let i = 0; i < ruleSet.length; i++) {
+    t += ruleSet[i].prob; // Keep adding the probability of the options to total
+    if(t > n) { // If the total is more than the random value
+      return ruleSet[i].rule; // Choose that option
+    }
+  }
+  return "";
+}  
+
+function generate() {
+  let next = [];
+
+  for(let i = 0; i < symbols.length; i++) {
+    let s = symbols[i];
+    let s2 = generate_rules(s);
+    if(s2){
+      next = next.concat(s2);
+    }
+    else{
+      next = next.concat(s);
+    }
+  }
+  //console.log(next, "NEW SYMBOLS FOR TREE");
+  return next;
+}
+
+//HERE WE FUCKING GOOOO
+function applyRule(symbol) {
+  let last_state = state_stack[state_stack.length - 1];
+  if(symbol.type == "!") {
+    last_state.pen[1] = symbol.wid;
+  }
+  else if (symbol.type == "F") {
+    //each new object stores: position, direction vector, length, width/radius
+    //draw object
+    objects.push([last_state.pos, last_state.heading, symbol.len, last_state.pen[1]]);
+    //translate state
+    last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
+  }
+  else if (symbol.type == "f") {
+    //translate state
+    last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
+  }
+  else if (symbol.type == "+") {
+    //p5.rotateZ(Math.PI/180 * -1 * (symbol.angle));
+    rotate_u(last_state, (Math.PI / 180) * (symbol.angle));
+  }
+  else if (symbol.type == "-") {
+    // p5.rotateZ(Math.PI/180 * (symbol.angle));
+    rotate_u(last_state, (Math.PI / 180) * -(symbol.angle));
+   }
+
+  else if (symbol.type == "&") {
+    rotate_l(last_state, (Math.PI / 180) * (symbol.angle)); 
+  }
+  else if (symbol.type == "^") {
+    rotate_l(last_state, (Math.PI / 180) * -(symbol.angle));  
+  }
+  else if (symbol.type == "\\") {
+    // p5.rotateY(Math.PI/180 * (symbol.angle));
+    rotate_h(last_state, (Math.PI / 180) * (symbol.angle));
+  }
+  else if (symbol.type == "/") {
+    rotate_h(last_state, (Math.PI / 180) * -(symbol.angle));
+  }
+  else if (symbol.type == '|') {
+    rotate_u(last_state, Math.PI);
+  }
+  else if (symbol.type == '$') {
+    console.log("$ NOT IMPLEMENTED YET");
+    //rotate_u(last_state, Math.PI);
+  }
+  else if (symbol.type == "[") {
+    let new_state = JSON.parse(JSON.stringify(last_state));
+    state_stack.push(new_state);
+  }
+  else if (symbol.type == "]") {
+    state_stack.pop();
+  }
+  else if (symbol.type == "L") {
+    //drawLeaf(symbol.sz);
+  }
+  
+}
+
+
 
 const matrix_vector_mult = (m, v) =>{
   return vector_add(scalar_mult(v[0], m.heading), vector_add(scalar_mult(v[1], m.left), scalar_mult(v[2], m.up)));
@@ -56,7 +212,7 @@ const rotate_h = (state, angle) =>{ //turn + -
   state.up = matrix_vector_mult(m, [0, -st, ct]);
 }
 
-
+//MAKE SURE NOT TO EDIT ANY VECTORS
 const Branch = ({pos, heading, radius, height}) => {
     const meshRef = useRef(null);
   
@@ -101,6 +257,16 @@ export default function Plant3D() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up);
 
+    symbols = [{type: "A", len: 120, wid: 25}];
+    for(let i = 0; i < num_gens; i ++) {
+        symbols = generate();
+        //  console.log(symbols, "NEW SYMBOLS");
+        console.log(symbols);
+    }
+    for(let i = 0; i < symbols.length; i ++) {
+      let s = symbols[i];
+      // applyRule(s);
+    }
 
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
@@ -111,7 +277,7 @@ export default function Plant3D() {
                 <ambientLight />
                 <pointLight position={[10, 10, 10]} />
 
-                <Branch pos={[1, 1, 0]} heading = {[1, 1, 0]} radius={0.2} height={1}/>
+                <Branch pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.2} height={1}/>
             </Canvas>
         </div>
     )
