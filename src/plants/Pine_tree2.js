@@ -4,8 +4,9 @@ Generates trees using a MONOPODIAL MODEL with a stochastic parametric L-system
 import React from "react";
 import { ReactP5Wrapper } from "react-p5-wrapper";
 import {Flex} from '@chakra-ui/react'
+//import {matrix_vector_mult} from './Turtle'
 
-const numGens = 8;
+const numGens = 9;
 const width = 1440;
 const height = 800;
 
@@ -25,36 +26,35 @@ $ Rotate the turtle to vertical.
 ` Increment the current color index. 
 % Cut off the remainder of the branch.  */
 
-const a = 1.0;
-const b = 0.90;
-const e = 0.80;
-const c = 50;
-const d = 50;
+const b = 0.9;
+const e = 0.8;
+const c = 45;
+const d = 45;
 const h = 0.707;
-const i = 137.5
-const min = 0;
+const i = 137.5;
 
 const leaf_gen = 3; //generation where leaf starts growing.
 
 const generateRules = (symbol) =>{
-  if (symbol.type == "A" && symbol.len >= min) {
+  if (symbol.type == "A") {
     const ruleSet = [
       {rule: [
         {type: "!", width: symbol.wid},
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "&", angle: c/2},
+        {type: "&", angle: c},
         {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
+
         {type: "/", angle: i},
-        {type: "A", len: symbol.len * a, wid: symbol.wid * h}
+        {type: "A", len: symbol.len * b, wid: symbol.wid * h}
 
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }
-  else if (symbol.type == "B" && symbol.len >= min) {
+  else if (symbol.type == "B") {
     const ruleSet = [
       {rule: [
         {type: "!", width: symbol.wid},
@@ -62,7 +62,7 @@ const generateRules = (symbol) =>{
 
         {type: "["},
         {type: "-", angle: d},
-        {type: "/", angle: -1 * i/2},
+        {/*type: "/", angle: -1 * i/2*/},
         {type: "C", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
@@ -71,7 +71,7 @@ const generateRules = (symbol) =>{
     ]
     return chooseOne(ruleSet);
   }
-  else if (symbol.type == "C" && symbol.len >= min) {
+  else if (symbol.type == "C") {
     const ruleSet = [
       {rule: [
         {type: "!", width: symbol.wid},
@@ -79,7 +79,7 @@ const generateRules = (symbol) =>{
 
         {type: "["},
         {type: "+", angle: d},
-        {type: "/", angle: -1 * i/2},
+        {/*type: "/", angle: -1 * i/2 */},
         {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
@@ -89,7 +89,6 @@ const generateRules = (symbol) =>{
     return chooseOne(ruleSet);
   }
 }
-
 
 function chooseOne(ruleSet) {
   let n = Math.random(); // Random number between 0-1
@@ -143,6 +142,7 @@ function sketch(p5) {
       p5.line(0, 0, 0, 0, -1* (symbol.len), 0);
       p5.translate(0, -1 * (symbol.len), 0);
     }
+    //ROTATES ON THE U AXIS (TURN) (USES THE RU MATRIX)
     else if (symbol.type == "+") {
       //p5.rotateZ(Math.PI/180 * -1 * (symbol.angle));
       const ct = Math.cos(-1 * Math.PI/180 * (symbol.angle));
@@ -165,6 +165,7 @@ function sketch(p5) {
          0.0, 0.0, 0.0,  1.0
        ); 
      }
+     //ROTATES ON THE H AXIS (ROLL) (USES THE RL MATRIX)
     else if (symbol.type == "/") {
        // p5.rotateY(Math.PI/180 * (symbol.angle));
         const ct = Math.cos(-1 * Math.PI/180 * (symbol.angle));
@@ -187,6 +188,7 @@ function sketch(p5) {
           0.0, 0.0, 0.0,  1.0
         );
     }
+    //ROTATES ON THE L AXIS (PITCH) (USES THE RH MATRIX)
     else if (symbol.type == "&") {
       // p5.rotateX(Math.PI/180 * (symbol.angle));
        const ct = Math.cos(Math.PI/180 * (symbol.angle));
@@ -208,6 +210,9 @@ function sketch(p5) {
          0.0, st,  ct,  0.0,
          0.0, 0.0, 0.0,  1.0
        );   
+    }
+    else if (symbol.type == "$") {
+      p5.rotateY(Math.PI/180 * -1 * (symbol.angle))
     }
     else if (symbol.type == "[") {
       p5.push();
@@ -238,14 +243,66 @@ function sketch(p5) {
     return next;
   }
 
+  function rotate_u (mat, angle){ //turn + -
+     return {
+         heading: matrix_vector_mult(mat, p5.createVector(Math.cos(angle), -1 * Math.sin(angle), 0)),
+         left: matrix_vector_mult(mat, p5.createVector(Math.sin(angle), Math.cos(angle), 0)),
+         up: matrix_vector_mult(mat, p5.createVector(0, 0, 1)),
+     };
+ }
+  function rotate_l (mat, angle){ //pitch & ^
+     return {
+         heading: matrix_vector_mult(mat, p5.createVector(Math.cos(angle), 0, Math.sin(angle))),
+         left: matrix_vector_mult(mat, p5.createVector(0, 1, 0)),
+         up: matrix_vector_mult(mat, p5.createVector(-1 * Math.sin(angle), 0, Math.cos(angle))),
+     };
+  }
+  function rotate_h (mat, angle){ //roll \ /
+     return {
+         heading: matrix_vector_mult(mat, p5.createVector(1, 0, 0)),
+         left: matrix_vector_mult(mat, p5.createVector(0, Math.cos(angle), Math.sin(angle))),
+         up: matrix_vector_mult(mat, p5.createVector(0, -1 * Math.sin(angle), Math.cos(angle))),
+     }
+  }
+  function matrix_vector_mult(mat, v){
+    return vector_add(scalar_mult(v.x, mat.heading), vector_add(scalar_mult(v.y, mat.left), scalar_mult(v.z, mat.up)));
+  }
+  function scalar_mult(c, v){
+      return p5.createVector(c*v.x, c*v.y, c*v.z);
+  }
+  function vector_add(v1, v2){
+      return p5.createVector(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+  }
+  function print_vector(v){
+    console.log(v.x, " ", v.y, " ", v.z);
+  }
+
   p5.draw = async () => {
     p5.background("#FFFFFF");
+    //p5.rotateX(-1 *Math.PI/2);
     
     // L-System AXIOMS:
-    symbols = [{type: "A", len: 120, wid: 25}];
-   // symbols = [{type: "!", width: 5},{type: "F", len: 200}, {type: "["}, {type: "-", angle: 45}, {type: "F", len: 100}, {type: "["}, {type: "-", angle:45},
-   //         {type: "F", len: 100}, {type: "]"}, {type:"F", len: 100}, {type: "]"}, {type: "F", len: 150}, 
-   //     ]; 
+    symbols = [{type: "A", len: 150, wid: 15, matrix: {left: p5.createVector(1, 0, 0), heading: p5.createVector(0, 1, 0), up: p5.createVector(0, 0, 1)}}];
+
+   /* const mat = {heading: p5.createVector(1, 4, 8), left: p5.createVector(2, -5, 10), up: p5.createVector(3, 6, 4)};
+    const test = p5.createVector(1, 4, -5);
+    console.log('VECTOR TEST 1', test.x, test.y, test.z);
+    const test2 = matrix_vector_mult(mat, test);
+    //test2.mult(1);
+    console.log('VECTOR TEST 2', test2.x, test2.y, test2.z);  */
+
+    symbols[0].matrix = rotate_u(symbols[0].matrix, Math.PI/3);
+    symbols[0].matrix = rotate_l(symbols[0].matrix, Math.PI/6);
+    symbols[0].matrix = rotate_h(symbols[0].matrix, 170 * (Math.PI/180));
+
+    console.log("MATRIX AFTER PRINTING: ");
+    print_vector(symbols[0].matrix.heading);
+    print_vector(symbols[0].matrix.left);
+    print_vector(symbols[0].matrix.up);
+
+    //rotate_l(turtle, Math.PI/6);
+    //rotate_h(turtle, 170 * (Math.PI/180));
+
 
     for(let i = 0; i < numGens; i ++) {
       symbols = generate();
@@ -255,22 +312,18 @@ function sketch(p5) {
     p5.push(); //save previous state
     p5.translate(0, width/4, 0);
    // p5.rotateY(60 * -1 * (Math.PI/180));
-    let count_branch = 0;
     p5.scale(0.8);
     for(let i = 0; i < symbols.length; i ++) {
       let s = symbols[i];
-      if(s.type == 'F'){
-        count_branch++;
-      }
-      //await sleep(1);
+    //  await sleep(1);
       applyRule(s);
     }
-
-    console.log(count_branch, "BRANCHES");
     p5.pop(); 
   }
   
   p5.mouseReleased=()=> {
+   // p5.resetMatrix();
+    //p5.rotateX(Math.PI/2);
     p5.clear();
     p5.draw();
   }

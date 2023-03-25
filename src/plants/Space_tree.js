@@ -5,7 +5,7 @@ import React from "react";
 import { ReactP5Wrapper } from "react-p5-wrapper";
 import {Flex} from '@chakra-ui/react'
 
-const numGens = 13;
+const numGens = 12;
 
 const width = 1440;
 const height = 800;
@@ -26,12 +26,14 @@ $ Rotate the turtle to vertical.
 ` Increment the current color index. 
 % Cut off the remainder of the branch.  */
 
-const p = 60;
+const p = 70;
 const a = 30;
 const b = 30;
 
-const c = 0.887; 
-const h = 0.8;  
+const c = 0.86; 
+const h = 0.72;  
+
+const dec = 0.24;
 
 const leaf_gen = 3; //generation where leaf starts growing.
 
@@ -43,25 +45,25 @@ const generateRules = (symbol) =>{
         {type: "/", angle: p},
 
         {type: "["},
-        {type: "+", angle: a},
+        {type: "+", angle: Math.min(a, a/(dec * symbol.step))},
         {type: "F", len: symbol.len},
         {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
         {type: "]"},
 
-        {type: "-", angle: b},
+        {type: "-", angle: Math.min(b, b/(dec * symbol.step))},
         {type: "F", len: symbol.len},
         {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
 
-      ], prob: Math.min(1, (2*symbol.step + 1) / (symbol.step * symbol.step) )},
+      ], prob: Math.min(1, 1.2*(2*symbol.step + 1) / (symbol.step * symbol.step) )},
       {rule: [
         {type: "!", width: symbol.wid},
         {type: "/", angle: p},
         {type: "B", step: symbol.step}, //dormant bud
-        {type: "-", angle: b},
+        {type: "-", angle: Math.min(b, b/(dec * symbol.step))},
         {type: "F", len: symbol.len},
         {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
 
-      ], prob: Math.max(0, 1 - (2*symbol.step + 1) / (symbol.step * symbol.step) )},
+      ], prob: Math.max(0, 1 - 1.2*(2*symbol.step + 1) / (symbol.step * symbol.step) )},
     ]
     return chooseOne(ruleSet);
   }
@@ -187,7 +189,7 @@ function sketch(p5) {
     p5.background("#FFFFFF");
     
     // L-System AXIOMS:
-    symbols = [{type: "!", width: 28}, {type: "F", len: 240}, {type: "A", step: 1, len: 110 * c, wid: 30 * h}];
+    symbols = [{type: "!", width: 28}, {type: "F", len: 200}, {type: "A", step: 1, len: 120 * c, wid: 30 * h}];
    // symbols = [{type: "!", width: 5},{type: "F", len: 200}, {type: "["}, {type: "-", angle: 45}, {type: "F", len: 100}, {type: "["}, {type: "-", angle:45},
    //         {type: "F", len: 100}, {type: "]"}, {type:"F", len: 100}, {type: "]"}, {type: "F", len: 150}, 
    //     ]; 
