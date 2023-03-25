@@ -5,81 +5,55 @@ import * as THREE from "three"
 
 //3D turtle interpreter
 //standard basis vectors
-let rotation_matrix = new THREE.Matrix4();
-let direction_matrix = new THREE.Matrix4();
 
+
+let heading_vector = new THREE.Vector3();
 let q = new THREE.Quaternion();
 const ey = new THREE.Vector3(0, 1, 0);
-let heading_vector = new THREE.Vector3();
-
 
 let init_state = {
     pos: [0, 0, 0],
-    direction: [
-      0,-1, 0, 0,
-      1, 0, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1
-    ],
+    heading: [0, 1, 0],
+    left: [-1, 0, 0], 
+    up: [0, 0, 1],
     pen: ['brown', 30, true], 
 }
 
-let state = [init_state];
+let state_stack = [init_state];
 
-
-const rotate_u = (direction_array, angle) => {
-  const st = Math.sin(angle);
+const matrix_vector_mult = (m, v) =>{
+  return vector_add(scalar_mult(v[0], m.heading), vector_add(scalar_mult(v[1], m.left), scalar_mult(v[2], m.up)));
+}
+const scalar_mult = (c, v) =>{
+  
+  return [c * v[0], c * v[1], c * v[2]];
+}
+const vector_add =(v1, v2) =>{
+  return [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]];
+}
+const rotate_u = (state, angle) =>{ //turn + -
+  const m = JSON.parse(JSON.stringify(state));
   const ct = Math.cos(angle);
-  rotation_matrix.set(
-      ct, st, 0, 0,
-      -st, ct, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1
-  )
-
-  direction_matrix.set(...direction_array);
-  console.log('BEFORE ROTATING ON U AXIS BY ANGLE:', angle)
-  print_matrix_array(direction_matrix.toArray());
-  direction_matrix.multiply(rotation_matrix);
-  console.log('AFTER ROTATING ON U AXIS BY ANGLE:', angle)
-  print_matrix_array(direction_matrix.toArray());
-  return direction_matrix.toArray();
+  const st = Math.sin(angle);
+  state.heading = matrix_vector_mult(m, [ct, -st, 0]);
+  state.left = matrix_vector_mult(m, [st, ct, 0]);
+  state.up = matrix_vector_mult(m, [0, 0, 1]);
 }
-
-const rotate_l = (direction_array, angle) => {
-    const st = Math.sin(angle);
-    const ct = Math.cos(angle);
-    rotation_matrix.set(
-        ct, 0, -st, 0,
-        0, 1, 0, 0,
-        st, 0, ct, 0,
-        0, 0, 0, 1
-    )
-    direction_matrix.set(...direction_array);
-    console.log('BEFORE ROTATING ON L AXIS BY ANGLE:', angle)
-    print_matrix_array(direction_matrix.toArray());
-    direction_matrix.multiply(rotation_matrix);
-    console.log('AFTER ROTATING ON L AXIS BY ANGLE:', angle)
-    print_matrix_array(direction_matrix.toArray());
-    return direction_matrix.toArray();
+const rotate_l = (state, angle) =>{ //turn + -
+  const m = JSON.parse(JSON.stringify(state));
+  const ct = Math.cos(angle);
+  const st = Math.sin(angle);
+  state.heading = matrix_vector_mult(m, [ct, 0, st]);
+  state.left = matrix_vector_mult(m, [0, 1, 0]);
+  state.up = matrix_vector_mult(m, [-st, 0, ct]);
 }
-
-const rotate_h = (direction_array, angle) => {
-    const st = Math.sin(angle);
-    const ct = Math.cos(angle);
-    rotation_matrix.set(
-        1, 0, 0, 0,
-        0, ct, -st, 0,
-        0, st, ct, 0,
-        0, 0, 0, 1
-    )
-    direction_matrix.set(...direction_array);
-    console.log('BEFORE ROTATING ON H AXIS BY ANGLE:', angle)
-    print_matrix_array(direction_matrix.toArray());
-    direction_matrix.multiply(rotation_matrix);
-    console.log('AFTER ROTATING ON H AXIS BY ANGLE:', angle)
-    print_matrix_array(direction_matrix.toArray());
-    return direction_matrix.toArray();
+const rotate_h = (state, angle) =>{ //turn + -
+  const m = JSON.parse(JSON.stringify(state));
+  const ct = Math.cos(angle);
+  const st = Math.sin(angle);
+  state.heading = matrix_vector_mult(m, [1, 0, 0]);
+  state.left = matrix_vector_mult(m, [0, ct, st]);
+  state.up = matrix_vector_mult(m, [0, -st, ct]);
 }
 
 
@@ -117,43 +91,15 @@ const Branch = ({pos, heading, radius, height}) => {
     )
 }
 
-
-
-const print_matrix_array = (m) => {
-    console.log(m[0], m[1], m[2], m[3]);
-    console.log(m[4], m[5], m[6], m[7]);
-    console.log(m[8], m[9], m[10], m[11]);
-    console.log(m[12], m[13], m[14], m[15]);
-}
-
 export default function Plant3D() {
     const canvas_ref = useRef(null);
-    let m = [
-      0,-1, 0, 0,
-      1, 0, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1
-    ];
 
-    m = rotate_u(m, Math.PI / 3);
-    print_matrix_array(m);
-
-    m = rotate_l(m, Math.PI / 6);
-    print_matrix_array(m);
-
-    /*const st = Math.sin(Math.PI / 3);
-    const ct = Math.cos(Math.PI / 3);
-    rotation_matrix.set(
-        ct, st, 0, 0,
-        -st, ct, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-    )
-
-    let mat = new THREE.Matrix4().set(...m);
-    console.log('before', mat);
-    mat.multiply(rotation_matrix);
-    console.log('after', mat); */
+    rotate_u(state_stack[0], Math.PI / 3);
+    rotate_l(state_stack[0], Math.PI / 6);
+    rotate_h(state_stack[0], 170 * (Math.PI / 180));
+    console.log(state_stack[0].heading);
+    console.log(state_stack[0].left);
+    console.log(state_stack[0].up);
 
 
     return (
