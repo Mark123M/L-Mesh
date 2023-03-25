@@ -250,7 +250,7 @@ const Branch = ({pos, heading, radius, height}) => {
     )
 }
 
-export default function Plant3D() {
+export default function Monopodial() {
     const canvas_ref = useRef(null);
 
    /* rotate_u(state_stack[0], Math.PI / 3);
