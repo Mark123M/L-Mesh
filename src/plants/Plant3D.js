@@ -16,13 +16,13 @@ let init_state = {
     heading: [0, 1, 0],
     left: [-1, 0, 0], 
     up: [0, 0, 1],
-    pen: ["#805333", 30, true], 
+    pen: ["#805333", 0.2, true], 
 }
 
 let state_stack = [init_state];
 let objects = [];
 let symbols;
-let num_gens = 8;
+let num_gens = 10;
 
 const a = 1.0;
 const b = 0.90;
@@ -242,7 +242,7 @@ const Branch = ({pos, heading, radius, height}) => {
     return (
         <mesh ref = {meshRef}> 
             <cylinderGeometry args={[radius, radius, height, 6]}/>
-            <meshStandardMaterial color="blue"/>
+            <meshStandardMaterial color="#805333"/>
         </mesh>
     )
 }
@@ -250,14 +250,14 @@ const Branch = ({pos, heading, radius, height}) => {
 export default function Plant3D() {
     const canvas_ref = useRef(null);
 
-    rotate_u(state_stack[0], Math.PI / 3);
+   /* rotate_u(state_stack[0], Math.PI / 3);
     rotate_l(state_stack[0], Math.PI / 6);
     rotate_h(state_stack[0], 170 * (Math.PI / 180));
     console.log(state_stack[0].heading);
     console.log(state_stack[0].left);
-    console.log(state_stack[0].up);
+    console.log(state_stack[0].up); */
 
-    symbols = [{type: "A", len: 120, wid: 25}];
+    symbols = [{type: "A", len: 1, wid: 0.2}];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();
         //  console.log(symbols, "NEW SYMBOLS");
@@ -265,18 +265,23 @@ export default function Plant3D() {
     }
     for(let i = 0; i < symbols.length; i ++) {
       let s = symbols[i];
-      // applyRule(s);
+      applyRule(s);
     }
+
+    console.log(objects);
+
 
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
             <Canvas>
                 <PerspectiveCamera makeDefault position={[0, 0, 10]} />
-                {/*<OrbitControls enableZoom={false} enablePan={false} enableRotate={false}/> */}
+                {<OrbitControls enableZoom enablePan enableRotate/>}
                 <axesHelper renderOrder={1} scale={[5, 5, 5]}/>
                 <ambientLight />
                 <pointLight position={[10, 10, 10]} />
-
+                {objects.map((o)=>
+                  <Branch pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]}/>
+                )}
                 <Branch pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.2} height={1}/>
             </Canvas>
         </div>
