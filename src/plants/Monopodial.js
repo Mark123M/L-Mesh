@@ -26,9 +26,9 @@ let symbols;
 let num_gens = 10;
 
 const b = 0.90;
-const e = 0.70;
-const c = 30;
-const d = -30;
+const e = 0.80;
+const c = 45;
+const d = 45;
 const h = 0.707;
 const i = 137.5
 const min = 0;
@@ -266,7 +266,7 @@ export default function Monopodial() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up); */
 
-    symbols = [{type: "A", len: 1, wid: 0.2}];
+    symbols = [{type: "A", len: 1, wid: 0.15}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();
