@@ -9,8 +9,12 @@ import { v4 as uuidv4 } from "uuid";
 
 
 let heading_vector = new THREE.Vector3();
+let axis_vector = new THREE.Vector3();
 let q = new THREE.Quaternion();
+let q_tropism = new THREE.Quaternion();
 const ey = new THREE.Vector3(0, 1, 0);
+const tropism = [-0.61, 0.77, -0.19];
+const e = 0.40;
 
 let init_state = {
     pos: [0, 0, 0],
@@ -23,64 +27,59 @@ let init_state = {
 let state_stack = [init_state];
 let objects = [];
 let symbols;
-let num_gens = 10;
+let num_gens = 6;
 
-const b = 0.90;
-const e = 0.80;
-const c = 45;
-const d = 45;
-const h = 0.707;
-const i = 137.5
-const min = 0;
+const d1 = 94.74;
+const d2 = 132.63;
+const a = 18.95;
+const lr = 1.109;
+const vr = 1.2;
+
 
 const generate_rules = (symbol) =>{
-  if (symbol.type == "A" && symbol.len >= min) {
+  if (symbol.type == "A") {
     const ruleSet = [
       {rule: [
-        {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
+        {type: "!", wid: vr * 0.03},
+        {type: "F", len: 1},
 
         {type: "["},
-        {type: "&", angle: c},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "&", angle: a},
+        {type: "F", len: 1},
+        {type: "A"},
         {type: "]"},
-        {type: "/", angle: i},
-        {type: "A", len: symbol.len * b, wid: symbol.wid * h}
 
+        {type: "/", angle: d1},
+
+        {type: "["},
+        {type: "&", angle: a},
+        {type: "F", len: 1},
+        {type: "A"},
+        {type: "]"},
+
+        {type: "/", angle: d2},
+
+        {type: "["},
+        {type: "&", angle: a},
+        {type: "F", len: 1},
+        {type: "A"},
+        {type: "]"},
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }
-  else if (symbol.type == "B" && symbol.len >= min) {
+  else if (symbol.type == "F") {
     const ruleSet = [
       {rule: [
-        {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
-
-        {type: "["},
-        {type: "-", angle: d},
-        {type: "$"},
-        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
-        {type: "]"},
-
-        {type: "C", len: symbol.len * b, wid: symbol.wid * h},
+        {type: "F", len: symbol.len * lr},
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }
-  else if (symbol.type == "C" && symbol.len >= min) {
+  else if (symbol.type == "!") {
     const ruleSet = [
       {rule: [
-        {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
-
-        {type: "["},
-        {type: "+", angle: d},
-        {type: "$"},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
-        {type: "]"},
-
-        {type: "B", len: symbol.len * b, wid: symbol.wid * h},
+        {type: "!", wid: symbol.wid * vr},
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
@@ -228,11 +227,21 @@ const Branch = ({pos, heading, radius, height}) => {
 
     useEffect(()=>{
       heading_vector.set(heading[0], heading[1], heading[2]);
+      meshRef.current.position.set(pos[0], pos[1], pos[2]);
+      //meshRef.current.rotation.set(Math.PI/6, 0, 0);
+      //applying tropism vector
+      
+      const axis = cross_product(heading, tropism);
+      const angle = e * vector_len(cross_product(heading, tropism));
+      axis_vector.set(axis[0], axis[1], axis[2]);
+      axis_vector.normalize();
+      q_tropism.setFromAxisAngle(axis_vector, angle);
+
+      heading_vector.applyQuaternion(q_tropism);
       heading_vector.normalize();
       q.setFromUnitVectors(ey, heading_vector);
-      meshRef.current.position.set(pos[0], pos[1], pos[2]);
+    
       meshRef.current.setRotationFromQuaternion(q);
-      //meshRef.current.rotation.set(Math.PI/6, 0, 0);
       
     }, [meshRef]);
 
@@ -256,7 +265,7 @@ const Branch = ({pos, heading, radius, height}) => {
     )
 }
 
-export default function Monopodial() {
+export default function Ternary() {
     const canvas_ref = useRef(null);
 
    /* rotate_u(state_stack[0], Math.PI / 3);
@@ -266,7 +275,7 @@ export default function Monopodial() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up); */
 
-    symbols = [{type: "A", len: 1, wid: 0.15}];
+    symbols = [{type: "!", wid: 0.1}, {type: "F", len: 1}, {type: "/", angle: 45}, {type: "A"}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();

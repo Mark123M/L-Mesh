@@ -292,7 +292,7 @@ export default function Monopodial() {
                 {<OrbitControls enableZoom enablePan enableRotate/>}
                 <axesHelper renderOrder={1} scale={[5, 5, 5]}/>
                 <ambientLight />
-                <pointLight position={[10, 10, 10]} intensity={0.5} />
+                <pointLight position={[10, 10, 10]} />
                 {objects.map((o)=>
                   <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]}/>
                 )}

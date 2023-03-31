@@ -17,16 +17,24 @@ import Space_tree from './plants/Space_tree'
 import Pine_tree2 from './plants/Pine_tree2'
 
 //import ThreeJs from './plants/old models/ThreeJs';
-import Plant3D from './plants/Plant3D';
+import Pine3D from './plants/Pine3D';
 import Turtle from './plants/Turtle';
 import Monopodial from './plants/Monopodial';
+import Space3D from './plants/Space3D';
+import Ternary from './plants/Ternary';
+import Masterpiece from './plants/Masterpiece';
 
 function App() {
   return (
     <ChakraProvider theme={theme}>
       <ColorModeSwitcher justifySelf="flex-end" /> 
+      <Masterpiece/>
       {/*<Plant3D/> */}
-      <Monopodial/>
+      {/*<Monopodial/>*/}
+      {/*<Space3D/> */}
+      {/*<Ternary/>   */}
+      {/*<Pine3D/> */}
+      {/*<Space_tree/> */}
       
     { /*
       <ThreeJs/> 

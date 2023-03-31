@@ -23,15 +23,14 @@ let init_state = {
 let state_stack = [init_state];
 let objects = [];
 let symbols;
-let num_gens = 9;
+let num_gens = 16;
 
-const a = 1.0;
-const b = 0.90;
-const e = 0.80;
-const c = 50;
-const d = 50;
-const h = 0.707;
-const i = 137.5
+const p = 90;
+const a = 32;
+const b = 20;
+
+const c = 0.85; 
+const h = 0.707;  
 const min = 0;
 
 const generate_rules = (symbol) =>{
@@ -39,50 +38,33 @@ const generate_rules = (symbol) =>{
     const ruleSet = [
       {rule: [
         {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
+        {type: "/", angle: p},
 
         {type: "["},
-        {type: "&", angle: c/2},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "+", angle: a},
+        {type: "F", len: symbol.len},
+        {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
         {type: "]"},
-        {type: "/", angle: i},
-        {type: "A", len: symbol.len * a, wid: symbol.wid * h}
 
-      ], prob: 1.0},
-    ]
-    return chooseOne(ruleSet);
-  }
-  else if (symbol.type == "B" && symbol.len >= min) {
-    const ruleSet = [
+
+        {type: "-", angle: b},
+        {type: "F", len: symbol.len},
+        {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
+
+      ], prob: Math.min(1, (2 * symbol.step + 1) / (symbol.step * symbol.step))},
+
       {rule: [
         {type: "!", wid: symbol.wid},
+        {type: "/", angle: p},
+
+        {type: "B", step: symbol.step},
+
+        {type: "-", angle: b},
         {type: "F", len: symbol.len},
+        {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
 
-        {type: "["},
-        {type: "-", angle: d},
-        {type: "/", angle: -1 * i/2},
-        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
-        {type: "]"},
+      ], prob: Math.min(0, 1 - (2 * symbol.step + 1) / (symbol.step * symbol.step))},
 
-        {type: "C", len: symbol.len * b, wid: symbol.wid * h},
-      ], prob: 1.0},
-    ]
-    return chooseOne(ruleSet);
-  }
-  else if (symbol.type == "C" && symbol.len >= min) {
-    const ruleSet = [
-      {rule: [
-        {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
-
-        {type: "["},
-        {type: "+", angle: d},
-        {type: "/", angle: -1 * i/2},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
-        {type: "]"},
-
-        {type: "B", len: symbol.len * b, wid: symbol.wid * h},
-      ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }
@@ -161,6 +143,11 @@ function applyRule(symbol) {
   }
   else if (symbol.type == '$') {
     console.log("$ NOT IMPLEMENTED YET");
+    //L = (V x H) / ||V x H||
+    last_state.left = cross_product([0, 1, 0], last_state.heading);
+    last_state.left = scalar_mult((1 / vector_len(last_state.left)), last_state.left);
+    //U = H x L
+    last_state.up = cross_product(last_state.heading, last_state.left); 
 
     //rotate_u(last_state, Math.PI);
   }
@@ -184,11 +171,13 @@ const cross_product = (a, b) => {
   return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 }
 const scalar_mult = (c, v) =>{
-  
   return [c * v[0], c * v[1], c * v[2]];
 }
 const vector_add =(v1, v2) =>{
   return [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]];
+}
+const vector_len = (v) =>{
+  return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 }
 const rotate_u = (state, angle) =>{ //turn + -
   const m = JSON.parse(JSON.stringify(state));
@@ -244,13 +233,13 @@ const Branch = ({pos, heading, radius, height}) => {
 
     return (
         <mesh ref = {meshRef}> 
-            <cylinderGeometry args={[radius, radius, height, 6]}/>
+            <cylinderGeometry args={[radius * h, radius, height, 6]}/>
             <meshStandardMaterial color="#805333"/>
         </mesh>
     )
 }
 
-export default function Plant3D() {
+export default function Space3D() {
     const canvas_ref = useRef(null);
 
    /* rotate_u(state_stack[0], Math.PI / 3);
@@ -260,7 +249,7 @@ export default function Plant3D() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up); */
 
-    symbols = [{type: "A", len: 1, wid: 0.2}];
+    symbols = [{type: "!", wid: 0.20}, {type: "F", len: 1}, {type: "A", len: 1, wid: 0.15, step: 1}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();
@@ -274,6 +263,10 @@ export default function Plant3D() {
 
     console.log(objects);
 
+    const v1 = [5, 3, -10];
+    const v2 = [-4, -5, 7];
+    console.log(cross_product(v1, v2));
+
 
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
@@ -282,7 +275,7 @@ export default function Plant3D() {
                 {<OrbitControls enableZoom enablePan enableRotate/>}
                 <axesHelper renderOrder={1} scale={[5, 5, 5]}/>
                 <ambientLight />
-                <pointLight position={[10, 10, 10]} />
+                <pointLight position={[10, 10, 10]} intensity={0.5} />
                 {objects.map((o)=>
                   <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]}/>
                 )}
