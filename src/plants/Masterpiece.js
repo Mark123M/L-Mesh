@@ -33,6 +33,8 @@ const h = 0.707;
 const i = 137.5
 const min = 0;
 
+const tolerance = 12;
+
 const generate_rules = (symbol) =>{
   if (symbol.type == "A" && symbol.len >= min) {
     const ruleSet = [
@@ -41,13 +43,25 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "&", angle: c},
+        {type: "&", angle: c + Math.random() * tolerance - (tolerance/2)},
         {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
-        {type: "/", angle: i},
+        {type: "/", angle: i + Math.random() * tolerance - (tolerance/2)},
         {type: "A", len: symbol.len * b, wid: symbol.wid * h}
 
-      ], prob: 1.0},
+      ], prob: 0.5},
+      {rule: [
+        {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "&", angle: c + Math.random() * tolerance - (tolerance/2)},
+        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+        {type: "/", angle: i + Math.random() * tolerance - (tolerance/2)},
+        {type: "A", len: symbol.len * b, wid: symbol.wid * h}
+
+      ], prob: 0.5},
     ]
     return chooseOne(ruleSet);
   }
@@ -58,13 +72,25 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "-", angle: d},
+        {type: "-", angle: d + Math.random() * tolerance - (tolerance/2)},
         {type: "$"},
         {type: "C", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
         {type: "C", len: symbol.len * b, wid: symbol.wid * h},
-      ], prob: 1.0},
+      ], prob: 0.7},
+      {rule: [
+        {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "+", angle: d + Math.random() * tolerance - (tolerance/2)},
+        {type: "$"},
+        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+
+        {type: "C", len: symbol.len * b, wid: symbol.wid * h},
+      ], prob: 0.3},
     ]
     return chooseOne(ruleSet);
   }
@@ -75,13 +101,25 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "+", angle: d},
+        {type: "+", angle: d + Math.random() * tolerance - (tolerance/2)},
         {type: "$"},
         {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
         {type: "B", len: symbol.len * b, wid: symbol.wid * h},
-      ], prob: 1.0},
+      ], prob: 0.7},
+      {rule: [
+        {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "-", angle: d + Math.random() * tolerance - (tolerance/2)},
+        {type: "$"},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+
+        {type: "B", len: symbol.len * b, wid: symbol.wid * h},
+      ], prob: 0.3},
     ]
     return chooseOne(ruleSet);
   }
