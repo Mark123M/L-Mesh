@@ -27,7 +27,7 @@ let num_gens = 10;
 
 const b = 0.90;
 const e = 0.80;
-const c = 45;
+const c = 30;
 const d = 45;
 const h = 0.707;
 const i = 137.5
@@ -299,7 +299,7 @@ const Branch = ({pos, heading, radius, height}) => {
 
     return (
         <mesh ref = {meshRef}> 
-            <cylinderGeometry args={[radius, radius, height, 6]}/>
+            <cylinderGeometry args={[radius * h, radius, height, 6]}/>
             <meshStandardMaterial color="#805333"/>
         </mesh>
     )
