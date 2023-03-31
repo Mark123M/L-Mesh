@@ -33,7 +33,10 @@ const h = 0.707;
 const i = 137.5
 const min = 0;
 
-const tolerance = 12;
+//tolerance values for randomization
+const turn_t = 12;
+const pitch_t = 12;
+const roll_t = 20;
 
 const generate_rules = (symbol) =>{
   if (symbol.type == "A" && symbol.len >= min) {
@@ -43,10 +46,10 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "&", angle: c + Math.random() * tolerance - (tolerance/2)},
+        {type: "&", angle: c + (Math.random() * 2 * pitch_t) - pitch_t},
         {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
-        {type: "/", angle: i + Math.random() * tolerance - (tolerance/2)},
+        {type: "/", angle: i + (Math.random() * 2 * turn_t) - turn_t},
         {type: "A", len: symbol.len * b, wid: symbol.wid * h}
 
       ], prob: 0.5},
@@ -55,10 +58,10 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "&", angle: c + Math.random() * tolerance - (tolerance/2)},
+        {type: "&", angle: c + (Math.random() * 2 * pitch_t) - pitch_t},
         {type: "C", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
-        {type: "/", angle: i + Math.random() * tolerance - (tolerance/2)},
+        {type: "/", angle: i + (Math.random() * 2 * turn_t) - turn_t},
         {type: "A", len: symbol.len * b, wid: symbol.wid * h}
 
       ], prob: 0.5},
@@ -72,11 +75,13 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "-", angle: d + Math.random() * tolerance - (tolerance/2)},
+        {type: "-", angle: d + (Math.random() * 2 * turn_t) - turn_t},
         {type: "$"},
+        {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
         {type: "C", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
-
+        
+        {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
         {type: "C", len: symbol.len * b, wid: symbol.wid * h},
       ], prob: 0.7},
       {rule: [
@@ -84,11 +89,13 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "+", angle: d + Math.random() * tolerance - (tolerance/2)},
+        {type: "+", angle: d + (Math.random() * 2 * turn_t) - turn_t},
         {type: "$"},
+        {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
         {type: "C", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
+        {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
         {type: "C", len: symbol.len * b, wid: symbol.wid * h},
       ], prob: 0.3},
     ]
@@ -101,11 +108,13 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "+", angle: d + Math.random() * tolerance - (tolerance/2)},
+        {type: "+", angle: d + (Math.random() * 2 * turn_t) - turn_t},
         {type: "$"},
+        {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
         {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
+        {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
         {type: "B", len: symbol.len * b, wid: symbol.wid * h},
       ], prob: 0.7},
       {rule: [
@@ -113,11 +122,13 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "-", angle: d + Math.random() * tolerance - (tolerance/2)},
+        {type: "-", angle: d + (Math.random() * 2 * turn_t) - turn_t},
         {type: "$"},
+        {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
         {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
+        {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
         {type: "B", len: symbol.len * b, wid: symbol.wid * h},
       ], prob: 0.3},
     ]
@@ -271,7 +282,7 @@ const Branch = ({pos, heading, radius, height}) => {
       meshRef.current.position.set(pos[0], pos[1], pos[2]);
       meshRef.current.setRotationFromQuaternion(q);
       //meshRef.current.rotation.set(Math.PI/6, 0, 0);
-      
+      console.log((Math.random() * 2 * pitch_t) - pitch_t);
     }, [meshRef]);
 
     let t;
