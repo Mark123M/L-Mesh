@@ -23,14 +23,14 @@ let init_state = {
 let state_stack = [init_state];
 let objects = [];
 let symbols;
-let num_gens = 10;
+let num_gens = 16;
 
-const b = 0.90;
-const e = 0.80;
-const c = 45;
-const d = 45;
-const h = 0.707;
-const i = 137.5
+const p = 90;
+const a = 32;
+const b = 20;
+
+const c = 0.85; 
+const h = 0.707;  
 const min = 0;
 
 const generate_rules = (symbol) =>{
@@ -38,50 +38,33 @@ const generate_rules = (symbol) =>{
     const ruleSet = [
       {rule: [
         {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
+        {type: "/", angle: p},
 
         {type: "["},
-        {type: "&", angle: c},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "+", angle: a},
+        {type: "F", len: symbol.len},
+        {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
         {type: "]"},
-        {type: "/", angle: i},
-        {type: "A", len: symbol.len * b, wid: symbol.wid * h}
 
-      ], prob: 1.0},
-    ]
-    return chooseOne(ruleSet);
-  }
-  else if (symbol.type == "B" && symbol.len >= min) {
-    const ruleSet = [
+
+        {type: "-", angle: b},
+        {type: "F", len: symbol.len},
+        {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
+
+      ], prob: Math.min(1, (2 * symbol.step + 1) / (symbol.step * symbol.step))},
+
       {rule: [
         {type: "!", wid: symbol.wid},
+        {type: "/", angle: p},
+
+        {type: "B", step: symbol.step},
+
+        {type: "-", angle: b},
         {type: "F", len: symbol.len},
+        {type: "A", step: symbol.step + 1, len: symbol.len * c, wid: symbol.wid * h},
 
-        {type: "["},
-        {type: "-", angle: d},
-        {type: "$"},
-        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
-        {type: "]"},
+      ], prob: Math.min(0, 1 - (2 * symbol.step + 1) / (symbol.step * symbol.step))},
 
-        {type: "C", len: symbol.len * b, wid: symbol.wid * h},
-      ], prob: 1.0},
-    ]
-    return chooseOne(ruleSet);
-  }
-  else if (symbol.type == "C" && symbol.len >= min) {
-    const ruleSet = [
-      {rule: [
-        {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
-
-        {type: "["},
-        {type: "+", angle: d},
-        {type: "$"},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
-        {type: "]"},
-
-        {type: "B", len: symbol.len * b, wid: symbol.wid * h},
-      ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }
@@ -250,13 +233,13 @@ const Branch = ({pos, heading, radius, height}) => {
 
     return (
         <mesh ref = {meshRef}> 
-            <cylinderGeometry args={[radius, radius, height, 6]}/>
+            <cylinderGeometry args={[radius * h, radius, height, 6]}/>
             <meshStandardMaterial color="#805333"/>
         </mesh>
     )
 }
 
-export default function Monopodial() {
+export default function Space3D() {
     const canvas_ref = useRef(null);
 
    /* rotate_u(state_stack[0], Math.PI / 3);
@@ -266,7 +249,7 @@ export default function Monopodial() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up); */
 
-    symbols = [{type: "A", len: 1, wid: 0.15}];
+    symbols = [{type: "!", wid: 0.20}, {type: "F", len: 1}, {type: "A", len: 1, wid: 0.15, step: 1}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();

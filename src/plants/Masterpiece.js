@@ -23,16 +23,20 @@ let init_state = {
 let state_stack = [init_state];
 let objects = [];
 let symbols;
-let num_gens = 9;
+let num_gens = 10;
 
-const a = 1.0;
 const b = 0.90;
 const e = 0.80;
-const c = 50;
-const d = 50;
+const c = 30;
+const d = 45;
 const h = 0.707;
 const i = 137.5
 const min = 0;
+
+//tolerance values for randomization
+const turn_t = 12;
+const pitch_t = 12;
+const roll_t = 20;
 
 const generate_rules = (symbol) =>{
   if (symbol.type == "A" && symbol.len >= min) {
@@ -42,13 +46,25 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "&", angle: c/2},
+        {type: "&", angle: c + (Math.random() * 2 * pitch_t) - pitch_t},
         {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
-        {type: "/", angle: i},
-        {type: "A", len: symbol.len * a, wid: symbol.wid * h}
+        {type: "/", angle: i + (Math.random() * 2 * turn_t) - turn_t},
+        {type: "A", len: symbol.len * b, wid: symbol.wid * h}
 
-      ], prob: 1.0},
+      ], prob: 0.5},
+      {rule: [
+        {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "&", angle: c + (Math.random() * 2 * pitch_t) - pitch_t},
+        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+        {type: "/", angle: i + (Math.random() * 2 * turn_t) - turn_t},
+        {type: "A", len: symbol.len * b, wid: symbol.wid * h}
+
+      ], prob: 0.5},
     ]
     return chooseOne(ruleSet);
   }
@@ -59,13 +75,29 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "-", angle: d},
-        {type: "/", angle: -1 * i/2},
+        {type: "-", angle: d + (Math.random() * 2 * turn_t) - turn_t},
+        {type: "$"},
+        {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
+        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+        
+        {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
+        {type: "C", len: symbol.len * b, wid: symbol.wid * h},
+      ], prob: 0.7},
+      {rule: [
+        {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "+", angle: d + (Math.random() * 2 * turn_t) - turn_t},
+        {type: "$"},
+        {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
         {type: "C", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
+        {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
         {type: "C", len: symbol.len * b, wid: symbol.wid * h},
-      ], prob: 1.0},
+      ], prob: 0.3},
     ]
     return chooseOne(ruleSet);
   }
@@ -76,13 +108,29 @@ const generate_rules = (symbol) =>{
         {type: "F", len: symbol.len},
 
         {type: "["},
-        {type: "+", angle: d},
-        {type: "/", angle: -1 * i/2},
+        {type: "+", angle: d + (Math.random() * 2 * turn_t) - turn_t},
+        {type: "$"},
+        {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
         {type: "B", len: symbol.len * e, wid: symbol.wid * h},
         {type: "]"},
 
+        {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
         {type: "B", len: symbol.len * b, wid: symbol.wid * h},
-      ], prob: 1.0},
+      ], prob: 0.7},
+      {rule: [
+        {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len},
+
+        {type: "["},
+        {type: "-", angle: d + (Math.random() * 2 * turn_t) - turn_t},
+        {type: "$"},
+        {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "]"},
+
+        {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
+        {type: "B", len: symbol.len * b, wid: symbol.wid * h},
+      ], prob: 0.3},
     ]
     return chooseOne(ruleSet);
   }
@@ -161,6 +209,11 @@ function applyRule(symbol) {
   }
   else if (symbol.type == '$') {
     console.log("$ NOT IMPLEMENTED YET");
+    //L = (V x H) / ||V x H||
+    last_state.left = cross_product([0, 1, 0], last_state.heading);
+    last_state.left = scalar_mult((1 / vector_len(last_state.left)), last_state.left);
+    //U = H x L
+    last_state.up = cross_product(last_state.heading, last_state.left); 
 
     //rotate_u(last_state, Math.PI);
   }
@@ -184,11 +237,13 @@ const cross_product = (a, b) => {
   return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 }
 const scalar_mult = (c, v) =>{
-  
   return [c * v[0], c * v[1], c * v[2]];
 }
 const vector_add =(v1, v2) =>{
   return [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]];
+}
+const vector_len = (v) =>{
+  return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 }
 const rotate_u = (state, angle) =>{ //turn + -
   const m = JSON.parse(JSON.stringify(state));
@@ -227,7 +282,7 @@ const Branch = ({pos, heading, radius, height}) => {
       meshRef.current.position.set(pos[0], pos[1], pos[2]);
       meshRef.current.setRotationFromQuaternion(q);
       //meshRef.current.rotation.set(Math.PI/6, 0, 0);
-      
+      console.log((Math.random() * 2 * pitch_t) - pitch_t);
     }, [meshRef]);
 
     let t;
@@ -244,13 +299,13 @@ const Branch = ({pos, heading, radius, height}) => {
 
     return (
         <mesh ref = {meshRef}> 
-            <cylinderGeometry args={[radius, radius, height, 6]}/>
+            <cylinderGeometry args={[radius * h, radius, height, 6]}/>
             <meshStandardMaterial color="#805333"/>
         </mesh>
     )
 }
 
-export default function Plant3D() {
+export default function Monopodial() {
     const canvas_ref = useRef(null);
 
    /* rotate_u(state_stack[0], Math.PI / 3);
@@ -260,7 +315,7 @@ export default function Plant3D() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up); */
 
-    symbols = [{type: "A", len: 1, wid: 0.2}];
+    symbols = [{type: "A", len: 1, wid: 0.15}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();
@@ -273,6 +328,10 @@ export default function Plant3D() {
     }
 
     console.log(objects);
+
+    const v1 = [5, 3, -10];
+    const v2 = [-4, -5, 7];
+    console.log(cross_product(v1, v2));
 
 
     return (
