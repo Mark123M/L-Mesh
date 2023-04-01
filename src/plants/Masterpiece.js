@@ -25,7 +25,7 @@ let objects = [];
 let symbols;
 let num_gens = 10;
 
-const b = 0.90;
+const b = 0.95;
 const e = 0.80;
 const c = 30;
 const d = 45;
@@ -345,7 +345,7 @@ export default function Monopodial() {
                 {objects.map((o)=>
                   <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]}/>
                 )}
-                <Branch pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.2} height={1}/>
+                <Branch pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
             </Canvas>
         </div>
     )
