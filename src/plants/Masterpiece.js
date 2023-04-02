@@ -38,6 +38,14 @@ const turn_t = 12;
 const pitch_t = 12;
 const roll_t = 20;
 
+//tropism vectors and constants
+let axis_array = [0, 0, 1];
+let tropism_array = [0, -1, 0];
+const tropism_const = 0.52;
+let axis = new THREE.Vector3();
+let tropism = new THREE.Vector3();
+
+
 const generate_rules = (symbol) =>{
   if (symbol.type == "A" && symbol.len >= min) {
     const ruleSet = [
@@ -174,7 +182,7 @@ function applyRule(symbol) {
   else if (symbol.type == "F") {
     //each new object stores: position, direction vector, length, width/radius
     //draw object
-    objects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1]]);
+    objects.push([last_state.pos , last_state.heading, symbol.len, last_state.pen[1]]);
     //translate state
     last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
   }
@@ -274,15 +282,8 @@ const rotate_h = (state, angle) =>{ //turn + -
 const Branch = ({pos, heading, radius, height}) => {
     const meshRef = useRef(null);
   
-
     useEffect(()=>{
-      heading_vector.set(heading[0], heading[1], heading[2]);
-      heading_vector.normalize();
-      q.setFromUnitVectors(ey, heading_vector);
-      meshRef.current.position.set(pos[0], pos[1], pos[2]);
-      meshRef.current.setRotationFromQuaternion(q);
-      //meshRef.current.rotation.set(Math.PI/6, 0, 0);
-      console.log((Math.random() * 2 * pitch_t) - pitch_t);
+
     }, [meshRef]);
 
     let t;
@@ -291,10 +292,24 @@ const Branch = ({pos, heading, radius, height}) => {
         if(!meshRef.current){
             return;
         }
-       // get_rotation_u();
-      //  meshRef.current.rotation.x = t; 
-        //meshRef.current.applyMatrix4(direction);
-       // console.log(meshRef.current.lookAt);
+        //create custom axis and angle
+        axis_array = cross_product(heading, tropism_array);
+        const angle = tropism_const * vector_len(axis_array);
+        axis.set(...axis_array); 
+        axis.normalize();
+
+        heading_vector.set(...heading);
+       // heading_vector.applyAxisAngle(axis, angle);
+        meshRef.current.position.set(...vector_add(pos, scalar_mult(height/2, [heading_vector.x, heading_vector.y, heading_vector.z])));
+
+        heading_vector.normalize();
+        q.setFromUnitVectors(ey, heading_vector);
+       
+        meshRef.current.setRotationFromQuaternion(q);
+        
+       // objects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1]]);
+        //translate state
+       // last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
     })
 
     return (
