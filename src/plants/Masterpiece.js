@@ -18,12 +18,14 @@ let init_state = {
     left: [-1, 0, 0], 
     up: [0, 0, 1],
     pen: ["#805333", 0.2, true], 
+    parent_id: null
 }
 
 let state_stack = [init_state];
 let objects = [];
 let symbols;
 let num_gens = 10;
+let cur_parent = null;
 
 const b = 0.95;
 const e = 0.80;
@@ -227,7 +229,9 @@ function applyRule(symbol) {
   }
   else if (symbol.type == "[") {
     let new_state = JSON.parse(JSON.stringify(last_state));
+    new_state.parent_id = uuidv4();
     state_stack.push(new_state);
+
   }
   else if (symbol.type == "]") {
     state_stack.pop();
@@ -301,15 +305,9 @@ const Branch = ({pos, heading, radius, height}) => {
         heading_vector.set(...heading);
        // heading_vector.applyAxisAngle(axis, angle);
         meshRef.current.position.set(...vector_add(pos, scalar_mult(height/2, [heading_vector.x, heading_vector.y, heading_vector.z])));
-
         heading_vector.normalize();
         q.setFromUnitVectors(ey, heading_vector);
-       
         meshRef.current.setRotationFromQuaternion(q);
-        
-       // objects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1]]);
-        //translate state
-       // last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
     })
 
     return (
@@ -343,11 +341,6 @@ export default function Monopodial() {
     }
 
     console.log(objects);
-
-    const v1 = [5, 3, -10];
-    const v2 = [-4, -5, 7];
-    console.log(cross_product(v1, v2));
-
 
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
