@@ -3,6 +3,7 @@ import { PerspectiveCamera, OrbitControls } from "@react-three/drei";
 import {useRef, useEffect} from "react";
 import * as THREE from "three"
 import { v4 as uuidv4 } from "uuid";
+import { useThree } from "@react-three/fiber";
 
 //3D turtle interpreter
 //standard basis vectors
@@ -18,14 +19,12 @@ let init_state = {
     left: [-1, 0, 0], 
     up: [0, 0, 1],
     pen: ["#805333", 0.2, true], 
-    parent_id: null
 }
 
 let state_stack = [init_state];
 let objects = [];
 let symbols;
 let num_gens = 10;
-let cur_parent = null;
 
 const b = 0.95;
 const e = 0.80;
@@ -40,39 +39,31 @@ const turn_t = 12;
 const pitch_t = 12;
 const roll_t = 20;
 
-//tropism vectors and constants
-let axis_array = [0, 0, 1];
-let tropism_array = [0, -1, 0];
-const tropism_const = 0.52;
-let axis = new THREE.Vector3();
-let tropism = new THREE.Vector3();
-
-
 const generate_rules = (symbol) =>{
   if (symbol.type == "A" && symbol.len >= min) {
     const ruleSet = [
       {rule: [
         {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
+        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
 
         {type: "["},
         {type: "&", angle: c + (Math.random() * 2 * pitch_t) - pitch_t},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id}, //create a child 
         {type: "]"},
         {type: "/", angle: i + (Math.random() * 2 * turn_t) - turn_t},
-        {type: "A", len: symbol.len * b, wid: symbol.wid * h}
+        {type: "A", len: symbol.len * b, wid: symbol.wid * h, id: symbol.id, parent_id: symbol.parent_id}
 
       ], prob: 0.5},
       {rule: [
         {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
+        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
 
         {type: "["},
         {type: "&", angle: c + (Math.random() * 2 * pitch_t) - pitch_t},
-        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "C", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
         {type: "]"},
         {type: "/", angle: i + (Math.random() * 2 * turn_t) - turn_t},
-        {type: "A", len: symbol.len * b, wid: symbol.wid * h}
+        {type: "A", len: symbol.len * b, wid: symbol.wid * h, id: symbol.id, parent_id: symbol.parent_id}
 
       ], prob: 0.5},
     ]
@@ -82,31 +73,31 @@ const generate_rules = (symbol) =>{
     const ruleSet = [
       {rule: [
         {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
+        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
 
         {type: "["},
         {type: "-", angle: d + (Math.random() * 2 * turn_t) - turn_t},
         {type: "$"},
         {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
-        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "C", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
         {type: "]"},
         
         {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
-        {type: "C", len: symbol.len * b, wid: symbol.wid * h},
+        {type: "C", len: symbol.len * b, wid: symbol.wid * h, id: symbol.id, parent_id: symbol.parent_id},
       ], prob: 0.7},
       {rule: [
         {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
+        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
 
         {type: "["},
         {type: "+", angle: d + (Math.random() * 2 * turn_t) - turn_t},
         {type: "$"},
         {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
-        {type: "C", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "C", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
         {type: "]"},
 
         {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
-        {type: "C", len: symbol.len * b, wid: symbol.wid * h},
+        {type: "C", len: symbol.len * b, wid: symbol.wid * h, id: symbol.id, parent_id: symbol.parent_id},
       ], prob: 0.3},
     ]
     return chooseOne(ruleSet);
@@ -115,31 +106,31 @@ const generate_rules = (symbol) =>{
     const ruleSet = [
       {rule: [
         {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
+        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
 
         {type: "["},
         {type: "+", angle: d + (Math.random() * 2 * turn_t) - turn_t},
         {type: "$"},
         {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
         {type: "]"},
 
         {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
-        {type: "B", len: symbol.len * b, wid: symbol.wid * h},
+        {type: "B", len: symbol.len * b, wid: symbol.wid * h, id: symbol.id, parent_id: symbol.parent_id},
       ], prob: 0.7},
       {rule: [
         {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len},
+        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
 
         {type: "["},
         {type: "-", angle: d + (Math.random() * 2 * turn_t) - turn_t},
         {type: "$"},
         {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h},
+        {type: "B", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
         {type: "]"},
 
         {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
-        {type: "B", len: symbol.len * b, wid: symbol.wid * h},
+        {type: "B", len: symbol.len * b, wid: symbol.wid * h, id: symbol.id, parent_id: symbol.parent_id},
       ], prob: 0.3},
     ]
     return chooseOne(ruleSet);
@@ -184,7 +175,7 @@ function applyRule(symbol) {
   else if (symbol.type == "F") {
     //each new object stores: position, direction vector, length, width/radius
     //draw object
-    objects.push([last_state.pos , last_state.heading, symbol.len, last_state.pen[1]]);
+    objects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1], symbol.id, symbol.parent_id]);
     //translate state
     last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
   }
@@ -229,9 +220,7 @@ function applyRule(symbol) {
   }
   else if (symbol.type == "[") {
     let new_state = JSON.parse(JSON.stringify(last_state));
-    new_state.parent_id = uuidv4();
     state_stack.push(new_state);
-
   }
   else if (symbol.type == "]") {
     state_stack.pop();
@@ -283,11 +272,22 @@ const rotate_h = (state, angle) =>{ //turn + -
 }
 
 //MAKE SURE NOT TO EDIT ANY VECTORS
-const Branch = ({pos, heading, radius, height}) => {
+const Branch = ({pos, heading, radius, height, id, parent_id}) => {
     const meshRef = useRef(null);
-  
-    useEffect(()=>{
+    const {scene} = useThree();
 
+    useEffect(()=>{
+      if(parent_id) {
+        scene.getObjectByName(parent_id).add(scene.getObjectByName(id));
+      }
+
+      heading_vector.set(heading[0], heading[1], heading[2]);
+      heading_vector.normalize();
+      q.setFromUnitVectors(ey, heading_vector);
+      meshRef.current.position.set(pos[0], pos[1], pos[2]);
+      meshRef.current.setRotationFromQuaternion(q);
+      //meshRef.current.rotation.set(Math.PI/6, 0, 0);
+      //console.log((Math.random() * 2 * pitch_t) - pitch_t);
     }, [meshRef]);
 
     let t;
@@ -296,22 +296,14 @@ const Branch = ({pos, heading, radius, height}) => {
         if(!meshRef.current){
             return;
         }
-        //create custom axis and angle
-        axis_array = cross_product(heading, tropism_array);
-        const angle = tropism_const * vector_len(axis_array);
-        axis.set(...axis_array); 
-        axis.normalize();
-
-        heading_vector.set(...heading);
-       // heading_vector.applyAxisAngle(axis, angle);
-        meshRef.current.position.set(...vector_add(pos, scalar_mult(height/2, [heading_vector.x, heading_vector.y, heading_vector.z])));
-        heading_vector.normalize();
-        q.setFromUnitVectors(ey, heading_vector);
-        meshRef.current.setRotationFromQuaternion(q);
+       // get_rotation_u();
+      //  meshRef.current.rotation.x = t; 
+        //meshRef.current.applyMatrix4(direction);
+       // console.log(meshRef.current.lookAt);
     })
 
     return (
-        <mesh ref = {meshRef}> 
+        <mesh ref = {meshRef} name = {id}> 
             <cylinderGeometry args={[radius * h, radius, height, 6]}/>
             <meshStandardMaterial color="#805333"/>
         </mesh>
@@ -328,7 +320,7 @@ export default function Monopodial() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up); */
 
-    symbols = [{type: "A", len: 1, wid: 0.15}];
+    symbols = [{type: "A", len: 1, wid: 0.15, id: "root", parent_id: null}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();
@@ -341,6 +333,11 @@ export default function Monopodial() {
     }
 
     console.log(objects);
+
+    const v1 = [5, 3, -10];
+    const v2 = [-4, -5, 7];
+    console.log(cross_product(v1, v2));
+
 
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
