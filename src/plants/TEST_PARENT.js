@@ -10,8 +10,8 @@ import { useThree } from "@react-three/fiber";
 
 
 let heading_vector = new THREE.Vector3();
-let position_vector = new THREE.Vector3();
 let q = new THREE.Quaternion();
+let inverse = new THREE.Matrix4();
 const ey = new THREE.Vector3(0, 1, 0);
 
 let init_state = {
@@ -52,7 +52,7 @@ const generate_rules = (symbol) =>{
         {type: "B", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id}, //create a child 
         {type: "]"},
         {type: "/", angle: i + (Math.random() * 2 * turn_t) - turn_t},
-        {type: "A", len: symbol.len * b, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id}
+        {type: "A", len: symbol.len * b, wid: symbol.wid * h, id: symbol.id, parent_id: symbol.parent_id}
 
       ], prob: 0.5},
       {rule: [
@@ -64,7 +64,7 @@ const generate_rules = (symbol) =>{
         {type: "C", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
         {type: "]"},
         {type: "/", angle: i + (Math.random() * 2 * turn_t) - turn_t},
-        {type: "A", len: symbol.len * b, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id}
+        {type: "A", len: symbol.len * b, wid: symbol.wid * h, id: symbol.id, parent_id: symbol.parent_id}
 
       ], prob: 0.5},
     ]
@@ -84,7 +84,7 @@ const generate_rules = (symbol) =>{
         {type: "]"},
         
         {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
-        {type: "C", len: symbol.len * b, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
+        {type: "C", len: symbol.len * b, wid: symbol.wid * h, id: symbol.id, parent_id: symbol.parent_id},
       ], prob: 0.7},
       {rule: [
         {type: "!", wid: symbol.wid},
@@ -98,7 +98,7 @@ const generate_rules = (symbol) =>{
         {type: "]"},
 
         {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
-        {type: "C", len: symbol.len * b, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
+        {type: "C", len: symbol.len * b, wid: symbol.wid * h, id: symbol.id, parent_id: symbol.parent_id},
       ], prob: 0.3},
     ]
     return chooseOne(ruleSet);
@@ -117,7 +117,7 @@ const generate_rules = (symbol) =>{
         {type: "]"},
 
         {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
-        {type: "B", len: symbol.len * b, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
+        {type: "B", len: symbol.len * b, wid: symbol.wid * h, id: symbol.id, parent_id: symbol.parent_id},
       ], prob: 0.7},
       {rule: [
         {type: "!", wid: symbol.wid},
@@ -131,7 +131,7 @@ const generate_rules = (symbol) =>{
         {type: "]"},
 
         {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
-        {type: "B", len: symbol.len * b, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
+        {type: "B", len: symbol.len * b, wid: symbol.wid * h, id: symbol.id, parent_id: symbol.parent_id},
       ], prob: 0.3},
     ]
     return chooseOne(ruleSet);
@@ -210,7 +210,7 @@ function applyRule(symbol) {
     rotate_u(last_state, Math.PI);
   }
   else if (symbol.type == '$') {
-    console.log("$ NOT IMPLEMENTED YET");
+    //console.log("$ NOT IMPLEMENTED YET");
     //L = (V x H) / ||V x H||
     last_state.left = cross_product([0, 1, 0], last_state.heading);
     last_state.left = scalar_mult((1 / vector_len(last_state.left)), last_state.left);
@@ -278,19 +278,25 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
     const {scene} = useThree();
 
     useEffect(()=>{
-      const parent = scene.getObjectByName(parent_id);
-      if(parent_id) {
-        parent.add(meshRef.current);
-      }
+
 
       heading_vector.set(heading[0], heading[1], heading[2]);
       heading_vector.normalize();
       q.setFromUnitVectors(ey, heading_vector);
       meshRef.current.position.set(pos[0], pos[1], pos[2]);
       meshRef.current.setRotationFromQuaternion(q);
+      meshRef.current.updateMatrix();
       //meshRef.current.rotation.set(Math.PI/6, 0, 0);
       //console.log((Math.random() * 2 * pitch_t) - pitch_t);
-
+      if(parent_id) {
+        const parent = scene.getObjectByName(parent_id)
+        parent.add(meshRef.current);
+        inverse.copy(parent.matrixWorld);
+        
+        inverse.invert();
+        console.log("INVERSE", parent.matrixWorld);
+        meshRef.current.applyMatrix4(inverse); 
+      }
     }, [meshRef]);
 
     let t;
@@ -299,14 +305,15 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
         if(!meshRef.current){
             return;
         }
+        
+        if(id == "root") {
+         // console.log('FOUND ROOT');
+         // meshRef.current.rotation.x = t;
+        }
        // get_rotation_u();
       //  meshRef.current.rotation.x = t; 
         //meshRef.current.applyMatrix4(direction);
        // console.log(meshRef.current.lookAt);
-       if(id == "root") {
-       // console.log(scene.getObjectByName("root"));
-        meshRef.current.rotation.x = t;
-       }
     })
 
     return (
@@ -317,7 +324,7 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
     )
 }
 
-export default function Monopodial() {
+export default function Test_parent() {
     const canvas_ref = useRef(null);
 
    /* rotate_u(state_stack[0], Math.PI / 3);
