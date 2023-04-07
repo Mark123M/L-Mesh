@@ -211,7 +211,6 @@ function applyRule(symbol) {
     rotate_u(last_state, Math.PI);
   }
   else if (symbol.type == '$') {
-    console.log("$ NOT IMPLEMENTED YET");
     //L = (V x H) / ||V x H||
     last_state.left = cross_product([0, 1, 0], last_state.heading);
     last_state.left = scalar_mult((1 / vector_len(last_state.left)), last_state.left);
@@ -314,10 +313,15 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
       //  meshRef.current.rotation.x = t; 
         //meshRef.current.applyMatrix4(direction);
        // console.log(meshRef.current.lookAt);
-       if(id == "root") {
+      /* if(id == "root") {
        // console.log(scene.getObjectByName("root"));
         meshRef.current.rotation.x = t;
-       }
+       }*/
+
+       meshRef.current.rotateX(Math.sin(t*2) / 2000);
+       meshRef.current.rotateY(Math.sin(t) / 3000);
+       meshRef.current.rotateZ(Math.sin(t * 3) / 2000);
+       console.log(t);
     })
 
     return (
