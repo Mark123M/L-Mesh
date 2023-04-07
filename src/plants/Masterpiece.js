@@ -11,7 +11,8 @@ import { useThree } from "@react-three/fiber";
 
 let heading_vector = new THREE.Vector3();
 let position_vector = new THREE.Vector3();
-let q = new THREE.Quaternion();
+let local_q = new THREE.Quaternion();
+let world_q = new THREE.Quaternion();
 const ey = new THREE.Vector3(0, 1, 0);
 
 let init_state = {
@@ -279,15 +280,25 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
 
     useEffect(()=>{
       const parent = scene.getObjectByName(parent_id);
-      if(parent_id) {
-        parent.add(meshRef.current);
-      }
-
+      position_vector.set(pos[0], pos[1], pos[2]);
       heading_vector.set(heading[0], heading[1], heading[2]);
       heading_vector.normalize();
-      q.setFromUnitVectors(ey, heading_vector);
-      meshRef.current.position.set(pos[0], pos[1], pos[2]);
-      meshRef.current.setRotationFromQuaternion(q);
+      local_q.setFromUnitVectors(ey, heading_vector);
+      
+      if(parent_id) {
+        parent.add(meshRef.current);
+        parent.worldToLocal(position_vector);
+
+        //get the world rotation of the parent
+        parent.getWorldQuaternion(world_q);
+        // get the inverse of the parent object's world rotation quaternion
+        world_q.invert();
+        // Convert the world rotation quaternion to local rotation quaternion
+        local_q.multiplyQuaternions(world_q, local_q);
+      }
+     
+      meshRef.current.position.copy(position_vector);
+      meshRef.current.setRotationFromQuaternion(local_q);
       //meshRef.current.rotation.set(Math.PI/6, 0, 0);
       //console.log((Math.random() * 2 * pitch_t) - pitch_t);
 
