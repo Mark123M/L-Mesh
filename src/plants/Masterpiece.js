@@ -20,7 +20,7 @@ let init_state = {
     heading: [0, 1, 0],
     left: [-1, 0, 0], 
     up: [0, 0, 1],
-    pen: ["#805333", 0.2, true], 
+    pen: ["#805333", 0.4, true], 
 }
 
 let state_stack = [init_state];
@@ -319,7 +319,7 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
        }*/
 
        meshRef.current.rotateX(Math.sin(t*2) / 2000);
-       meshRef.current.rotateY(Math.sin(t) / 3000);
+       //meshRef.current.rotateY(Math.sin(t) / 3000);
        meshRef.current.rotateZ(Math.sin(t * 3) / 2000);
        console.log(t);
     })
