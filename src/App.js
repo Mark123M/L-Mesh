@@ -23,12 +23,15 @@ import Monopodial from './plants/Monopodial';
 import Space3D from './plants/Space3D';
 import Ternary from './plants/Ternary';
 import Masterpiece from './plants/Masterpiece';
+import Bush from './plants/Bush';
 
 function App() {
   return (
     <ChakraProvider theme={theme}>
       <ColorModeSwitcher justifySelf="flex-end" /> 
-      <Masterpiece/>
+      <Bush/>
+      {/*<Masterpiece/> */}
+  
       {/*<Plant3D/> */}
       {/*<Monopodial/>*/}
       {/*<Space3D/> */}
