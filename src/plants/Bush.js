@@ -1,6 +1,6 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { PerspectiveCamera, OrbitControls } from "@react-three/drei";
-import {useRef, useEffect} from "react";
+import {useRef, useEffect, useState} from "react";
 import * as THREE from "three"
 import { v4 as uuidv4 } from "uuid";
 import { useThree } from "@react-three/fiber";
@@ -14,6 +14,27 @@ let position_vector = new THREE.Vector3();
 let local_q = new THREE.Quaternion();
 let world_q = new THREE.Quaternion();
 const ey = new THREE.Vector3(0, 1, 0);
+
+let mesh_shape = new THREE.Shape();
+let mesh_geometry;
+let positions;
+
+/*mesh_shape.moveTo(0, 0);
+mesh_shape.lineTo(1, 0);
+mesh_shape.lineTo(1, 1);
+mesh_shape.lineTo(0, 1);
+mesh_shape.lineTo(0, 0);
+
+const square = new THREE.ShapeGeometry(mesh_shape);
+const pos = square.getAttribute('position');
+console.log("POSITION OF SQUARE",pos);
+//for(let i = 0; i < pos.count; i++) {
+//  pos.setZ(i, Math.random());
+//}
+square.setAttribute('position', pos);  */
+
+
+const hiearchy_on = false;
 
 let init_state = {
     pos: [0, 0, 0],
@@ -36,7 +57,7 @@ let objects = [];
 let shapes = [];
 let shape_stack = []; //{ means start a new shape, } means push the shape into the shapes array to be drawn
 let symbols;
-let num_gens = 4;
+let num_gens = 3;
 
 const b = 0.95;
 const e = 0.80;
@@ -52,7 +73,7 @@ const pitch_t = 12;
 const roll_t = 20;
 
 const delta = 22.5;
-const edge = 10;
+const edge = 0.4;
 
 const generate_rules = (symbol) =>{
   if (symbol.type == "A" && symbol.len >= min) {
@@ -60,9 +81,10 @@ const generate_rules = (symbol) =>{
       {rule: [
         {type: "["},
         {type: "&", angle: delta},
-        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
-        {type: "L", id: symbol.id, parent_id: symbol.parent_id},
         {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id}, ////ohh bebcause there is no object with id root before i add the first one 
+        //wait and there are just like multiple objects of the same id, this is nto good .
+        {type: "L", id: uuidv4(), parent_id: symbol.id},
         {type: "A", len: symbol.len, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
         {type: "]"},
         
@@ -75,9 +97,9 @@ const generate_rules = (symbol) =>{
         
         {type: "["},
         {type: "&", angle: delta},
-        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
-        {type: "L", id: symbol.id, parent_id: symbol.parent_id},
         {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
+        {type: "L", id: uuidv4(), parent_id: symbol.id},
         {type: "A", len: symbol.len, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
         {type: "]"},
 
@@ -92,9 +114,9 @@ const generate_rules = (symbol) =>{
 
         {type: "["},
         {type: "&", angle: delta},
-        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
-        {type: "L", id: symbol.id, parent_id: symbol.parent_id},
         {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
+        {type: "L", id: uuidv4(), parent_id: symbol.id},
         {type: "A", len: symbol.len, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
         {type: "]"},
 
@@ -103,21 +125,21 @@ const generate_rules = (symbol) =>{
     ]
     return chooseOne(ruleSet);
   }
-  else if (symbol.type == "F" && symbol.len >= min) {
+  else if (symbol.type == "F") {
     const ruleSet = [
       {rule: [
-        {type: "S", id: symbol.id, parent_id: symbol.parent_id},
+        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
         {type: "/", angle: delta},
         {type: "/", angle: delta},
         {type: "/", angle: delta},
         {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "F", len: symbol.len, id: uuidv4(), parent_id: symbol.id},
+        {type: "/", angle: delta}, 
+        {type: "S", len: symbol.len, id: uuidv4(), parent_id: symbol.id}, 
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
-  }
-  else if (symbol.type == "S" && symbol.len >= min) {
+  } 
+  else if (symbol.type == "S") {
     const ruleSet = [
       {rule: [
         {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
@@ -125,8 +147,8 @@ const generate_rules = (symbol) =>{
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
-  }
-  else if (symbol.type == "L" && symbol.len >= min) {
+  }  
+  else if (symbol.type == "L") {
     const ruleSet = [
       {rule: [
         {type: "["},
@@ -136,22 +158,30 @@ const generate_rules = (symbol) =>{
         {type: "^", angle: delta},
         {type: "^", angle: delta},
 
-        {type: "{"},
+        {type: "{", id: symbol.id, parent_id: symbol.parent_id},
+        {type: "."},
         {type: "-", angle: delta},
         {type: "f", len: edge},
+        {type: "."},
         {type: "+", angle: delta},
         {type: "f", len: edge},
+        {type: "."},
         {type: "+", angle: delta},
         {type: "f", len: edge},
+        
         {type: "-", angle: delta},
         {type: "|"},
+
+        {type: "."},
         {type: "-", angle: delta},
         {type: "f", len: edge},
+        {type: "."},
         {type: "+", angle: delta},
         {type: "f", len: edge},
+        {type: "."},
         {type: "+", angle: delta},
-        {type: "f", len: edge},
-        {type: "}"},
+        {type: "f", len: edge},  
+        {type: "}"}, 
 
         {type: "]"},
       ], prob: 1.0},
@@ -252,7 +282,7 @@ function applyRule(symbol) {
   }
   //start a new polygon
   else if (symbol.type == "{") {
-    shape_stack.push(["#228B22", 1, symbol.id, symbol.parent_id, []]);
+    shape_stack.push(["#228B22", 1, symbol.id, symbol.parent_id, []]); 
   }
   //finish the current polygon
   else if (symbol.type == "}") {
@@ -260,7 +290,8 @@ function applyRule(symbol) {
   }
   //draw a vertex for the current polygon
   else if (symbol.type == ".") {
-    shape_stack[4].push([last_state.pos]);
+    const num_shapes = shape_stack.length;
+    shape_stack[num_shapes - 1][4].push(last_state.pos);
   }
   
 }
@@ -316,8 +347,9 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
       heading_vector.set(heading[0], heading[1], heading[2]);
       heading_vector.normalize();
       local_q.setFromUnitVectors(ey, heading_vector);
-      
+      //console.log("CURRENT OBJECT HAS ID: ",id, "PARENT ID",parent_id);
       if(parent_id) {
+        //console.log(parent);
         parent.add(meshRef.current);
         parent.worldToLocal(position_vector);
 
@@ -351,15 +383,15 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
         meshRef.current.rotation.x = t;
        }*/
 
-       meshRef.current.rotateX(Math.sin(t*2) / 2000);
+      // meshRef.current.rotateX(Math.sin(t*2) / 2000);
        //meshRef.current.rotateY(Math.sin(t) / 3000);
-       meshRef.current.rotateZ(Math.sin(t * 3) / 2000);
-       console.log(t);
+      // meshRef.current.rotateZ(Math.sin(t * 3) / 2000);
+       //console.log(t);
     })
 
     return (
         <mesh ref = {meshRef} name = {id}> 
-            <cylinderGeometry args={[radius * h, radius, height, 6]}/>
+            <cylinderGeometry args={[radius, radius, height, 6]}/>
             <meshStandardMaterial color="#805333"/>
         </mesh>
     )
@@ -368,19 +400,53 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
 const Shape = ({color, wid, points, id, parent_id}) => {
   const meshRef = useRef(null);
   const {scene} = useThree();
+  const [geometry, setGeometry] = useState(new THREE.ShapeGeometry());
   
   useEffect(()=>{
     const parent = scene.getObjectByName(parent_id);
-    
-    if(parent_id) {
-      parent.add(meshRef.current);
-      parent.worldToLocal(position_vector);
-    }
-   
-    meshRef.current.position.copy(position_vector);
-    meshRef.current.setRotationFromQuaternion(local_q);
+    mesh_shape = new THREE.Shape();
 
-  }, [meshRef]);
+    position_vector.set(points[0][0], points[0][1], points[0][2]);
+    mesh_shape.moveTo(position_vector.x, position_vector.y);
+
+    //add a small random value to avoid repeating lineTo calls
+    let rx = Math.random() * 0.000008999999 + 0.000001;
+    let ry = Math.random() * 0.000008999999 + 0.000001;
+    for(let i = 1; i < points.length; i++) {
+      position_vector.set(points[i][0], points[i][1], points[i][2]);
+      mesh_shape.lineTo(position_vector.x + rx, position_vector.y + ry);
+      rx = Math.random() * 0.000008999999 + 0.000001;
+      ry = Math.random() * 0.000008999999 + 0.000001;
+    }
+
+    position_vector.set(points[0][0], points[0][1], points[0][2]);
+    mesh_shape.lineTo(position_vector.x, position_vector.y);
+   
+    setGeometry(new THREE.ShapeGeometry(mesh_shape));
+    
+    /*positions = geometry.getAttribute('position');
+    console.log('ALL POSITIONS', positions);
+
+    for(let i = 0; i < positions.count; i++) {
+      positions.setZ(i, Math.random());
+    }
+    geometry.setAttribute('position', positions);   */
+ 
+
+    
+  }, [meshRef]); 
+
+  useEffect(()=>{
+
+    console.log(points, points.length, geometry.getAttribute('position'));
+  }, [geometry])
+  
+
+  return (
+    <mesh mesh ref = {meshRef} name = {id} geometry={geometry}>
+      <meshPhongMaterial color="green" side={THREE.DoubleSide}/>
+    </mesh>
+  );
 }
 
 export default function Bush() {
@@ -393,7 +459,7 @@ export default function Bush() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up); */
 
-    symbols = [{type: "A", len: 1, wid: 0.15, id: "root", parent_id: null}];
+    symbols = [{type: "F", len: 0, id: "root", parent_id: null}, {type: "A", len: 1, wid: 0.08, id: "root", parent_id: null}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();
@@ -406,6 +472,7 @@ export default function Bush() {
     }
 
     console.log(objects);
+    console.log(shapes);
 
     const v1 = [5, 3, -10];
     const v2 = [-4, -5, 7];
@@ -422,6 +489,9 @@ export default function Bush() {
                 <pointLight position={[10, 10, 10]} />
                 {objects.map((o)=>
                   <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]}/>
+                )}
+                {shapes.map((s)=>
+                  <Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
                 )}
                 <Branch pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
             </Canvas>
