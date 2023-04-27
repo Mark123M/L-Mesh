@@ -13,7 +13,6 @@ import { ColorModeSwitcher } from './ColorModeSwitcher';
 import Tree3D from './plants/Tree3D'
 import Flower from './plants/Flower'
 import Pine_tree from './plants/Pine_tree'
-import Space_tree from './plants/Space_tree'
 import Pine_tree2 from './plants/Pine_tree2'
 
 //import ThreeJs from './plants/old models/ThreeJs';
