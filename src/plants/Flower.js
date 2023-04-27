@@ -58,7 +58,7 @@ let objects = [];
 let shapes = [];
 let shape_stack = []; //{ means start a new shape, } means push the shape into the shapes array to be drawn
 let symbols;
-let num_gens = 6;
+let num_gens = 5;
 
 const b = 0.95;
 const e = 0.80;
@@ -73,118 +73,211 @@ const turn_t = 12;
 const pitch_t = 12;
 const roll_t = 20;
 
-const delta = 22.5;
+const delta = 18;
 const edge = 0.4;
 
 const generate_rules = (symbol) =>{
-  if (symbol.type == "A" && symbol.len >= min) {
+  if (symbol.type == "plant") {
     const ruleSet = [
       {rule: [
-        {type: "["},
-        {type: "&", angle: delta},
-        {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id}, ////ohh bebcause there is no object with id root before i add the first one 
-        //wait and there are just like multiple objects of the same id, this is nto good .
-        {type: "L", id: uuidv4(), parent_id: symbol.id},
-        {type: "A", len: symbol.len, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
-        {type: "]"},
-        
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "'", amt: 5}, //increase color index
-        
-        {type: "["},
-        {type: "&", angle: delta},
-        {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
-        {type: "L", id: uuidv4(), parent_id: symbol.id},
-        {type: "A", len: symbol.len, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
-        {type: "]"},
-
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "'", amt: 5}, //increase color index
+        {type: "internode"},
+        {type: "+", angle: delta},
 
         {type: "["},
-        {type: "&", angle: delta},
-        {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
-        {type: "L", id: uuidv4(), parent_id: symbol.id},
-        {type: "A", len: symbol.len, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
+        {type: "plant"},
+        {type: "+", angle: delta},
+        {type: "flower"},
         {type: "]"},
 
+        {type: "-", angle: delta},
+        {type: "-", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+
+        {type: "["},
+        {type: "-", angle: delta},
+        {type: "-", angle: delta},
+        {type: "leaf"},
+        {type: "]"},
+
+        {type: "internode"},
+
+        {type: "["},
+        {type: "+", angle: delta},
+        {type: "+", angle: delta},
+        {type: "leaf"},
+        {type: "]"},
+
+        {type: "-", angle: delta},
+        {type: "["},
+        {type: "plant"},
+        {type: "flower"},
+        {type: "]"},
+
+        {type: "+", angle: delta},
+        {type: "+", angle: delta},
+        {type: "plant"},
+        {type: "flower"},
 
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }
-  else if (symbol.type == "F") {
+  else if (symbol.type == "internode") {
     const ruleSet = [
       {rule: [
-        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
+        {type: "F", len: edge},
+        {type: "seg"},
+
+        {type: "["},
         {type: "/", angle: delta},
         {type: "/", angle: delta},
+        {type: "&", angle: delta},
+        {type: "&", angle: delta},
+        {type: "leaf"},
+        {type: "]"},
+
+        {type: "["},
         {type: "/", angle: delta},
         {type: "/", angle: delta},
-        {type: "/", angle: delta}, 
-        {type: "S", len: symbol.len, id: uuidv4(), parent_id: symbol.id}, 
+        {type: "^", angle: delta},
+        {type: "^", angle: delta},
+        {type: "leaf"},
+        {type: "]"},
+
+        {type: "F", len: edge},
+        {type: "seg"},
+
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   } 
-  else if (symbol.type == "S") {
+  else if (symbol.type == "seg") {
     const ruleSet = [
       {rule: [
-        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
-        {type: "L", id: uuidv4(), parent_id: symbol.id},
+        {type: "seg"},
+        {type: "F", len: edge},
+        {type: "seg"},
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }  
-  else if (symbol.type == "L") {
+  else if (symbol.type == "leaf") {
     const ruleSet = [
       {rule: [
         {type: "["},
-        {type: "'", amt: 5}, //increase color index
-        {type: "'", amt: 5}, //increase color index
-        {type: "'", amt: 5}, //increase color index
-        {type: "^", angle: delta},
-        {type: "^", angle: delta},
+        {type: "'"},
 
-        {type: "{", id: symbol.id, parent_id: symbol.parent_id},
+        {type: "{", color: "green"},
+        {type: "."},
+        {type: "+", angle: delta},
+        {type: "f", len: edge},
         {type: "."},
         {type: "-", angle: delta},
         {type: "f", len: edge},
-        {type: "."},
-        {type: "+", angle: delta},
         {type: "f", len: edge},
-        {type: "."},
-        {type: "+", angle: delta},
-        {type: "f", len: edge},
-        
-        {type: "-", angle: delta},
-        {type: "|"},
-
         {type: "."},
         {type: "-", angle: delta},
         {type: "f", len: edge},
+
+        {type: "+", angle: delta},
+        {type: "|", angle: delta},
+
         {type: "."},
         {type: "+", angle: delta},
         {type: "f", len: edge},
         {type: "."},
-        {type: "+", angle: delta},
-        {type: "f", len: edge},  
-        {type: "}"}, 
-
+        {type: "-", angle: delta},
+        {type: "f", len: edge},
+        {type: "f", len: edge},
+        {type: "."},
+        {type: "-", angle: delta},
+        {type: "f", len: edge},
+        {type: "}"},
         {type: "]"},
+        
+      ], prob: 1.0},
+    ]
+    return chooseOne(ruleSet);
+  }
+  else if (symbol.type == "flower") {
+    const ruleSet = [
+      {rule: [
+        {type: "["},
+        {type: "&", angle: delta},
+        {type: "&", angle: delta},
+        {type: "&", angle: delta},
+        {type: "pedicel"},
+        {type: "'"},
+        {type: "/", angle: delta},
+        {type: "wedge"},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "wedge"},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "wedge"},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "wedge"},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "wedge"},
+        {type: "]"},
+        
+      ], prob: 1.0},
+    ]
+    return chooseOne(ruleSet);
+  }
+  else if (symbol.type == "pedicel") {
+    const ruleSet = [
+      {rule: [
+        {type: "F", len: edge},
+        {type: "F", len: edge},
+      ], prob: 1.0},
+    ]
+    return chooseOne(ruleSet);
+  }
+  else if (symbol.type == "wedge") {
+    const ruleSet = [
+      {rule: [
+        {type: "["},
+        {type: "'"},
+        {type: "^", angle: delta},
+        {type: "F", len: edge},
+        {type: "]"},
+
+        {type: "["},
+        {type: "{", color: "orange"},
+        {type: "."},
+        {type: "&", angle: delta},
+        {type: "&", angle: delta},
+        {type: "&", angle: delta},
+        {type: "&", angle: delta},
+        {type: "-", angle: delta},
+        {type: "f", len: edge * 2},
+        {type: "."},
+        {type: "+", angle: delta},
+        {type: "f", len: edge * 2},
+
+        {type: "."},
+        {type: "|"},
+        {type: "-", angle: delta},
+        {type: "f", len: edge * 2},
+        {type: "."},
+        {type: "+", angle: delta},
+        {type: "f", len: edge * 2},
+        {type: "}"},
+        {type: "]"},
+
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
@@ -239,11 +332,11 @@ function applyRule(symbol) {
   }
   else if (symbol.type == "+") {
     //p5.rotateZ(Math.PI/180 * -1 * (symbol.angle));
-    rotate_u(last_state, (Math.PI / 180) * (symbol.angle));
+    rotate_u(last_state, (Math.PI / 180) * -(symbol.angle));
   }
   else if (symbol.type == "-") {
     // p5.rotateZ(Math.PI/180 * (symbol.angle));
-    rotate_u(last_state, (Math.PI / 180) * -(symbol.angle));
+    rotate_u(last_state, (Math.PI / 180) * (symbol.angle));
    }
 
   else if (symbol.type == "&") {
@@ -254,10 +347,10 @@ function applyRule(symbol) {
   }
   else if (symbol.type == "\\") {
     // p5.rotateY(Math.PI/180 * (symbol.angle));
-    rotate_h(last_state, (Math.PI / 180) * (symbol.angle));
+    rotate_h(last_state, (Math.PI / 180) * -(symbol.angle));
   }
   else if (symbol.type == "/") {
-    rotate_h(last_state, (Math.PI / 180) * -(symbol.angle));
+    rotate_h(last_state, (Math.PI / 180) * (symbol.angle));
   }
   else if (symbol.type == '|') {
     rotate_u(last_state, Math.PI);
@@ -283,7 +376,7 @@ function applyRule(symbol) {
   }
   //start a new polygon
   else if (symbol.type == "{") {
-    shape_stack.push(["#228B22", 1, symbol.id, symbol.parent_id, []]); 
+    shape_stack.push([symbol.color, 1, symbol.id, symbol.parent_id, []]); 
   }
   //finish the current polygon
   else if (symbol.type == "}") {
@@ -439,7 +532,7 @@ const Shape = ({color, wid, points, id, parent_id}) => {
 
   return (
     <mesh mesh ref = {meshRef} name = {id} geometry={geometry}>
-      <meshPhongMaterial color="green" side={THREE.DoubleSide}/>
+      <meshPhongMaterial color={color} side={THREE.DoubleSide}/>
     </mesh>
   );
 }
@@ -454,7 +547,8 @@ export default function Bush() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up); */
 
-    symbols = [{type: "F", len: 0, id: "root", parent_id: null}, {type: "A", len: 0.4, wid: 0.08, id: "root", parent_id: null}];
+    symbols = [{type: "!", wid: 0.02}, {type: "plant"}];
+    //symbols = [{type: "/", angle: delta * 3},{type: "!", wid: 0.02},{type: "F", len: edge * 2}, {type: "["}, {type: "&", angle: delta * 3}, {type: "F", len: edge}, {type: "]"}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();
