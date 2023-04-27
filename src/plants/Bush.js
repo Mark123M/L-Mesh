@@ -4,6 +4,7 @@ import {useRef, useEffect, useState} from "react";
 import * as THREE from "three"
 import { v4 as uuidv4 } from "uuid";
 import { useThree } from "@react-three/fiber";
+import { ShapeUtils } from "three";
 
 //3D turtle interpreter
 //standard basis vectors
@@ -374,14 +375,6 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
         if(!meshRef.current){
             return;
         }
-       // get_rotation_u();
-      //  meshRef.current.rotation.x = t; 
-        //meshRef.current.applyMatrix4(direction);
-       // console.log(meshRef.current.lookAt);
-      /* if(id == "root") {
-       // console.log(scene.getObjectByName("root"));
-        meshRef.current.rotation.x = t;
-       }*/
 
       // meshRef.current.rotateX(Math.sin(t*2) / 2000);
        //meshRef.current.rotateY(Math.sin(t) / 3000);
@@ -421,27 +414,24 @@ const Shape = ({color, wid, points, id, parent_id}) => {
 
     position_vector.set(points[0][0], points[0][1], points[0][2]);
     mesh_shape.lineTo(position_vector.x, position_vector.y);
-   
-   // setGeometry(new THREE.ShapeGeometry(mesh_shape));
-    /*positions = geometry.getAttribute('position');
-    console.log('ALL POSITIONS', positions);
-
-    for(let i = 0; i < positions.count; i++) {
-      positions.setZ(i, Math.random());
-    }
-    geometry.setAttribute('position', positions);   */
 
     mesh_geometry = new THREE.ShapeGeometry(mesh_shape);
     positions = mesh_geometry.getAttribute('position');
-    console.log(points, points.length, mesh_geometry.getAttribute('position'));
     for(let i = 1; i < positions.count; i++) {
      // console.log(positions.getX(i), positions.getY(i), positions.getZ(i), 'POINTS', points[positions.count - i - 1]);
-      positions.setZ(i, points[positions.count - i][2]);
+      if(ShapeUtils.isClockWise(mesh_shape.getPoints())) {
+        positions.setZ(i, points[i][2]);
+      }
+      else {
+        positions.setZ(i, points[positions.count - i][2]);
+      }
     }
+    //console.log();
+
     positions.setZ(0, points[0][2]);
     mesh_geometry.setAttribute('position', positions);
-   // console.log(mesh_geometry, points);
     setGeometry(mesh_geometry);
+    //console.log(points, points.length, mesh_geometry.getAttribute('position'), ShapeUtils.isClockWise(mesh_shape.getPoints()));
 
     
   }, [meshRef]); 
@@ -464,7 +454,7 @@ export default function Bush() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up); */
 
-    symbols = [{type: "F", len: 0, id: "root", parent_id: null}, {type: "A", len: 1, wid: 0.08, id: "root", parent_id: null}];
+    symbols = [{type: "F", len: 0, id: "root", parent_id: null}, {type: "A", len: 0.4, wid: 0.08, id: "root", parent_id: null}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();

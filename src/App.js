@@ -29,7 +29,8 @@ function App() {
   return (
     <ChakraProvider theme={theme}>
       <ColorModeSwitcher justifySelf="flex-end" /> 
-      <Bush/>
+      <Flower/>
+      {/*<Bush/>*/}
       {/*<Masterpiece/> */}
   
       {/*<Plant3D/> */}
