@@ -57,7 +57,7 @@ let objects = [];
 let shapes = [];
 let shape_stack = []; //{ means start a new shape, } means push the shape into the shapes array to be drawn
 let symbols;
-let num_gens = 3;
+let num_gens = 6;
 
 const b = 0.95;
 const e = 0.80;
@@ -422,8 +422,7 @@ const Shape = ({color, wid, points, id, parent_id}) => {
     position_vector.set(points[0][0], points[0][1], points[0][2]);
     mesh_shape.lineTo(position_vector.x, position_vector.y);
    
-    setGeometry(new THREE.ShapeGeometry(mesh_shape));
-    
+   // setGeometry(new THREE.ShapeGeometry(mesh_shape));
     /*positions = geometry.getAttribute('position');
     console.log('ALL POSITIONS', positions);
 
@@ -431,15 +430,21 @@ const Shape = ({color, wid, points, id, parent_id}) => {
       positions.setZ(i, Math.random());
     }
     geometry.setAttribute('position', positions);   */
- 
+
+    mesh_geometry = new THREE.ShapeGeometry(mesh_shape);
+    positions = mesh_geometry.getAttribute('position');
+    console.log(points, points.length, mesh_geometry.getAttribute('position'));
+    for(let i = 1; i < positions.count; i++) {
+     // console.log(positions.getX(i), positions.getY(i), positions.getZ(i), 'POINTS', points[positions.count - i - 1]);
+      positions.setZ(i, points[positions.count - i][2]);
+    }
+    positions.setZ(0, points[0][2]);
+    mesh_geometry.setAttribute('position', positions);
+   // console.log(mesh_geometry, points);
+    setGeometry(mesh_geometry);
 
     
   }, [meshRef]); 
-
-  useEffect(()=>{
-
-    console.log(points, points.length, geometry.getAttribute('position'));
-  }, [geometry])
   
 
   return (
