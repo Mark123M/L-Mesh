@@ -58,7 +58,7 @@ let objects = [];
 let shapes = [];
 let shape_stack = []; //{ means start a new shape, } means push the shape into the shapes array to be drawn
 let symbols;
-let num_gens = 5;
+let num_gens = 4;
 
 const b = 0.95;
 const e = 0.80;
@@ -204,9 +204,9 @@ const generate_rules = (symbol) =>{
     const ruleSet = [
       {rule: [
         {type: "["},
-        {type: "&", angle: delta},
-        {type: "&", angle: delta},
-        {type: "&", angle: delta},
+        {type: "^", angle: delta},
+        {type: "^", angle: delta},
+        {type: "^", angle: delta},
         {type: "pedicel"},
         {type: "'"},
         {type: "/", angle: delta},
@@ -263,16 +263,24 @@ const generate_rules = (symbol) =>{
         {type: "&", angle: delta},
         {type: "&", angle: delta},
         {type: "-", angle: delta},
+        {type: "-", angle: delta},
+        {type: "-", angle: delta},
         {type: "f", len: edge * 2},
         {type: "."},
+        {type: "+", angle: delta},
+        {type: "+", angle: delta},
         {type: "+", angle: delta},
         {type: "f", len: edge * 2},
 
         {type: "."},
         {type: "|"},
         {type: "-", angle: delta},
+        {type: "-", angle: delta},
+        {type: "-", angle: delta},
         {type: "f", len: edge * 2},
         {type: "."},
+        {type: "+", angle: delta},
+        {type: "+", angle: delta},
         {type: "+", angle: delta},
         {type: "f", len: edge * 2},
         {type: "}"},
