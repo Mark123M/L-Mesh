@@ -5,6 +5,7 @@ import * as THREE from "three"
 import { v4 as uuidv4 } from "uuid";
 import { useThree } from "@react-three/fiber";
 import { ShapeUtils } from "three";
+import * as math from "mathjs"
 
 //3D turtle interpreter
 //standard basis vectors
@@ -294,9 +295,113 @@ const generate_rules = (symbol) =>{
 
 //NEW CHANGES 
 
-//rule is a string of the returning production rule 
-const get_params = (rule) => {
+//"name" : val
+let constants = {
+  "num_gen": 5,
+  "delta": 18,
+  "edge": 0.4,
+}
+//"symbol" : "replacements"
+let productions = {
+  "A(len, wid)": "A(sin(len * sin(0)) + cos(len * cos(pi/2)) + 1,  wid)",
+}
+//"name" : [param1, param2...]
+//SHOULD INCLUDE PRIMITIVE COMMANDS ALWAYS, LIKE F, f, !, [, ], {, }, /, \
+let params = {
+  "F": ["len"],
+  "f": ["len"],
+  "+": ["angle"],
+  "-": ["angle"],
+  "^": ["angle"],
+  "&": ["angle"],
+  "\\": ["angle"],
+  "/": ["angle"],
+  "|": [],
+  "$": [],
+  "[": [],
+  "]": [],
+  "{": [],
+  ".": [],
+  "}": [],
+  "!": ["wid"],
+  "'": ["color"],
+  "%": [],
+}
+//replacement symbol string is split by space: so A-> F(10) A(15) / / /
+//rule is a string representation of a symbol and its next params
+//ex. "F(5 * sin(log(k, h)) + 5, expt(4, 5))" 
+//returns a symbol object {type: "name", param1: x, param2: y...};
 
+//then replace each occuring instance of the parameters of the symbol in the rule string
+//then evaluate the parameters and and create a new symbol. 
+//symbol is the string of the original symbol, rule is the replacement 
+const get_next_symbol = (symbol, rule) => {
+  rule = rule.replaceAll(' ', ''); //remove all whitespaces for safety
+  if(!rule.includes('(')) { //if there are no parameters
+    return {type: "rule"};
+  }
+  const firstIdx = rule.indexOf('(');
+  const type = rule.substring(0, firstIdx);
+  const lastIdx = rule.lastIndexOf(")");
+  rule = rule.substring(firstIdx + 1, lastIdx);
+  console.log("TRIMMED RULE IS", type, rule);
+
+  if(!params[type]) {
+    return;
+  }
+  Object.keys(symbol).forEach((s)=>{
+    console.log(s, symbol[s]);
+    if(s != "type"){
+      rule = rule.replaceAll(s, symbol[s]); //replace all variables of the production with the fields of symbol 
+    }
+  })
+  Object.keys(constants).forEach((s)=>{
+    if(s != "num_gen"){
+      rule = rule.replaceAll(s, constants[s]); //replace all variables of the production with any constants
+    }
+  })
+  console.log("SUBBED RULE IS ", rule);
+
+  let stack = [];
+  let cur_param = "";
+  let param_idx = 0;
+  let new_symbol = {type: type};
+
+  for(let i = 0; i < rule.length; i++) {
+    if(rule[i] == ',' && stack.length == 0) { //if theres a comma that is not in a bracket, this is a parameter
+      console.log("PARAM",param_idx, "is", params[type][param_idx]);
+      new_symbol[params[type][param_idx]] = math.evaluate(cur_param);
+      cur_param = "";
+      param_idx++;
+      continue;
+    }
+    cur_param = cur_param + rule[i];
+    if(rule[i] == '(') {
+      stack.push(rule[i]);
+    }
+    else if (rule[i] == ')') {
+      stack.pop();
+    }
+  }
+  if(rule[rule.length - 1] != ',') {
+    console.log("PARAM",param_idx, "is", params[type][param_idx]);
+    new_symbol[params[type][param_idx]] = math.evaluate(cur_param);
+    cur_param = "";
+    param_idx++;
+  }
+  console.log(new_symbol);
+
+}
+
+const get_params = () => {
+  Object.keys(productions).forEach((s)=>{
+    const type = s.substring(0, s.indexOf('('));
+    s = s.substring(s.indexOf('('));
+    s = s.replaceAll(' ','');
+    s = s.replaceAll('(', '');
+    s = s.replaceAll(')', '');
+    params[type] = s.split(',');
+  })
 }
 
 function chooseOne(ruleSet) {
@@ -582,7 +687,11 @@ export default function Bush() {
     const v2 = [-4, -5, 7];
     console.log(cross_product(v1, v2));
 
-
+    //get_next_symbol({type: "A", len: 5}, "  Flower  (sin(len) * cos(len) + 1, ) ");
+    get_params();
+    console.log(params);
+    get_next_symbol({type: "A", len: 5, wid: 10}, "A(sin(len * sin(0)) + cos(len * cos(pi/2)) + 1 * delta,  (((wid + edge))))")
+    
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
             <Canvas>
