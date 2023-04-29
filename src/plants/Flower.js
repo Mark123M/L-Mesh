@@ -292,6 +292,13 @@ const generate_rules = (symbol) =>{
   }
 }
 
+//NEW CHANGES 
+
+//rule is a string of the returning production rule 
+const get_params = (rule) => {
+
+}
+
 function chooseOne(ruleSet) {
   let n = Math.random(); // Random number between 0-1
   let t = 0;
