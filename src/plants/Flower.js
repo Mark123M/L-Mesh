@@ -21,21 +21,6 @@ let mesh_shape = new THREE.Shape();
 let mesh_geometry;
 let positions;
 
-/*mesh_shape.moveTo(0, 0);
-mesh_shape.lineTo(1, 0);
-mesh_shape.lineTo(1, 1);
-mesh_shape.lineTo(0, 1);
-mesh_shape.lineTo(0, 0);
-
-const square = new THREE.ShapeGeometry(mesh_shape);
-const pos = square.getAttribute('position');
-console.log("POSITION OF SQUARE",pos);
-//for(let i = 0; i < pos.count; i++) {
-//  pos.setZ(i, Math.random());
-//}
-square.setAttribute('position', pos);  */
-
-
 const hiearchy_on = false;
 
 let init_state = {
@@ -45,14 +30,6 @@ let init_state = {
     up: [0, 0, 1],
     pen: ["#805333", 0.4, true], 
 }
-
-/*
-let shape = {
-  verticies:
-  width: 
-  color: 
-}
-*/
 
 let state_stack = [init_state];
 let objects = [];
@@ -77,8 +54,9 @@ const roll_t = 20;
 const delta = 18;
 const edge = 0.4;
 
+//given a symbol, return the next generation of replacement symbols based on productions.
 const generate_rules = (symbol) =>{
-  if (symbol.type == "plant") {
+ /* if (symbol.type == "plant") {
     const ruleSet = [
       {rule: [
         {type: "internode"},
@@ -290,7 +268,39 @@ const generate_rules = (symbol) =>{
       ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
+  } */
+  let symbol_str = symbol.type;
+  
+  if(params[symbol.type].length > 0) {
+    symbol_str = symbol_str + '(';
+    //console.log("PARAMS OF CURRENT SYMBOL",params[symbol.type]);
+    for(let i = 0; i < params[symbol.type].length - 1; i++) {
+      symbol_str = symbol_str + params[symbol.type][i] + ',';
+    }
+    symbol_str = symbol_str + params[symbol.type][params[symbol.type].length - 1] + ')';
+    //console.log(symbol_str); //OHHH I HAD SOME UNDEFINED BEHAVIOR 
   }
+
+  if(!(symbol_str in productions)) {
+    return;
+  }
+  let new_symbols = [];
+  productions[symbol_str].forEach((r)=>{
+    new_symbols.push(
+      {
+        rule: r.rule.split(" ").map((s)=>get_next_symbol(symbol, s)),
+        prob: r.prob
+      }
+    )
+  })
+  /*productions[symbol_str].split(" ").forEach((s)=>{
+    console.log("NEW SYMBOLS", symbol, s, get_next_symbol(symbol, s));
+    new_symbols.push(get_next_symbol(symbol, s));
+
+  })*/
+  console.log("NEW SYMBOLS", new_symbols);
+  return chooseOne(new_symbols);
+ 
 }
 
 //NEW CHANGES 
@@ -300,10 +310,35 @@ let constants = {
   "num_gen": 5,
   "delta": 18,
   "edge": 0.4,
+  "wid": 0.04,
 }
 //"symbol" : "replacements"
 let productions = {
-  "A(len, wid)": "A(sin(len * sin(0)) + cos(len * cos(pi/2)) + 1,  wid)",
+  //default productions
+  "F(len)": [{rule: "F(len)", prob: 1.0}],  
+  "f(len)": [{rule: "f(len)", prob: 1.0}],
+  "+(angle)": [{rule: "+(angle)", prob: 1.0}],
+  "-(angle)": [{rule: "-(angle)", prob: 1.0}],
+  "^(angle)": [{rule: "^(angle)", prob: 1.0}],
+  "&(angle)": [{rule: "&(angle)", prob: 1.0}],
+  "\\(angle)": [{rule: "\\(angle)", prob: 1.0}],
+  "/(angle)": [{rule: "/(angle)", prob: 1.0}],
+  "|": [{rule: "|", prob: 1.0}],
+  "$": [{rule: "$", prob: 1.0}],
+  "[": [{rule: "[", prob: 1.0}],
+  "]": [{rule: "]", prob: 1.0}],
+  "{": [{rule: "{", prob: 1.0}],
+  ".": [{rule: ".", prob: 1.0}],
+  "}": [{rule: "}", prob: 1.0}],
+  "!(wid)": [{rule: "!(wid)", prob: 1.0}],
+  "'(color)": [{rule: "'(color)", prob: 1.0}],
+
+  //custom productions
+  "A": [{rule: "[ &(delta) !(wid) F(edge) L A ] /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) F(edge) L A ] /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) F(edge) L A ]", prob:1.0}],
+  "F(len)": [{rule: "S /(delta) /(delta) /(delta) /(delta) /(delta) F(edge)", prob:1.0}],
+  "S": [{rule: "F(edge) L", prob: 1.0}],
+  "L": [{rule: "[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", prob: 1.0}],
+
 }
 //"name" : [param1, param2...]
 //SHOULD INCLUDE PRIMITIVE COMMANDS ALWAYS, LIKE F, f, !, [, ], {, }, /, \
@@ -325,7 +360,6 @@ let params = {
   "}": [],
   "!": ["wid"],
   "'": ["color"],
-  "%": [],
 }
 //replacement symbol string is split by space: so A-> F(10) A(15) / / /
 //rule is a string representation of a symbol and its next params
@@ -334,33 +368,31 @@ let params = {
 
 //then replace each occuring instance of the parameters of the symbol in the rule string
 //then evaluate the parameters and and create a new symbol. 
-//symbol is the string of the original symbol, rule is the replacement 
+//symbol is the string of the original symbol, rule is A replacement symbol 
 const get_next_symbol = (symbol, rule) => {
   rule = rule.replaceAll(' ', ''); //remove all whitespaces for safety
   if(!rule.includes('(')) { //if there are no parameters
-    return {type: "rule"};
+    console.log({type: rule});
+    return {type: rule};
   }
   const firstIdx = rule.indexOf('(');
   const type = rule.substring(0, firstIdx);
   const lastIdx = rule.lastIndexOf(")");
   rule = rule.substring(firstIdx + 1, lastIdx);
-  console.log("TRIMMED RULE IS", type, rule);
+  //console.log("TRIMMED RULE IS", type, rule);
 
-  if(!params[type]) {
-    return;
-  }
   Object.keys(symbol).forEach((s)=>{
-    console.log(s, symbol[s]);
+    //console.log(s, symbol[s]);
     if(s != "type"){
-      rule = rule.replaceAll(s, symbol[s]); //replace all variables of the production with the fields of symbol 
+      rule = rule.replaceAll(s, JSON.stringify(symbol[s])); //replace all variables of the production with any fields of symbol 
     }
   })
   Object.keys(constants).forEach((s)=>{
     if(s != "num_gen"){
-      rule = rule.replaceAll(s, constants[s]); //replace all variables of the production with any constants
+      rule = rule.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
     }
   })
-  console.log("SUBBED RULE IS ", rule);
+  //console.log("SUBBED RULE IS ", rule, symbol);
 
   let stack = [];
   let cur_param = "";
@@ -369,8 +401,9 @@ const get_next_symbol = (symbol, rule) => {
 
   for(let i = 0; i < rule.length; i++) {
     if(rule[i] == ',' && stack.length == 0) { //if theres a comma that is not in a bracket, this is a parameter
-      console.log("PARAM",param_idx, "is", params[type][param_idx]);
-      new_symbol[params[type][param_idx]] = math.evaluate(cur_param);
+      //console.log("PARAM",param_idx, "is", params[type][param_idx]);
+      const val = math.evaluate(cur_param);
+      new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
       cur_param = "";
       param_idx++;
       continue;
@@ -384,23 +417,30 @@ const get_next_symbol = (symbol, rule) => {
     }
   }
   if(rule[rule.length - 1] != ',') {
-    console.log("PARAM",param_idx, "is", params[type][param_idx]);
-    new_symbol[params[type][param_idx]] = math.evaluate(cur_param);
+    console.log("PARAM TPYE: ",type,  params, new_symbol, cur_param); //ohh math.evaluate is fucking up 
+    const val = math.evaluate(cur_param);
+    new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
     cur_param = "";
     param_idx++;
   }
   console.log(new_symbol);
-
+  return(new_symbol);
 }
 
 const get_params = () => {
   Object.keys(productions).forEach((s)=>{
-    const type = s.substring(0, s.indexOf('('));
-    s = s.substring(s.indexOf('('));
-    s = s.replaceAll(' ','');
-    s = s.replaceAll('(', '');
-    s = s.replaceAll(')', '');
-    params[type] = s.split(',');
+    //console.log(s);
+    if(!s.includes('(')){
+      params[s] = [];
+    }
+    else {
+      const type = s.substring(0, s.indexOf('('));
+      s = s.substring(s.indexOf('('));
+      s = s.replaceAll(' ','');
+      s = s.replaceAll('(', '');
+      s = s.replaceAll(')', '');
+      params[type] = s.split(',');
+    }
   })
 }
 
@@ -496,7 +536,7 @@ function applyRule(symbol) {
   }
   //start a new polygon
   else if (symbol.type == "{") {
-    shape_stack.push([symbol.color, 1, symbol.id, symbol.parent_id, []]); 
+    shape_stack.push([last_state.pen[0], 1, symbol.id, symbol.parent_id, []]); 
   }
   //finish the current polygon
   else if (symbol.type == "}") {
@@ -506,6 +546,9 @@ function applyRule(symbol) {
   else if (symbol.type == ".") {
     const num_shapes = shape_stack.length;
     shape_stack[num_shapes - 1][4].push(last_state.pos);
+  }
+  else if (symbol.type == "'") {
+    last_state.pen[0] = symbol.color;
   }
   
 }
@@ -660,6 +703,11 @@ const Shape = ({color, wid, points, id, parent_id}) => {
 export default function Bush() {
     const canvas_ref = useRef(null);
 
+    //get_next_symbol({type: "A", len: 5}, "  Flower  (sin(len) * cos(len) + 1, ) ");
+    get_params();
+    console.log("ALL PARAMS",params);
+   // get_next_symbol({type: "A", len: 5, wid: 10}, "A(sin(len * sin(0)) + cos(len * cos(pi/2)) + 1 * delta,  (((wid + edge))))")
+
    /* rotate_u(state_stack[0], Math.PI / 3);
     rotate_l(state_stack[0], Math.PI / 6);
     rotate_h(state_stack[0], 170 * (Math.PI / 180));
@@ -667,7 +715,8 @@ export default function Bush() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up); */
 
-    symbols = [{type: "!", wid: 0.02}, {type: "plant"}];
+    symbols = [{type: "A"}];  
+    //symbols = [{type: "!", wid: 0.02}, {type: "plant"}];
     //symbols = [{type: "/", angle: delta * 3},{type: "!", wid: 0.02},{type: "F", len: edge * 2}, {type: "["}, {type: "&", angle: delta * 3}, {type: "F", len: edge}, {type: "]"}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
@@ -678,20 +727,13 @@ export default function Bush() {
     for(let i = 0; i < symbols.length; i ++) {
       let s = symbols[i];
       applyRule(s);
-    }
+    } 
 
+    console.log("FINAL SYMBOLS: ",symbols);
     console.log(objects);
     console.log(shapes);
 
-    const v1 = [5, 3, -10];
-    const v2 = [-4, -5, 7];
-    console.log(cross_product(v1, v2));
-
-    //get_next_symbol({type: "A", len: 5}, "  Flower  (sin(len) * cos(len) + 1, ) ");
-    get_params();
-    console.log(params);
-    get_next_symbol({type: "A", len: 5, wid: 10}, "A(sin(len * sin(0)) + cos(len * cos(pi/2)) + 1 * delta,  (((wid + edge))))")
-    
+    console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray());    
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
             <Canvas>
