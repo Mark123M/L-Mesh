@@ -28,7 +28,7 @@ let init_state = {
     heading: [0, 1, 0],
     left: [-1, 0, 0], 
     up: [0, 0, 1],
-    pen: ["#805333", 0.4, true], 
+    pen: [[128, 83, 51], 0.4, true], 
 }
 
 let state_stack = [init_state];
@@ -282,6 +282,7 @@ const generate_rules = (symbol) =>{
   }
 
   if(!(symbol_str in productions)) {
+    console.log("symbol not found in productions");
     return;
   }
   let new_symbols = [];
@@ -311,6 +312,8 @@ let constants = {
   "delta": 18,
   "edge": 0.4,
   "wid": 0.04,
+  "hr": 0.707,
+  "l_col": [0, 150, 0]
 }
 //"symbol" : "replacements"
 let productions = {
@@ -334,10 +337,10 @@ let productions = {
   "'(color)": [{rule: "'(color)", prob: 1.0}],
 
   //custom productions
-  "A": [{rule: "[ &(delta) !(wid) F(edge) L A ] /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) F(edge) L A ] /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) F(edge) L A ]", prob:1.0}],
-  "F(len)": [{rule: "S /(delta) /(delta) /(delta) /(delta) /(delta) F(edge)", prob:1.0}],
+  "A(len,wid)": [{rule: "[ &(delta) !(wid) F(len) L A(len,wid*hr) ] /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) F(len) L A(len,wid*hr) ] /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) F(len) L A(len,wid*hr) ]", prob:1.0}],
+  "F(len)": [{rule: "S /(delta) /(delta) /(delta) /(delta) /(delta) F(len)", prob:1.0}],
   "S": [{rule: "F(edge) L", prob: 1.0}],
-  "L": [{rule: "[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", prob: 1.0}],
+  "L": [{rule: "[ '(l_col) ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", prob: 1.0}],
 
 }
 //"name" : [param1, param2...]
@@ -370,6 +373,7 @@ let params = {
 //then evaluate the parameters and and create a new symbol. 
 //symbol is the string of the original symbol, rule is A replacement symbol 
 const get_next_symbol = (symbol, rule) => {
+  console.log("INITIAL RULE IS: ", rule);
   rule = rule.replaceAll(' ', ''); //remove all whitespaces for safety
   if(!rule.includes('(')) { //if there are no parameters
     console.log({type: rule});
@@ -379,7 +383,7 @@ const get_next_symbol = (symbol, rule) => {
   const type = rule.substring(0, firstIdx);
   const lastIdx = rule.lastIndexOf(")");
   rule = rule.substring(firstIdx + 1, lastIdx);
-  //console.log("TRIMMED RULE IS", type, rule);
+  console.log("TRIMMED RULE IS", type, rule);
 
   Object.keys(symbol).forEach((s)=>{
     //console.log(s, symbol[s]);
@@ -392,7 +396,7 @@ const get_next_symbol = (symbol, rule) => {
       rule = rule.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
     }
   })
-  //console.log("SUBBED RULE IS ", rule, symbol);
+  console.log("SUBBED RULE IS ", rule, symbol);
 
   let stack = [];
   let cur_param = "";
@@ -401,7 +405,7 @@ const get_next_symbol = (symbol, rule) => {
 
   for(let i = 0; i < rule.length; i++) {
     if(rule[i] == ',' && stack.length == 0) { //if theres a comma that is not in a bracket, this is a parameter
-      //console.log("PARAM",param_idx, "is", params[type][param_idx]);
+      console.log("PARAM TPYE: ",type,  params, new_symbol, cur_param); //ohh math.evaluate is fucking up 
       const val = math.evaluate(cur_param);
       new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
       cur_param = "";
@@ -409,10 +413,10 @@ const get_next_symbol = (symbol, rule) => {
       continue;
     }
     cur_param = cur_param + rule[i];
-    if(rule[i] == '(') {
+    if(rule[i] == '(' || rule[i] == '[') {
       stack.push(rule[i]);
     }
-    else if (rule[i] == ')') {
+    else if (rule[i] == ')' || rule[i] == ']') {
       stack.pop();
     }
   }
@@ -482,7 +486,7 @@ function applyRule(symbol) {
   else if (symbol.type == "F") {
     //each new object stores: position, direction vector, length, width/radius
     //draw object
-    objects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1], symbol.id, symbol.parent_id]);
+    objects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1], symbol.id, symbol.parent_id, last_state.pen[0]]);
     //translate state
     last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
   }
@@ -592,9 +596,13 @@ const rotate_h = (state, angle) =>{ //turn + -
   state.left = matrix_vector_mult(m, [0, ct, st]);
   state.up = matrix_vector_mult(m, [0, -st, ct]);
 }
+const rgbToHex = (rgb, type) => {
+  console.log("RGB VALUES ARE", rgb); //some rgb are undefined waht the fuck 
+  return "#" + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
+}
 
 //MAKE SURE NOT TO EDIT ANY VECTORS
-const Branch = ({pos, heading, radius, height, id, parent_id}) => {
+const Branch = ({pos, heading, radius, height, id, parent_id, color}) => {
     const meshRef = useRef(null);
     const {scene} = useThree();
 
@@ -641,10 +649,11 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
     return (
         <mesh ref = {meshRef} name = {id}> 
             <cylinderGeometry args={[radius, radius, height, 6]}/>
-            <meshStandardMaterial color="#805333"/>
+            <meshStandardMaterial color={rgbToHex(color, true)}/>
         </mesh>
     )
 }
+
 
 const Shape = ({color, wid, points, id, parent_id}) => {
   const meshRef = useRef(null);
@@ -695,7 +704,7 @@ const Shape = ({color, wid, points, id, parent_id}) => {
 
   return (
     <mesh mesh ref = {meshRef} name = {id} geometry={geometry}>
-      <meshPhongMaterial color={color} side={THREE.DoubleSide}/>
+      <meshPhongMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>
     </mesh>
   );
 }
@@ -715,7 +724,7 @@ export default function Bush() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up); */
 
-    symbols = [{type: "A"}];  
+    symbols = [{type: "A", len: 0.4, wid: 0.04}];  
     //symbols = [{type: "!", wid: 0.02}, {type: "plant"}];
     //symbols = [{type: "/", angle: delta * 3},{type: "!", wid: 0.02},{type: "F", len: edge * 2}, {type: "["}, {type: "&", angle: delta * 3}, {type: "F", len: edge}, {type: "]"}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
@@ -733,7 +742,26 @@ export default function Bush() {
     console.log(objects);
     console.log(shapes);
 
-    console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray());    
+    console.log(math.evaluate('[1, 2, 3]').toArray());
+    console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
+    
+    /*console.log("ALL THE BRANCHES (F)");
+    let f_count = 0, l_count = 0;
+    for(let i = 0; i < symbols.length; i++){
+      if(symbols[i].type == "F"){
+        //console.log(symbols[i]);
+        f_count++;
+      }
+    }
+    console.log("ALL THE LEAVES (L)");
+    for(let i = 0; i < symbols.length; i++){
+      if(symbols[i].type == "L") {
+        //console.log(symbols[i]);
+        l_count++;
+      }
+    }
+    console.log(f_count, l_count); */
+    
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
             <Canvas>
@@ -743,12 +771,12 @@ export default function Bush() {
                 <ambientLight />
                 <pointLight position={[10, 10, 10]} />
                 {objects.map((o)=>
-                  <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]}/>
+                  <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
                 )}
                 {shapes.map((s)=>
                   <Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
                 )}
-                <Branch pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
+                <Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
             </Canvas>
         </div>
     )

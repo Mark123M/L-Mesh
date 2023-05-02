@@ -10,12 +10,10 @@ import {
   theme,
 } from '@chakra-ui/react';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
-import Tree3D from './plants/Tree3D'
 import Flower from './plants/Flower'
 
 //import ThreeJs from './plants/old models/ThreeJs';
 import Pine3D from './plants/Pine3D';
-import Turtle from './plants/Turtle';
 import Monopodial from './plants/Monopodial';
 import Space3D from './plants/Space3D';
 import Ternary from './plants/Ternary';
