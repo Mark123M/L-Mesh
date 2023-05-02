@@ -36,23 +36,7 @@ let objects = [];
 let shapes = [];
 let shape_stack = []; //{ means start a new shape, } means push the shape into the shapes array to be drawn
 let symbols;
-let num_gens = 4;
-
-const b = 0.95;
-const e = 0.80;
-const c = 30;
-const d = 45;
-const h = 0.707;
-const i = 137.5
-const min = 0;
-
-//tolerance values for randomization
-const turn_t = 12;
-const pitch_t = 12;
-const roll_t = 20;
-
-const delta = 18;
-const edge = 0.4;
+let num_gens = 6;
 
 //given a symbol, return the next generation of replacement symbols based on productions.
 const generate_rules = (symbol) =>{
@@ -278,7 +262,7 @@ const generate_rules = (symbol) =>{
       symbol_str = symbol_str + params[symbol.type][i] + ',';
     }
     symbol_str = symbol_str + params[symbol.type][params[symbol.type].length - 1] + ')';
-    //console.log(symbol_str); //OHHH I HAD SOME UNDEFINED BEHAVIOR 
+    //console.log(symbol_str);
   }
 
   if(!(symbol_str in productions)) {
@@ -304,16 +288,17 @@ const generate_rules = (symbol) =>{
  
 }
 
-//NEW CHANGES 
+let axiom = {
 
+}
 //"name" : val
 let constants = {
   "num_gen": 5,
-  "delta": 18,
+  "delta": 22.5,
   "edge": 0.4,
   "wid": 0.04,
   "hr": 0.707,
-  "l_col": [0, 150, 0]
+  "col_rate": [0, 20, 0]
 }
 //"symbol" : "replacements"
 let productions = {
@@ -337,10 +322,10 @@ let productions = {
   "'(color)": [{rule: "'(color)", prob: 1.0}],
 
   //custom productions
-  "A(len,wid)": [{rule: "[ &(delta) !(wid) F(len) L A(len,wid*hr) ] /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) F(len) L A(len,wid*hr) ] /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) F(len) L A(len,wid*hr) ]", prob:1.0}],
-  "F(len)": [{rule: "S /(delta) /(delta) /(delta) /(delta) /(delta) F(len)", prob:1.0}],
-  "S": [{rule: "F(edge) L", prob: 1.0}],
-  "L": [{rule: "[ '(l_col) ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", prob: 1.0}],
+  "A(len,wid,lcol,bcol)": [{rule: "[ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ]", prob:1.0}],
+  "F(len,lcol)": [{rule: "S(lcol) /(delta) /(delta) /(delta) /(delta) /(delta) F(len,lcol)", prob:1.0}],
+  "S(lcol)": [{rule: "F(edge,lcol) '(lcol) L", prob: 1.0}],
+  "L": [{rule: "[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", prob: 1.0}],
 
 }
 //"name" : [param1, param2...]
@@ -364,16 +349,9 @@ let params = {
   "!": ["wid"],
   "'": ["color"],
 }
-//replacement symbol string is split by space: so A-> F(10) A(15) / / /
-//rule is a string representation of a symbol and its next params
-//ex. "F(5 * sin(log(k, h)) + 5, expt(4, 5))" 
-//returns a symbol object {type: "name", param1: x, param2: y...};
 
-//then replace each occuring instance of the parameters of the symbol in the rule string
-//then evaluate the parameters and and create a new symbol. 
-//symbol is the string of the original symbol, rule is A replacement symbol 
 const get_next_symbol = (symbol, rule) => {
-  console.log("INITIAL RULE IS: ", rule);
+  //console.log("INITIAL RULE IS: ", rule);
   rule = rule.replaceAll(' ', ''); //remove all whitespaces for safety
   if(!rule.includes('(')) { //if there are no parameters
     console.log({type: rule});
@@ -383,7 +361,7 @@ const get_next_symbol = (symbol, rule) => {
   const type = rule.substring(0, firstIdx);
   const lastIdx = rule.lastIndexOf(")");
   rule = rule.substring(firstIdx + 1, lastIdx);
-  console.log("TRIMMED RULE IS", type, rule);
+  //console.log("TRIMMED RULE IS", type, rule);
 
   Object.keys(symbol).forEach((s)=>{
     //console.log(s, symbol[s]);
@@ -396,7 +374,7 @@ const get_next_symbol = (symbol, rule) => {
       rule = rule.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
     }
   })
-  console.log("SUBBED RULE IS ", rule, symbol);
+  //console.log("SUBBED RULE IS ", rule, symbol);
 
   let stack = [];
   let cur_param = "";
@@ -405,7 +383,7 @@ const get_next_symbol = (symbol, rule) => {
 
   for(let i = 0; i < rule.length; i++) {
     if(rule[i] == ',' && stack.length == 0) { //if theres a comma that is not in a bracket, this is a parameter
-      console.log("PARAM TPYE: ",type,  params, new_symbol, cur_param); //ohh math.evaluate is fucking up 
+      //console.log("PARAM TPYE: ",type,  params, new_symbol, cur_param); //ohh math.evaluate is fucking up 
       const val = math.evaluate(cur_param);
       new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
       cur_param = "";
@@ -421,13 +399,13 @@ const get_next_symbol = (symbol, rule) => {
     }
   }
   if(rule[rule.length - 1] != ',') {
-    console.log("PARAM TPYE: ",type,  params, new_symbol, cur_param); //ohh math.evaluate is fucking up 
+    //console.log("PARAM TPYE: ",type,  params, new_symbol, cur_param); //ohh math.evaluate is fucking up 
     const val = math.evaluate(cur_param);
     new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
     cur_param = "";
     param_idx++;
   }
-  console.log(new_symbol);
+  //console.log(new_symbol);
   return(new_symbol);
 }
 
@@ -597,7 +575,7 @@ const rotate_h = (state, angle) =>{ //turn + -
   state.up = matrix_vector_mult(m, [0, -st, ct]);
 }
 const rgbToHex = (rgb, type) => {
-  console.log("RGB VALUES ARE", rgb); //some rgb are undefined waht the fuck 
+  //console.log("RGB VALUES ARE", rgb); //some rgb are undefined waht the fuck 
   return "#" + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
 }
 
@@ -630,20 +608,17 @@ const Branch = ({pos, heading, radius, height, id, parent_id, color}) => {
       meshRef.current.setRotationFromQuaternion(local_q);
       //meshRef.current.rotation.set(Math.PI/6, 0, 0);
       //console.log((Math.random() * 2 * pitch_t) - pitch_t);
-
     }, [meshRef]);
 
     let t;
     useFrame((state)=>{
-        t = state.clock.getElapsedTime();
-        if(!meshRef.current){
-            return;
-        }
-
+      t = state.clock.getElapsedTime();
+      if(!meshRef.current){
+          return;
+      }
       // meshRef.current.rotateX(Math.sin(t*2) / 2000);
        //meshRef.current.rotateY(Math.sin(t) / 3000);
       // meshRef.current.rotateZ(Math.sin(t * 3) / 2000);
-       //console.log(t);
     })
 
     return (
@@ -691,17 +666,11 @@ const Shape = ({color, wid, points, id, parent_id}) => {
         positions.setZ(i, points[positions.count - i][2]);
       }
     }
-    //console.log();
 
     positions.setZ(0, points[0][2]);
     mesh_geometry.setAttribute('position', positions);
     setGeometry(mesh_geometry);
-    //console.log(points, points.length, mesh_geometry.getAttribute('position'), ShapeUtils.isClockWise(mesh_shape.getPoints()));
-
-    
   }, [meshRef]); 
-  
-
   return (
     <mesh mesh ref = {meshRef} name = {id} geometry={geometry}>
       <meshPhongMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>
@@ -711,22 +680,13 @@ const Shape = ({color, wid, points, id, parent_id}) => {
 
 export default function Bush() {
     const canvas_ref = useRef(null);
-
-    //get_next_symbol({type: "A", len: 5}, "  Flower  (sin(len) * cos(len) + 1, ) ");
     get_params();
     console.log("ALL PARAMS",params);
    // get_next_symbol({type: "A", len: 5, wid: 10}, "A(sin(len * sin(0)) + cos(len * cos(pi/2)) + 1 * delta,  (((wid + edge))))")
 
-   /* rotate_u(state_stack[0], Math.PI / 3);
-    rotate_l(state_stack[0], Math.PI / 6);
-    rotate_h(state_stack[0], 170 * (Math.PI / 180));
-    console.log(state_stack[0].heading);
-    console.log(state_stack[0].left);
-    console.log(state_stack[0].up); */
-
-    symbols = [{type: "A", len: 0.4, wid: 0.04}];  
+    symbols = [{type: "A", len: 0.4, wid: 0.04, lcol: [0, 80, 0], bcol: [128, 83, 51]}];  
     //symbols = [{type: "!", wid: 0.02}, {type: "plant"}];
-    //symbols = [{type: "/", angle: delta * 3},{type: "!", wid: 0.02},{type: "F", len: edge * 2}, {type: "["}, {type: "&", angle: delta * 3}, {type: "F", len: edge}, {type: "]"}];
+    //symbols = [{type: "/", angle: 18 * 2},{type: "!", wid: 0.02},{type: "F", len: 0.4 * 2}, {type: "["}, {type: "&", angle: 18 * 3}, {type: "F", len: 0.4}, {type: "]"}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();
@@ -745,22 +705,6 @@ export default function Bush() {
     console.log(math.evaluate('[1, 2, 3]').toArray());
     console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
     
-    /*console.log("ALL THE BRANCHES (F)");
-    let f_count = 0, l_count = 0;
-    for(let i = 0; i < symbols.length; i++){
-      if(symbols[i].type == "F"){
-        //console.log(symbols[i]);
-        f_count++;
-      }
-    }
-    console.log("ALL THE LEAVES (L)");
-    for(let i = 0; i < symbols.length; i++){
-      if(symbols[i].type == "L") {
-        //console.log(symbols[i]);
-        l_count++;
-      }
-    }
-    console.log(f_count, l_count); */
     
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
