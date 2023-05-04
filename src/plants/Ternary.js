@@ -3,6 +3,8 @@ import { PerspectiveCamera, OrbitControls } from "@react-three/drei";
 import {useRef, useEffect} from "react";
 import * as THREE from "three"
 import { v4 as uuidv4 } from "uuid";
+import React from 'react'
+import ReactDOM from 'react-dom'
 
 //3D turtle interpreter
 //standard basis vectors

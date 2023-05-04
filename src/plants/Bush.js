@@ -5,6 +5,8 @@ import * as THREE from "three"
 import { v4 as uuidv4 } from "uuid";
 import { useThree } from "@react-three/fiber";
 import { ShapeUtils } from "three";
+import React from 'react'
+import ReactDOM from 'react-dom'
 
 //3D turtle interpreter
 //standard basis vectors

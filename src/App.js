@@ -1,15 +1,4 @@
 import React from 'react';
-import {
-  ChakraProvider,
-  Box,
-  Text,
-  Link,
-  VStack,
-  Code,
-  Grid,
-  theme,
-} from '@chakra-ui/react';
-import { ColorModeSwitcher } from './ColorModeSwitcher';
 import Flower from './plants/Flower'
 
 //import ThreeJs from './plants/old models/ThreeJs';
@@ -20,11 +9,13 @@ import Ternary from './plants/Ternary';
 import Masterpiece from './plants/Masterpiece';
 import Bush from './plants/Bush';
 
+import Editor from './Editor';
+
 function App() {
   return (
-    <ChakraProvider theme={theme}>
-      <ColorModeSwitcher justifySelf="flex-end" /> 
-      <Flower/>
+    <div>
+      <Editor/>
+      {/*<Flower/> */}
       {/*<Bush/>*/}
       {/*<Masterpiece/> */}
   
@@ -46,7 +37,7 @@ function App() {
       <Tree/>
       <Turtle/>  */}
 
-    </ChakraProvider>
+    </div>
   );
 }
 

@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 import { useThree } from "@react-three/fiber";
 import { ShapeUtils } from "three";
 import * as math from "mathjs"
+import React from 'react'
+import ReactDOM from 'react-dom'
 
 //3D turtle interpreter
 //standard basis vectors
@@ -283,23 +285,23 @@ const generate_rules = (symbol) =>{
     new_symbols.push(get_next_symbol(symbol, s));
 
   })*/
-  console.log("NEW SYMBOLS", new_symbols);
+  //console.log("NEW SYMBOLS", new_symbols);
   return chooseOne(new_symbols);
  
 }
 
-let axiom = {
-
-}
 //"name" : val
 let constants = {
-  "num_gen": 5,
+  "num_gens": 5,
   "delta": 22.5,
   "edge": 0.4,
-  "wid": 0.04,
+  "init_wid": 0.04,
   "hr": 0.707,
-  "col_rate": [0, 20, 0]
+  "col_rate": [0, 15, 0]
 }
+
+let axiom = "A(edge,init_wid,[0,80,0],[128,83,51])"
+
 //"symbol" : "replacements"
 let productions = {
   //default productions
@@ -350,11 +352,15 @@ let params = {
   "'": ["color"],
 }
 
+const get_axiom = (axiom) =>{
+  symbols = axiom.split(" ").map((s)=>get_next_symbol(null, s));
+}
+
 const get_next_symbol = (symbol, rule) => {
   //console.log("INITIAL RULE IS: ", rule);
   rule = rule.replaceAll(' ', ''); //remove all whitespaces for safety
   if(!rule.includes('(')) { //if there are no parameters
-    console.log({type: rule});
+    //console.log({type: rule});
     return {type: rule};
   }
   const firstIdx = rule.indexOf('(');
@@ -363,12 +369,15 @@ const get_next_symbol = (symbol, rule) => {
   rule = rule.substring(firstIdx + 1, lastIdx);
   //console.log("TRIMMED RULE IS", type, rule);
 
-  Object.keys(symbol).forEach((s)=>{
-    //console.log(s, symbol[s]);
-    if(s != "type"){
-      rule = rule.replaceAll(s, JSON.stringify(symbol[s])); //replace all variables of the production with any fields of symbol 
-    }
-  })
+  if(symbol != null) {
+    Object.keys(symbol).forEach((s)=>{
+      //console.log(s, symbol[s]);
+      if(s != "type"){
+        rule = rule.replaceAll(s, JSON.stringify(symbol[s])); //replace all variables of the production with any fields of symbol 
+      }
+    })
+  }
+
   Object.keys(constants).forEach((s)=>{
     if(s != "num_gen"){
       rule = rule.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
@@ -678,13 +687,15 @@ const Shape = ({color, wid, points, id, parent_id}) => {
   );
 }
 
-export default function Bush() {
+export default function Bush({constants, axiomkk, productions}) {
     const canvas_ref = useRef(null);
     get_params();
     console.log("ALL PARAMS",params);
    // get_next_symbol({type: "A", len: 5, wid: 10}, "A(sin(len * sin(0)) + cos(len * cos(pi/2)) + 1 * delta,  (((wid + edge))))")
 
-    symbols = [{type: "A", len: 0.4, wid: 0.04, lcol: [0, 80, 0], bcol: [128, 83, 51]}];  
+    get_axiom(axiom);
+    console.log("INITIAL SYMBOLS", symbols);
+    //symbols = [{type: "A", len: 0.4, wid: 0.04, lcol: [0, 80, 0], bcol: [128, 83, 51]}];  
     //symbols = [{type: "!", wid: 0.02}, {type: "plant"}];
     //symbols = [{type: "/", angle: 18 * 2},{type: "!", wid: 0.02},{type: "F", len: 0.4 * 2}, {type: "["}, {type: "&", angle: 18 * 3}, {type: "F", len: 0.4}, {type: "]"}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
@@ -702,10 +713,9 @@ export default function Bush() {
     console.log(objects);
     console.log(shapes);
 
-    console.log(math.evaluate('[1, 2, 3]').toArray());
-    console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
-    
-    
+    //console.log(math.evaluate('[1, 2, 3]').toArray());
+    //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
+  
     return (
         <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
             <Canvas>
