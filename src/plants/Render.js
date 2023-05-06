@@ -34,229 +34,14 @@ let init_state = {
 }
 
 let state_stack = [init_state];
-let objects = [];
-let shapes = [];
 let shape_stack = []; //{ means start a new shape, } means push the shape into the shapes array to be drawn
 let symbols;
 let num_gens = 6;
 
 //given a symbol, return the next generation of replacement symbols based on productions.
-const generate_rules = (symbol) =>{
- /* if (symbol.type == "plant") {
-    const ruleSet = [
-      {rule: [
-        {type: "internode"},
-        {type: "+", angle: delta},
-
-        {type: "["},
-        {type: "plant"},
-        {type: "+", angle: delta},
-        {type: "flower"},
-        {type: "]"},
-
-        {type: "-", angle: delta},
-        {type: "-", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-
-        {type: "["},
-        {type: "-", angle: delta},
-        {type: "-", angle: delta},
-        {type: "leaf"},
-        {type: "]"},
-
-        {type: "internode"},
-
-        {type: "["},
-        {type: "+", angle: delta},
-        {type: "+", angle: delta},
-        {type: "leaf"},
-        {type: "]"},
-
-        {type: "-", angle: delta},
-        {type: "["},
-        {type: "plant"},
-        {type: "flower"},
-        {type: "]"},
-
-        {type: "+", angle: delta},
-        {type: "+", angle: delta},
-        {type: "plant"},
-        {type: "flower"},
-
-      ], prob: 1.0},
-    ]
-    return chooseOne(ruleSet);
-  }
-  else if (symbol.type == "internode") {
-    const ruleSet = [
-      {rule: [
-        {type: "F", len: edge},
-        {type: "seg"},
-
-        {type: "["},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "&", angle: delta},
-        {type: "&", angle: delta},
-        {type: "leaf"},
-        {type: "]"},
-
-        {type: "["},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "^", angle: delta},
-        {type: "^", angle: delta},
-        {type: "leaf"},
-        {type: "]"},
-
-        {type: "F", len: edge},
-        {type: "seg"},
-
-      ], prob: 1.0},
-    ]
-    return chooseOne(ruleSet);
-  } 
-  else if (symbol.type == "seg") {
-    const ruleSet = [
-      {rule: [
-        {type: "seg"},
-        {type: "F", len: edge},
-        {type: "seg"},
-      ], prob: 1.0},
-    ]
-    return chooseOne(ruleSet);
-  }  
-  else if (symbol.type == "leaf") {
-    const ruleSet = [
-      {rule: [
-        {type: "["},
-        {type: "'"},
-
-        {type: "{", color: "green"},
-        {type: "."},
-        {type: "+", angle: delta},
-        {type: "f", len: edge},
-        {type: "."},
-        {type: "-", angle: delta},
-        {type: "f", len: edge},
-        {type: "f", len: edge},
-        {type: "."},
-        {type: "-", angle: delta},
-        {type: "f", len: edge},
-
-        {type: "+", angle: delta},
-        {type: "|", angle: delta},
-
-        {type: "."},
-        {type: "+", angle: delta},
-        {type: "f", len: edge},
-        {type: "."},
-        {type: "-", angle: delta},
-        {type: "f", len: edge},
-        {type: "f", len: edge},
-        {type: "."},
-        {type: "-", angle: delta},
-        {type: "f", len: edge},
-        {type: "}"},
-        {type: "]"},
-        
-      ], prob: 1.0},
-    ]
-    return chooseOne(ruleSet);
-  }
-  else if (symbol.type == "flower") {
-    const ruleSet = [
-      {rule: [
-        {type: "["},
-        {type: "^", angle: delta},
-        {type: "^", angle: delta},
-        {type: "^", angle: delta},
-        {type: "pedicel"},
-        {type: "'"},
-        {type: "/", angle: delta},
-        {type: "wedge"},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "wedge"},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "wedge"},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "wedge"},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "/", angle: delta},
-        {type: "wedge"},
-        {type: "]"},
-        
-      ], prob: 1.0},
-    ]
-    return chooseOne(ruleSet);
-  }
-  else if (symbol.type == "pedicel") {
-    const ruleSet = [
-      {rule: [
-        {type: "F", len: edge},
-        {type: "F", len: edge},
-      ], prob: 1.0},
-    ]
-    return chooseOne(ruleSet);
-  }
-  else if (symbol.type == "wedge") {
-    const ruleSet = [
-      {rule: [
-        {type: "["},
-        {type: "'"},
-        {type: "^", angle: delta},
-        {type: "F", len: edge},
-        {type: "]"},
-
-        {type: "["},
-        {type: "{", color: "orange"},
-        {type: "."},
-        {type: "&", angle: delta},
-        {type: "&", angle: delta},
-        {type: "&", angle: delta},
-        {type: "&", angle: delta},
-        {type: "-", angle: delta},
-        {type: "-", angle: delta},
-        {type: "-", angle: delta},
-        {type: "f", len: edge * 2},
-        {type: "."},
-        {type: "+", angle: delta},
-        {type: "+", angle: delta},
-        {type: "+", angle: delta},
-        {type: "f", len: edge * 2},
-
-        {type: "."},
-        {type: "|"},
-        {type: "-", angle: delta},
-        {type: "-", angle: delta},
-        {type: "-", angle: delta},
-        {type: "f", len: edge * 2},
-        {type: "."},
-        {type: "+", angle: delta},
-        {type: "+", angle: delta},
-        {type: "+", angle: delta},
-        {type: "f", len: edge * 2},
-        {type: "}"},
-        {type: "]"},
-
-      ], prob: 1.0},
-    ]
-    return chooseOne(ruleSet);
-  } */
+const generate_rules = (symbol, productions, constants) =>{
   let symbol_str = symbol.type;
-  
+
   if(params[symbol.type].length > 0) {
     symbol_str = symbol_str + '(';
     //console.log("PARAMS OF CURRENT SYMBOL",params[symbol.type]);
@@ -275,7 +60,7 @@ const generate_rules = (symbol) =>{
   productions[symbol_str].forEach((r)=>{
     new_symbols.push(
       {
-        rule: r.rule.split(" ").map((s)=>get_next_symbol(symbol, s)),
+        rule: r.rule.split(" ").map((s)=>get_next_symbol(symbol, s, constants)),
         prob: r.prob
       }
     )
@@ -291,37 +76,20 @@ const generate_rules = (symbol) =>{
 }
 
 //"name" : val
-let constants = {
+/*let constants = {
   "num_gens": 5,
   "delta": 22.5,
   "edge": 0.4,
   "init_wid": 0.04,
   "hr": 0.707,
   "col_rate": [0, 15, 0]
-}
+} */
 
-let axiom = "A(edge,init_wid,[0,80,0],[128,83,51])"
+//let axiom = "A(edge,init_wid,[0,80,0],[128,83,51])"
 
 //"symbol" : "replacements"
-let productions = {
+/*let productions = {
   //default productions
-  "F(len)": [{rule: "F(len)", prob: 1.0}],  
-  "f(len)": [{rule: "f(len)", prob: 1.0}],
-  "+(angle)": [{rule: "+(angle)", prob: 1.0}],
-  "-(angle)": [{rule: "-(angle)", prob: 1.0}],
-  "^(angle)": [{rule: "^(angle)", prob: 1.0}],
-  "&(angle)": [{rule: "&(angle)", prob: 1.0}],
-  "\\(angle)": [{rule: "\\(angle)", prob: 1.0}],
-  "/(angle)": [{rule: "/(angle)", prob: 1.0}],
-  "|": [{rule: "|", prob: 1.0}],
-  "$": [{rule: "$", prob: 1.0}],
-  "[": [{rule: "[", prob: 1.0}],
-  "]": [{rule: "]", prob: 1.0}],
-  "{": [{rule: "{", prob: 1.0}],
-  ".": [{rule: ".", prob: 1.0}],
-  "}": [{rule: "}", prob: 1.0}],
-  "!(wid)": [{rule: "!(wid)", prob: 1.0}],
-  "'(color)": [{rule: "'(color)", prob: 1.0}],
 
   //custom productions
   "A(len,wid,lcol,bcol)": [{rule: "[ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ]", prob:1.0}],
@@ -329,7 +97,7 @@ let productions = {
   "S(lcol)": [{rule: "F(edge,lcol) '(lcol) L", prob: 1.0}],
   "L": [{rule: "[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", prob: 1.0}],
 
-}
+} */
 //"name" : [param1, param2...]
 //SHOULD INCLUDE PRIMITIVE COMMANDS ALWAYS, LIKE F, f, !, [, ], {, }, /, \
 let params = {
@@ -352,11 +120,11 @@ let params = {
   "'": ["color"],
 }
 
-const get_axiom = (axiom) =>{
-  symbols = axiom.split(" ").map((s)=>get_next_symbol(null, s));
+const get_axiom = (axiom, constants) =>{
+  symbols = axiom.split(" ").map((s)=>get_next_symbol(null, s, constants));
 }
 
-const get_next_symbol = (symbol, rule) => {
+const get_next_symbol = (symbol, rule, constants) => {
   //console.log("INITIAL RULE IS: ", rule);
   rule = rule.replaceAll(' ', ''); //remove all whitespaces for safety
   if(!rule.includes('(')) { //if there are no parameters
@@ -377,7 +145,7 @@ const get_next_symbol = (symbol, rule) => {
       }
     })
   }
-
+  console.log("PRINTING CONSTANTS", constants);
   Object.keys(constants).forEach((s)=>{
     if(s != "num_gen"){
       rule = rule.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
@@ -418,7 +186,7 @@ const get_next_symbol = (symbol, rule) => {
   return(new_symbol);
 }
 
-const get_params = () => {
+const get_params = (productions) => {
   Object.keys(productions).forEach((s)=>{
     //console.log(s);
     if(!s.includes('(')){
@@ -447,12 +215,12 @@ function chooseOne(ruleSet) {
   return "";
 }  
 
-function generate() {
+function generate(productions, constants) {
   let next = [];
 
   for(let i = 0; i < symbols.length; i++) {
     let s = symbols[i];
-    let s2 = generate_rules(s);
+    let s2 = generate_rules(s, productions, constants);
     if(s2){
       next = next.concat(s2);
     }
@@ -464,85 +232,6 @@ function generate() {
   return next;
 }
 
-//HERE WE FUCKING GOOOO
-function applyRule(symbol) {
-  let last_state = state_stack[state_stack.length - 1];
-  if(symbol.type == "!") {
-    last_state.pen[1] = symbol.wid;
-  }
-  else if (symbol.type == "F") {
-    //each new object stores: position, direction vector, length, width/radius
-    //draw object
-    objects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1], symbol.id, symbol.parent_id, last_state.pen[0]]);
-    //translate state
-    last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
-  }
-  else if (symbol.type == "f") {
-    //translate state
-    last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
-  }
-  else if (symbol.type == "+") {
-    //p5.rotateZ(Math.PI/180 * -1 * (symbol.angle));
-    rotate_u(last_state, (Math.PI / 180) * -(symbol.angle));
-  }
-  else if (symbol.type == "-") {
-    // p5.rotateZ(Math.PI/180 * (symbol.angle));
-    rotate_u(last_state, (Math.PI / 180) * (symbol.angle));
-   }
-
-  else if (symbol.type == "&") {
-    rotate_l(last_state, (Math.PI / 180) * (symbol.angle)); 
-  }
-  else if (symbol.type == "^") {
-    rotate_l(last_state, (Math.PI / 180) * -(symbol.angle));  
-  }
-  else if (symbol.type == "\\") {
-    // p5.rotateY(Math.PI/180 * (symbol.angle));
-    rotate_h(last_state, (Math.PI / 180) * -(symbol.angle));
-  }
-  else if (symbol.type == "/") {
-    rotate_h(last_state, (Math.PI / 180) * (symbol.angle));
-  }
-  else if (symbol.type == '|') {
-    rotate_u(last_state, Math.PI);
-  }
-  else if (symbol.type == '$') {
-    //L = (V x H) / ||V x H||
-    last_state.left = cross_product([0, 1, 0], last_state.heading);
-    last_state.left = scalar_mult((1 / vector_len(last_state.left)), last_state.left);
-    //U = H x L
-    last_state.up = cross_product(last_state.heading, last_state.left); 
-
-    //rotate_u(last_state, Math.PI);
-  }
-  else if (symbol.type == "[") {
-    let new_state = JSON.parse(JSON.stringify(last_state));
-    state_stack.push(new_state);
-  }
-  else if (symbol.type == "]") {
-    state_stack.pop();
-  }
-  else if (symbol.type == "L") {
-    //drawLeaf(symbol.sz);
-  }
-  //start a new polygon
-  else if (symbol.type == "{") {
-    shape_stack.push([last_state.pen[0], 1, symbol.id, symbol.parent_id, []]); 
-  }
-  //finish the current polygon
-  else if (symbol.type == "}") {
-    shapes.push(shape_stack.pop());
-  }
-  //draw a vertex for the current polygon
-  else if (symbol.type == ".") {
-    const num_shapes = shape_stack.length;
-    shape_stack[num_shapes - 1][4].push(last_state.pos);
-  }
-  else if (symbol.type == "'") {
-    last_state.pen[0] = symbol.color;
-  }
-  
-}
 
 const matrix_vector_mult = (m, v) =>{
   return vector_add(scalar_mult(v[0], m.heading), vector_add(scalar_mult(v[1], m.left), scalar_mult(v[2], m.up)));
@@ -687,51 +376,143 @@ const Shape = ({color, wid, points, id, parent_id}) => {
   );
 }
 
-export default function Bush({constants, axiomkk, productions}) {
-    const canvas_ref = useRef(null);
-    get_params();
-    console.log("ALL PARAMS",params);
-   // get_next_symbol({type: "A", len: 5, wid: 10}, "A(sin(len * sin(0)) + cos(len * cos(pi/2)) + 1 * delta,  (((wid + edge))))")
+const Render = ({axiom, constants, productions}) => {
+  const[objects, setObjects] = useState([]);
+  const[shapes, setShapes] = useState([]);
+  const canvas_ref = useRef(null);
 
-    get_axiom(axiom);
+  //HERE WE FUCKING GOOOO
+  const applyRule = (symbol) => {
+    let last_state = state_stack[state_stack.length - 1];
+    if(symbol.type == "!") {
+      last_state.pen[1] = symbol.wid;
+    }
+    else if (symbol.type == "F") {
+      //each new object stores: position, direction vector, length, width/radius
+      //draw object
+      objects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1], symbol.id, symbol.parent_id, last_state.pen[0]]);
+      //translate state
+      last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
+    }
+    else if (symbol.type == "f") {
+      //translate state
+      last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
+    }
+    else if (symbol.type == "+") {
+      //p5.rotateZ(Math.PI/180 * -1 * (symbol.angle));
+      rotate_u(last_state, (Math.PI / 180) * -(symbol.angle));
+    }
+    else if (symbol.type == "-") {
+      // p5.rotateZ(Math.PI/180 * (symbol.angle));
+      rotate_u(last_state, (Math.PI / 180) * (symbol.angle));
+    }
+
+    else if (symbol.type == "&") {
+      rotate_l(last_state, (Math.PI / 180) * (symbol.angle)); 
+    }
+    else if (symbol.type == "^") {
+      rotate_l(last_state, (Math.PI / 180) * -(symbol.angle));  
+    }
+    else if (symbol.type == "\\") {
+      // p5.rotateY(Math.PI/180 * (symbol.angle));
+      rotate_h(last_state, (Math.PI / 180) * -(symbol.angle));
+    }
+    else if (symbol.type == "/") {
+      rotate_h(last_state, (Math.PI / 180) * (symbol.angle));
+    }
+    else if (symbol.type == '|') {
+      rotate_u(last_state, Math.PI);
+    }
+    else if (symbol.type == '$') {
+      //L = (V x H) / ||V x H||
+      last_state.left = cross_product([0, 1, 0], last_state.heading);
+      last_state.left = scalar_mult((1 / vector_len(last_state.left)), last_state.left);
+      //U = H x L
+      last_state.up = cross_product(last_state.heading, last_state.left); 
+
+      //rotate_u(last_state, Math.PI);
+    }
+    else if (symbol.type == "[") {
+      let new_state = JSON.parse(JSON.stringify(last_state));
+      state_stack.push(new_state);
+    }
+    else if (symbol.type == "]") {
+      state_stack.pop();
+    }
+    else if (symbol.type == "L") {
+      //drawLeaf(symbol.sz);
+    }
+    //start a new polygon
+    else if (symbol.type == "{") {
+      shape_stack.push([last_state.pen[0], 1, symbol.id, symbol.parent_id, []]); 
+    }
+    //finish the current polygon
+    else if (symbol.type == "}") {
+      shapes.push(shape_stack.pop());
+    }
+    //draw a vertex for the current polygon
+    else if (symbol.type == ".") {
+      const num_shapes = shape_stack.length;
+      shape_stack[num_shapes - 1][4].push(last_state.pos);
+    }
+    else if (symbol.type == "'") {
+      last_state.pen[0] = symbol.color;
+    }
+  }
+
+  
+  useEffect(()=>{
+    console.log("PRINTING ALL PROPS");
+    console.log(axiom);
+    console.log(constants);
+    console.log(productions);
+
+    get_params(productions);
+    console.log("All params:",params);
+
+    get_axiom(axiom, constants);
     console.log("INITIAL SYMBOLS", symbols);
+        
     //symbols = [{type: "A", len: 0.4, wid: 0.04, lcol: [0, 80, 0], bcol: [128, 83, 51]}];  
     //symbols = [{type: "!", wid: 0.02}, {type: "plant"}];
     //symbols = [{type: "/", angle: 18 * 2},{type: "!", wid: 0.02},{type: "F", len: 0.4 * 2}, {type: "["}, {type: "&", angle: 18 * 3}, {type: "F", len: 0.4}, {type: "]"}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
-        symbols = generate();
+        symbols = generate(productions, constants);
         //  console.log(symbols, "NEW SYMBOLS");
         console.log(symbols);
     }
     for(let i = 0; i < symbols.length; i ++) {
       let s = symbols[i];
-      applyRule(s);
+      applyRule(s, objects, shapes);
     } 
 
     console.log("FINAL SYMBOLS: ",symbols);
     console.log(objects);
-    console.log(shapes);
+    console.log(shapes); 
+  }, [axiom, constants, productions])
 
-    //console.log(math.evaluate('[1, 2, 3]').toArray());
-    //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
-  
-    return (
-        <div ref={canvas_ref} style={{position: "fixed", top: "0", left: "0", bottom: "0", right: "0", overflow: "auto"} }>
-            <Canvas>
-                <PerspectiveCamera makeDefault position={[0, 0, 10]} />
-                {<OrbitControls enableZoom enablePan enableRotate/>}
-                <axesHelper renderOrder={1} scale={[5, 5, 5]}/>
-                <ambientLight />
-                <pointLight position={[10, 10, 10]} />
-                {objects.map((o)=>
-                  <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
-                )}
-                {shapes.map((s)=>
-                  <Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
-                )}
-                <Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
-            </Canvas>
-        </div>
-    )
+  //console.log(math.evaluate('[1, 2, 3]').toArray());
+  //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
+
+  return (
+    <div ref={canvas_ref} style={{top: "0", bottom: "0", right: "0", width: "100%"} }>
+        <Canvas>
+            <PerspectiveCamera makeDefault position={[4, 4, 10]} />
+            <OrbitControls enableZoom enablePan enableRotate/>
+            <axesHelper renderOrder={1} scale={[5, 5, 5]}/>
+            <ambientLight />
+            <pointLight position={[10, 10, 10]} />
+            {objects.map((o)=>
+              <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
+            )}
+            {shapes.map((s)=>
+              <Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
+            )}
+            <Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
+        </Canvas>
+    </div>
+  )
 }
+
+export default Render;

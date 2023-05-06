@@ -1,5 +1,5 @@
 import React from 'react';
-import Flower from './plants/Flower'
+//import Flower from './plants/Flower'
 
 //import ThreeJs from './plants/old models/ThreeJs';
 import Pine3D from './plants/Pine3D';
