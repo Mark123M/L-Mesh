@@ -1,9 +1,10 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { PerspectiveCamera, OrbitControls } from "@react-three/drei";
-import {useRef, useEffect} from "react";
+import {useRef, useEffect, useState} from "react";
 import * as THREE from "three"
 import { v4 as uuidv4 } from "uuid";
 import { useThree } from "@react-three/fiber";
+import { ShapeUtils } from "three";
 import React from 'react'
 import ReactDOM from 'react-dom'
 
@@ -17,6 +18,27 @@ let local_q = new THREE.Quaternion();
 let world_q = new THREE.Quaternion();
 const ey = new THREE.Vector3(0, 1, 0);
 
+let mesh_shape = new THREE.Shape();
+let mesh_geometry;
+let positions;
+
+/*mesh_shape.moveTo(0, 0);
+mesh_shape.lineTo(1, 0);
+mesh_shape.lineTo(1, 1);
+mesh_shape.lineTo(0, 1);
+mesh_shape.lineTo(0, 0);
+
+const square = new THREE.ShapeGeometry(mesh_shape);
+const pos = square.getAttribute('position');
+console.log("POSITION OF SQUARE",pos);
+//for(let i = 0; i < pos.count; i++) {
+//  pos.setZ(i, Math.random());
+//}
+square.setAttribute('position', pos);  */
+
+
+const hiearchy_on = false;
+
 let init_state = {
     pos: [0, 0, 0],
     heading: [0, 1, 0],
@@ -25,11 +47,20 @@ let init_state = {
     pen: ["#805333", 0.4, true], 
 }
 
+/*
+let shape = {
+  verticies:
+  width: 
+  color: 
+}
+*/
+
 let state_stack = [init_state];
 let objects = [];
 let shapes = [];
+let shape_stack = []; //{ means start a new shape, } means push the shape into the shapes array to be drawn
 let symbols;
-let num_gens = 10;
+let num_gens = 6;
 
 const b = 0.95;
 const e = 0.80;
@@ -44,99 +75,119 @@ const turn_t = 12;
 const pitch_t = 12;
 const roll_t = 20;
 
+const delta = 22.5;
+const edge = 0.4;
+
 const generate_rules = (symbol) =>{
   if (symbol.type == "A" && symbol.len >= min) {
     const ruleSet = [
       {rule: [
-        {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
-
         {type: "["},
-        {type: "&", angle: c + (Math.random() * 2 * pitch_t) - pitch_t},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id}, //create a child 
-        {type: "]"},
-        {type: "/", angle: i + (Math.random() * 2 * turn_t) - turn_t},
-        {type: "A", len: symbol.len * b, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id}
-
-      ], prob: 0.5},
-      {rule: [
+        {type: "&", angle: delta},
         {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
-
-        {type: "["},
-        {type: "&", angle: c + (Math.random() * 2 * pitch_t) - pitch_t},
-        {type: "C", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
-        {type: "]"},
-        {type: "/", angle: i + (Math.random() * 2 * turn_t) - turn_t},
-        {type: "A", len: symbol.len * b, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id}
-
-      ], prob: 0.5},
-    ]
-    return chooseOne(ruleSet);
-  }
-  else if (symbol.type == "B" && symbol.len >= min) {
-    const ruleSet = [
-      {rule: [
-        {type: "!", wid: symbol.wid},
-        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
-
-        {type: "["},
-        {type: "-", angle: d + (Math.random() * 2 * turn_t) - turn_t},
-        {type: "$"},
-        {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
-        {type: "C", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
+        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id}, ////ohh bebcause there is no object with id root before i add the first one 
+        //wait and there are just like multiple objects of the same id, this is nto good .
+        {type: "L", id: uuidv4(), parent_id: symbol.id},
+        {type: "A", len: symbol.len, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
         {type: "]"},
         
-        {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
-        {type: "C", len: symbol.len * b, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
-      ], prob: 0.7},
-      {rule: [
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "'", amt: 5}, //increase color index
+        
+        {type: "["},
+        {type: "&", angle: delta},
         {type: "!", wid: symbol.wid},
         {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
-
-        {type: "["},
-        {type: "+", angle: d + (Math.random() * 2 * turn_t) - turn_t},
-        {type: "$"},
-        {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
-        {type: "C", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
+        {type: "L", id: uuidv4(), parent_id: symbol.id},
+        {type: "A", len: symbol.len, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
         {type: "]"},
 
-        {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
-        {type: "C", len: symbol.len * b, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
-      ], prob: 0.3},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "'", amt: 5}, //increase color index
+
+        {type: "["},
+        {type: "&", angle: delta},
+        {type: "!", wid: symbol.wid},
+        {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
+        {type: "L", id: uuidv4(), parent_id: symbol.id},
+        {type: "A", len: symbol.len, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
+        {type: "]"},
+
+
+      ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }
-  else if (symbol.type == "C" && symbol.len >= min) {
+  else if (symbol.type == "F") {
     const ruleSet = [
       {rule: [
-        {type: "!", wid: symbol.wid},
         {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
-
-        {type: "["},
-        {type: "+", angle: d + (Math.random() * 2 * turn_t) - turn_t},
-        {type: "$"},
-        {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
-        {type: "]"},
-
-        {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
-        {type: "B", len: symbol.len * b, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
-      ], prob: 0.7},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta},
+        {type: "/", angle: delta}, 
+        {type: "S", len: symbol.len, id: uuidv4(), parent_id: symbol.id}, 
+      ], prob: 1.0},
+    ]
+    return chooseOne(ruleSet);
+  } 
+  else if (symbol.type == "S") {
+    const ruleSet = [
       {rule: [
-        {type: "!", wid: symbol.wid},
         {type: "F", len: symbol.len, id: symbol.id, parent_id: symbol.parent_id},
-
+        {type: "L", id: uuidv4(), parent_id: symbol.id},
+      ], prob: 1.0},
+    ]
+    return chooseOne(ruleSet);
+  }  
+  else if (symbol.type == "L") {
+    const ruleSet = [
+      {rule: [
         {type: "["},
-        {type: "-", angle: d + (Math.random() * 2 * turn_t) - turn_t},
-        {type: "$"},
-        {type: "&", angle: (Math.random() * 2 * pitch_t) - pitch_t},
-        {type: "B", len: symbol.len * e, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
-        {type: "]"},
+        {type: "'", amt: 5}, //increase color index
+        {type: "'", amt: 5}, //increase color index
+        {type: "'", amt: 5}, //increase color index
+        {type: "^", angle: delta},
+        {type: "^", angle: delta},
 
-        {type: "/", angle: (Math.random() * 2 * roll_t) - roll_t},
-        {type: "B", len: symbol.len * b, wid: symbol.wid * h, id: uuidv4(), parent_id: symbol.id},
-      ], prob: 0.3},
+        {type: "{", id: symbol.id, parent_id: symbol.parent_id},
+        {type: "."},
+        {type: "-", angle: delta},
+        {type: "f", len: edge},
+        {type: "."},
+        {type: "+", angle: delta},
+        {type: "f", len: edge},
+        {type: "."},
+        {type: "+", angle: delta},
+        {type: "f", len: edge},
+        
+        {type: "-", angle: delta},
+        {type: "|"},
+
+        {type: "."},
+        {type: "-", angle: delta},
+        {type: "f", len: edge},
+        {type: "."},
+        {type: "+", angle: delta},
+        {type: "f", len: edge},
+        {type: "."},
+        {type: "+", angle: delta},
+        {type: "f", len: edge},  
+        {type: "}"}, 
+
+        {type: "]"},
+      ], prob: 1.0},
     ]
     return chooseOne(ruleSet);
   }
@@ -232,6 +283,19 @@ function applyRule(symbol) {
   else if (symbol.type == "L") {
     //drawLeaf(symbol.sz);
   }
+  //start a new polygon
+  else if (symbol.type == "{") {
+    shape_stack.push(["#228B22", 1, symbol.id, symbol.parent_id, []]); 
+  }
+  //finish the current polygon
+  else if (symbol.type == "}") {
+    shapes.push(shape_stack.pop());
+  }
+  //draw a vertex for the current polygon
+  else if (symbol.type == ".") {
+    const num_shapes = shape_stack.length;
+    shape_stack[num_shapes - 1][4].push(last_state.pos);
+  }
   
 }
 
@@ -286,8 +350,9 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
       heading_vector.set(heading[0], heading[1], heading[2]);
       heading_vector.normalize();
       local_q.setFromUnitVectors(ey, heading_vector);
-      
+      //console.log("CURRENT OBJECT HAS ID: ",id, "PARENT ID",parent_id);
       if(parent_id) {
+        //console.log(parent);
         parent.add(meshRef.current);
         parent.worldToLocal(position_vector);
 
@@ -312,30 +377,76 @@ const Branch = ({pos, heading, radius, height, id, parent_id}) => {
         if(!meshRef.current){
             return;
         }
-       // get_rotation_u();
-      //  meshRef.current.rotation.x = t; 
-        //meshRef.current.applyMatrix4(direction);
-       // console.log(meshRef.current.lookAt);
-      /* if(id == "root") {
-       // console.log(scene.getObjectByName("root"));
-        meshRef.current.rotation.x = t;
-       }*/
 
-       meshRef.current.rotateX(Math.sin(t*2) / 2000);
+      // meshRef.current.rotateX(Math.sin(t*2) / 2000);
        //meshRef.current.rotateY(Math.sin(t) / 3000);
-       meshRef.current.rotateZ(Math.sin(t * 3) / 2000);
-       console.log(t);
+      // meshRef.current.rotateZ(Math.sin(t * 3) / 2000);
+       //console.log(t);
     })
 
     return (
         <mesh ref = {meshRef} name = {id}> 
-            <cylinderGeometry args={[radius * h, radius, height, 6]}/>
+            <cylinderGeometry args={[radius, radius, height, 6]}/>
             <meshStandardMaterial color="#805333"/>
         </mesh>
     )
 }
 
-export default function Monopodial() {
+const Shape = ({color, wid, points, id, parent_id}) => {
+  const meshRef = useRef(null);
+  const {scene} = useThree();
+  const [geometry, setGeometry] = useState(new THREE.ShapeGeometry());
+  
+  useEffect(()=>{
+    const parent = scene.getObjectByName(parent_id);
+    mesh_shape = new THREE.Shape();
+
+    position_vector.set(points[0][0], points[0][1], points[0][2]);
+    mesh_shape.moveTo(position_vector.x, position_vector.y);
+
+    //add a small random value to avoid repeating lineTo calls
+    let rx = Math.random() * 0.000008999999 + 0.000001;
+    let ry = Math.random() * 0.000008999999 + 0.000001;
+    for(let i = 1; i < points.length; i++) {
+      position_vector.set(points[i][0], points[i][1], points[i][2]);
+      mesh_shape.lineTo(position_vector.x + rx, position_vector.y + ry);
+      rx = Math.random() * 0.000008999999 + 0.000001;
+      ry = Math.random() * 0.000008999999 + 0.000001;
+    }
+
+    position_vector.set(points[0][0], points[0][1], points[0][2]);
+    mesh_shape.lineTo(position_vector.x, position_vector.y);
+
+    mesh_geometry = new THREE.ShapeGeometry(mesh_shape);
+    positions = mesh_geometry.getAttribute('position');
+    for(let i = 1; i < positions.count; i++) {
+     // console.log(positions.getX(i), positions.getY(i), positions.getZ(i), 'POINTS', points[positions.count - i - 1]);
+      if(ShapeUtils.isClockWise(mesh_shape.getPoints())) {
+        positions.setZ(i, points[i][2]);
+      }
+      else {
+        positions.setZ(i, points[positions.count - i][2]);
+      }
+    }
+    //console.log();
+
+    positions.setZ(0, points[0][2]);
+    mesh_geometry.setAttribute('position', positions);
+    setGeometry(mesh_geometry);
+    //console.log(points, points.length, mesh_geometry.getAttribute('position'), ShapeUtils.isClockWise(mesh_shape.getPoints()));
+
+    
+  }, [meshRef]); 
+  
+
+  return (
+    <mesh mesh ref = {meshRef} name = {id} geometry={geometry}>
+      <meshPhongMaterial color="green" side={THREE.DoubleSide}/>
+    </mesh>
+  );
+}
+
+export default function Bush() {
     const canvas_ref = useRef(null);
 
    /* rotate_u(state_stack[0], Math.PI / 3);
@@ -345,7 +456,7 @@ export default function Monopodial() {
     console.log(state_stack[0].left);
     console.log(state_stack[0].up); */
 
-    symbols = [{type: "A", len: 1, wid: 0.15, id: "root", parent_id: null}];
+    symbols = [{type: "F", len: 0, id: "root", parent_id: null}, {type: "A", len: 0.4, wid: 0.08, id: "root", parent_id: null}];
     //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
     for(let i = 0; i < num_gens; i ++) {
         symbols = generate();
@@ -358,6 +469,7 @@ export default function Monopodial() {
     }
 
     console.log(objects);
+    console.log(shapes);
 
     const v1 = [5, 3, -10];
     const v2 = [-4, -5, 7];
@@ -374,6 +486,9 @@ export default function Monopodial() {
                 <pointLight position={[10, 10, 10]} />
                 {objects.map((o)=>
                   <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]}/>
+                )}
+                {shapes.map((s)=>
+                  <Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
                 )}
                 <Branch pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
             </Canvas>

@@ -1,34 +1,24 @@
 import React from 'react';
-import {
-  ChakraProvider,
-  Box,
-  Text,
-  Link,
-  VStack,
-  Code,
-  Grid,
-  theme,
-} from '@chakra-ui/react';
-import { ColorModeSwitcher } from './ColorModeSwitcher';
-import Tree3D from './plants/Tree3D'
-import Flower from './plants/Flower'
-import Pine_tree from './plants/Pine_tree'
-import Space_tree from './plants/Space_tree'
-import Pine_tree2 from './plants/Pine_tree2'
+//import Flower from './plants/Flower'
 
 //import ThreeJs from './plants/old models/ThreeJs';
 import Pine3D from './plants/Pine3D';
-import Turtle from './plants/Turtle';
 import Monopodial from './plants/Monopodial';
 import Space3D from './plants/Space3D';
 import Ternary from './plants/Ternary';
 import Masterpiece from './plants/Masterpiece';
+import Bush from './plants/Bush';
+
+import Editor from './Editor';
 
 function App() {
   return (
-    <ChakraProvider theme={theme}>
-      <ColorModeSwitcher justifySelf="flex-end" /> 
-      <Masterpiece/>
+    <div>
+      <Editor/>
+      {/*<Flower/> */}
+      {/*<Bush/>*/}
+      {/*<Masterpiece/> */}
+  
       {/*<Plant3D/> */}
       {/*<Monopodial/>*/}
       {/*<Space3D/> */}
@@ -47,7 +37,7 @@ function App() {
       <Tree/>
       <Turtle/>  */}
 
-    </ChakraProvider>
+    </div>
   );
 }
 
