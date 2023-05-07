@@ -23,9 +23,7 @@ let mesh_shape = new THREE.Shape();
 let mesh_geometry;
 let positions;
 
-const hiearchy_on = false;
-
-let init_state = {
+const init_state = {
     pos: [0, 0, 0],
     heading: [0, 1, 0],
     left: [-1, 0, 0], 
@@ -33,15 +31,15 @@ let init_state = {
     pen: [[128, 83, 51], 0.4, true], 
 }
 
-let state_stack = [init_state];
-let shape_stack = []; //{ means start a new shape, } means push the shape into the shapes array to be drawn
-let symbols;
 let num_gens = 6;
 
 //given a symbol, return the next generation of replacement symbols based on productions.
-const generate_rules = (symbol, productions, constants) =>{
+const generate_rules = (symbol, productions, constants, params) =>{
   let symbol_str = symbol.type;
 
+  if(!params[symbol.type]){
+    return;
+  }
   if(params[symbol.type].length > 0) {
     symbol_str = symbol_str + '(';
     //console.log("PARAMS OF CURRENT SYMBOL",params[symbol.type]);
@@ -60,7 +58,7 @@ const generate_rules = (symbol, productions, constants) =>{
   productions[symbol_str].forEach((r)=>{
     new_symbols.push(
       {
-        rule: r.rule.split(" ").map((s)=>get_next_symbol(symbol, s, constants)),
+        rule: r.rule.split(" ").map((s)=>get_next_symbol(symbol, s, constants, params)),
         prob: r.prob
       }
     )
@@ -100,31 +98,14 @@ const generate_rules = (symbol, productions, constants) =>{
 } */
 //"name" : [param1, param2...]
 //SHOULD INCLUDE PRIMITIVE COMMANDS ALWAYS, LIKE F, f, !, [, ], {, }, /, \
-let params = {
-  "F": ["len"],
-  "f": ["len"],
-  "+": ["angle"],
-  "-": ["angle"],
-  "^": ["angle"],
-  "&": ["angle"],
-  "\\": ["angle"],
-  "/": ["angle"],
-  "|": [],
-  "$": [],
-  "[": [],
-  "]": [],
-  "{": [],
-  ".": [],
-  "}": [],
-  "!": ["wid"],
-  "'": ["color"],
+
+
+const get_axiom = (axiom, constants, params) =>{
+  return axiom.split(" ").map((s)=>get_next_symbol(null, s, constants, params));
 }
 
-const get_axiom = (axiom, constants) =>{
-  symbols = axiom.split(" ").map((s)=>get_next_symbol(null, s, constants));
-}
-
-const get_next_symbol = (symbol, rule, constants) => {
+const get_next_symbol = (symbol, rule, constants, params) => {
+  
   //console.log("INITIAL RULE IS: ", rule);
   rule = rule.replaceAll(' ', ''); //remove all whitespaces for safety
   if(!rule.includes('(')) { //if there are no parameters
@@ -145,7 +126,7 @@ const get_next_symbol = (symbol, rule, constants) => {
       }
     })
   }
-  console.log("PRINTING CONSTANTS", constants);
+  //console.log("PRINTING CONSTANTS", constants);
   Object.keys(constants).forEach((s)=>{
     if(s != "num_gen"){
       rule = rule.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
@@ -176,7 +157,7 @@ const get_next_symbol = (symbol, rule, constants) => {
     }
   }
   if(rule[rule.length - 1] != ',') {
-    //console.log("PARAM TPYE: ",type,  params, new_symbol, cur_param); //ohh math.evaluate is fucking up 
+    //console.log("PARAM TPYE: ",type,  params, cur_param); //ohh math.evaluate is fucking up 
     const val = math.evaluate(cur_param);
     new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
     cur_param = "";
@@ -186,14 +167,16 @@ const get_next_symbol = (symbol, rule, constants) => {
   return(new_symbol);
 }
 
-const get_params = (productions) => {
+const get_params = (productions, params) => {
   Object.keys(productions).forEach((s)=>{
-    //console.log(s);
+
     if(!s.includes('(')){
       params[s] = [];
+     // console.log(params);
     }
     else {
       const type = s.substring(0, s.indexOf('('));
+      //console.log(type);
       s = s.substring(s.indexOf('('));
       s = s.replaceAll(' ','');
       s = s.replaceAll('(', '');
@@ -201,6 +184,7 @@ const get_params = (productions) => {
       params[type] = s.split(',');
     }
   })
+  //console.log("NEW PARAMS", params, productions);
 }
 
 function chooseOne(ruleSet) {
@@ -215,22 +199,6 @@ function chooseOne(ruleSet) {
   return "";
 }  
 
-function generate(productions, constants) {
-  let next = [];
-
-  for(let i = 0; i < symbols.length; i++) {
-    let s = symbols[i];
-    let s2 = generate_rules(s, productions, constants);
-    if(s2){
-      next = next.concat(s2);
-    }
-    else{
-      next = next.concat(s);
-    }
-  }
-  //console.log(next, "NEW SYMBOLS FOR TREE");
-  return next;
-}
 
 
 const matrix_vector_mult = (m, v) =>{
@@ -379,18 +347,59 @@ const Shape = ({color, wid, points, id, parent_id}) => {
 const Render = ({axiom, constants, productions}) => {
   const[objects, setObjects] = useState([]);
   const[shapes, setShapes] = useState([]);
+  //{ means start a new shape, } means push the shape into the shapes array to be drawn
+  const [symbols, setSymbols] = useState([]);
+  const [params, setParams] = useState({
+    "F": ["len"],
+    "f": ["len"],
+    "+": ["angle"],
+    "-": ["angle"],
+    "^": ["angle"],
+    "&": ["angle"],
+    "\\": ["angle"],
+    "/": ["angle"],
+    "|": [],
+    "$": [],
+    "[": [],
+    "]": [],
+    "{": [],
+    ".": [],
+    "}": [],
+    "!": ["wid"],
+    "'": ["color"],
+  });
+
   const canvas_ref = useRef(null);
 
-  //HERE WE FUCKING GOOOO
-  const applyRule = (symbol) => {
-    let last_state = state_stack[state_stack.length - 1];
+
+  const generate = (symbols) => {
+    let next = [];
+  
+    for(let i = 0; i < symbols.length; i++) {
+      let s = symbols[i];
+      let s2 = generate_rules(s, productions, constants, params);
+      if(s2){
+        next = next.concat(s2);
+      }
+      else{
+        next = next.concat(s);
+      }
+    }
+    //console.log(next, "NEW SYMBOLS FOR TREE");
+    return next;
+  }
+
+   //HERE WE FUCKING GOOOO
+   const applyRule = (symbol, newObjects, newShapes, newStateStack, newShapeStack) => {
+    //console.log(newStateStack, "WITH TYPE", symbol.type); //pritning out the states
+    let last_state = newStateStack[newStateStack.length - 1];
     if(symbol.type == "!") {
       last_state.pen[1] = symbol.wid;
     }
     else if (symbol.type == "F") {
       //each new object stores: position, direction vector, length, width/radius
       //draw object
-      objects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1], symbol.id, symbol.parent_id, last_state.pen[0]]);
+      newObjects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1], symbol.id, symbol.parent_id, last_state.pen[0]]);
       //translate state
       last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
     }
@@ -434,63 +443,108 @@ const Render = ({axiom, constants, productions}) => {
     }
     else if (symbol.type == "[") {
       let new_state = JSON.parse(JSON.stringify(last_state));
-      state_stack.push(new_state);
+      newStateStack.push(new_state);
     }
     else if (symbol.type == "]") {
-      state_stack.pop();
+      newStateStack.pop();
     }
     else if (symbol.type == "L") {
       //drawLeaf(symbol.sz);
     }
     //start a new polygon
     else if (symbol.type == "{") {
-      shape_stack.push([last_state.pen[0], 1, symbol.id, symbol.parent_id, []]); 
+      newShapeStack.push([last_state.pen[0], 1, symbol.id, symbol.parent_id, []]); 
     }
     //finish the current polygon
     else if (symbol.type == "}") {
-      shapes.push(shape_stack.pop());
+      newShapes.push(newShapeStack.pop());
     }
     //draw a vertex for the current polygon
     else if (symbol.type == ".") {
-      const num_shapes = shape_stack.length;
-      shape_stack[num_shapes - 1][4].push(last_state.pos);
+      const num_shapes = newShapeStack.length;
+      newShapeStack[num_shapes - 1][4].push(last_state.pos);
     }
     else if (symbol.type == "'") {
       last_state.pen[0] = symbol.color;
     }
+    
   }
 
-  
+  const getAllMeshes = () => {
+    const newStateStack = [
+      {pos: [0, 0, 0],
+      heading: [0, 1, 0],
+      left: [-1, 0, 0], 
+      up: [0, 0, 1],
+      pen: [[128, 83, 51], 0.4, true], }
+    ];
+    const newShapeStack = [];
+    const newObjects = [];
+    const newShapes = [];
+    for(let i = 0; i < symbols.length; i ++) {
+      let s = symbols[i];
+      applyRule(s, newObjects, newShapes, newStateStack, newShapeStack);
+    } 
+    setObjects(newObjects);
+    setShapes(newShapes);
+  }
+
+  //params -> generating symbols -> objects -> shapes 
   useEffect(()=>{
     console.log("PRINTING ALL PROPS");
     console.log(axiom);
     console.log(constants);
     console.log(productions);
 
-    get_params(productions);
-    console.log("All params:",params);
-
-    get_axiom(axiom, constants);
-    console.log("INITIAL SYMBOLS", symbols);
-        
-    //symbols = [{type: "A", len: 0.4, wid: 0.04, lcol: [0, 80, 0], bcol: [128, 83, 51]}];  
-    //symbols = [{type: "!", wid: 0.02}, {type: "plant"}];
-    //symbols = [{type: "/", angle: 18 * 2},{type: "!", wid: 0.02},{type: "F", len: 0.4 * 2}, {type: "["}, {type: "&", angle: 18 * 3}, {type: "F", len: 0.4}, {type: "]"}];
-    //symbols = [{type: "F", len: 2, wid: 0.2}, {type: "-", angle: 45}, {type: "F", len: 1, wid: 0.2}, {type: "^", angle: 45},{type: "F", len: 1, wid: 0.2}, ];
-    for(let i = 0; i < num_gens; i ++) {
-        symbols = generate(productions, constants);
-        //  console.log(symbols, "NEW SYMBOLS");
-        console.log(symbols);
-    }
-    for(let i = 0; i < symbols.length; i ++) {
-      let s = symbols[i];
-      applyRule(s, objects, shapes);
-    } 
-
-    console.log("FINAL SYMBOLS: ",symbols);
-    console.log(objects);
-    console.log(shapes); 
+    let newParams = {
+      "F": ["len"],
+      "f": ["len"],
+      "+": ["angle"],
+      "-": ["angle"],
+      "^": ["angle"],
+      "&": ["angle"],
+      "\\": ["angle"],
+      "/": ["angle"],
+      "|": [],
+      "$": [],
+      "[": [],
+      "]": [],
+      "{": [],
+      ".": [],
+      "}": [],
+      "!": ["wid"],
+      "'": ["color"],
+    };
+    get_params(productions, newParams);
+    //console.log("NEW PARAMS", newParams);
+    setParams(newParams); 
   }, [axiom, constants, productions])
+
+  useEffect(()=>{
+    console.log("All params:",params);
+      
+    let newSymbols = get_axiom(axiom, constants, params); //start with the axiom 
+    console.log("INITIAL SYMBOLS", newSymbols);  
+    for(let i = 0; i < constants["num_gens"]; i ++) {
+      newSymbols = generate(newSymbols);
+      //  console.log(symbols, "NEW SYMBOLS");
+    }
+    //console.log(newSymbols);
+    setSymbols(newSymbols); 
+  }, [params])
+
+  useEffect(()=>{
+    console.log("FINAL SYMBOLS", symbols);
+    getAllMeshes();
+  }, [symbols])
+
+  useEffect(()=>{
+    console.log("FINAL OBJECTS", objects);
+  }, [objects])
+
+  useEffect(()=>{
+    console.log("FINAL SHAPES", shapes);
+  }, [shapes])
 
   //console.log(math.evaluate('[1, 2, 3]').toArray());
   //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
