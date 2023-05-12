@@ -550,9 +550,9 @@ const Render = ({axiom, constants, productions}) => {
   //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
 
   return (
-    <div ref={canvas_ref} style={{top: "0", bottom: "0", right: "0", width: "100%"} }>
+    <div ref={canvas_ref} style={{top: "0", bottom: "0", left: "0", right: "0", position: "fixed", width: "100%"} }>
         <Canvas>
-            <PerspectiveCamera makeDefault position={[4, 4, 10]} />
+            <PerspectiveCamera makeDefault position={[3, 3, 10]} />
             <OrbitControls enableZoom enablePan enableRotate/>
             <gridHelper args={[100, 100]}/>
             <axesHelper renderOrder={1} scale={[100, 100, 100]}/>
