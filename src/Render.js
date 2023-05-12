@@ -554,7 +554,8 @@ const Render = ({axiom, constants, productions}) => {
         <Canvas>
             <PerspectiveCamera makeDefault position={[4, 4, 10]} />
             <OrbitControls enableZoom enablePan enableRotate/>
-            <axesHelper renderOrder={1} scale={[5, 5, 5]}/>
+            <gridHelper args={[100, 100]}/>
+            <axesHelper renderOrder={1} scale={[100, 100, 100]}/>
             <ambientLight />
             <pointLight position={[10, 10, 10]} />
             {objects.map((o)=>
