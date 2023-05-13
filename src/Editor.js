@@ -27,12 +27,6 @@ const AxiomInput = ({axiom, setAxiom}) => {
             onChange={(e)=>setAxiom(e.target.value)}
             size="small"
             style={{width:"150px", marginRight: "8px"}}
-            inputProps={{
-                style:{height: "18px", fontSize: "14px"}
-            }}
-            InputLabelProps={{
-                style:{height: "18px", fontSize: "14px"}
-            }}
             required
         />
     )
@@ -49,12 +43,6 @@ const ConstantInput = ({name, val, index, handleConstantInputChange}) => {
             onChange={(e)=>handleConstantInputChange(e.target.value, index, 0)}
             size="small"
             style={{width:"150px", marginRight: "8px"}}
-            inputProps={{
-                style:{height: "18px", fontSize: "14px"}
-            }}
-            InputLabelProps={{
-                style:{height: "18px", fontSize: "14px"}
-            }}
             required
         />
         <TextField
@@ -65,12 +53,6 @@ const ConstantInput = ({name, val, index, handleConstantInputChange}) => {
             onChange={(e)=>handleConstantInputChange(e.target.value, index, 1)}
             size="small"
             style={{width:"150px"}}
-            inputProps={{
-                style:{height: "18px", fontSize: "14px"}
-            }}
-            InputLabelProps={{
-                style:{height: "18px", fontSize: "14px"}
-            }}
             required
         />
         </>
@@ -87,12 +69,6 @@ const ProductionSymbolInput = ({name, index, handleProductionSymbolChange}) => {
             onChange={(e)=>handleProductionSymbolChange(e.target.value, index)}
             size="small"
             style={{width:"150px"}}
-            inputProps={{
-                style:{height: "18px", fontSize: "14px"}
-            }}
-            InputLabelProps={{
-                style:{height: "18px", fontSize: "14px"}
-            }}
             required
         />
     )
@@ -103,18 +79,13 @@ const ProductionRuleInput = ({rule, prob, index, index2, handleProductionRuleCha
         <>
         <TextField
             key={`prod-rule-name-${index}-${index2}`}
-            id="outlined-basic"
+            id="outlined-textarea"
             label="rule"
             value={rule}
             onChange={(e)=>handleProductionRuleChange(e.target.value, index, index2, 0)}
             size="small"
             style={{width:"100%", marginRight: "8px"}}
-            inputProps={{
-                style:{height: "18px", fontSize: "14px"}
-            }}
-            InputLabelProps={{
-                style:{height: "18px", fontSize: "14px"}
-            }}
+            multiline
             required
         />
         <TextField
@@ -125,14 +96,9 @@ const ProductionRuleInput = ({rule, prob, index, index2, handleProductionRuleCha
             onChange={(e)=>handleProductionRuleChange(e.target.value, index, index2, 1)}
             size="small"
             style={{width:"80px"}}
-            inputProps={{
-                style:{height: "18px", fontSize: "14px"}
-            }}
-            InputLabelProps={{
-                style:{height: "18px", fontSize: "14px"}
-            }}
             required
         />
+        
         </>
     )
 }
@@ -141,7 +107,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     const [axiom, setAxiom] = useState(init_axiom);
     const [constants, setConstants] = useState(init_constants);
     const [productions, setProductions] = useState(init_productions);
-    const [drawerWidth, setDrawerWidth] = useState(680);
+    const [drawerWidth, setDrawerWidth] = useState(700);
     const [productionsSymbolExpand, setProductionsSymbolExpand] = useState(true);
     const [productionsRuleExpand, setProductionsRuleExpand] = useState([])
     const [constantsExpand, setConstantsExpand] = useState(true);
@@ -268,6 +234,10 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
 
     return(
         <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
+            <div style={{position: "fixed", top: 0, left: 0, width: "100vw", zIndex: 99999, background: "#27a243",display: "flex", flexDirection: "row", alignItems: "center"}}>
+                <div style={{display:"flex", fontFamily: "Open Sans", color: "white", fontSize: "22px", fontWeight: 500, marginBottom: "10px", marginLeft: "10px"}}> {`L-Mesh`}</div>
+            </div>
+            
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
                 <Drawer
                     sx={{
@@ -282,8 +252,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                 > 
                     <div style={{display: "flex", flexDirection: "row", overflow: "hidden"}}>
                         <div style={{display: "flex", flexDirection: "column", marginLeft: "10px", width: "100%", overflow: "auto"}}>
-                            <div style={{fontFamily: "Open Sans", fontSize: "42px", fontWeight: 600, marginBottom: "10px", marginLeft: "5px"}}> {`L-Mesh`}</div>
-                            <div style={{marginBottom: "8px"}}>
+                            <div style={{marginBottom: "8px", marginTop: "50px"}}>
                                 <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px"}}> {`Axiom (starting symbols)`}</div>
                                 <AxiomInput axiom={axiom} setAxiom={setAxiom}/>
                             </div>
@@ -335,7 +304,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                                     <Collapse in={productionsSymbolExpand} timeout="auto" unmountOnExit>
                                         {productions.map((p, index)=>(
                                             <div key={`prod-div-${index}`} style={{display: "flex", flexDirection: "column", marginBottom: "8px"}}>
-                                                <div key={`prod-symbol-div-${index}`} style={{display: "flex", flexDirection: "row", marginBottom: "4px"}}>
+                                                <div key={`prod-symbol-div-${index}`} style={{display: "flex", flexDirection: "row", marginBottom: "8px"}}>
                                                     <ProductionSymbolInput name={p[0]} index={index} handleProductionSymbolChange={handleProductionSymbolChange}/>
                                                     <IconButton key={`prod-symbol-button-${index}`} size="small" onClick={e=>removeProductionSymbol(index)}>
                                                         <CloseIcon/>
@@ -349,7 +318,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                                                     </IconButton>}
                                             
                                                 </div>
-                                                <Collapse in={productionsRuleExpand[index]} timeout="auto" unmountOnExit>
+                                                <Collapse sx={{marginLeft: 2}} in={productionsRuleExpand[index]} timeout="auto" unmountOnExit>
                                                     {p[1].map((r, index2)=>{
                                                         //console.log(p, r);
                                                         return(
