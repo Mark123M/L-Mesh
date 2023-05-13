@@ -292,7 +292,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                             <div style={{width: "200px"}}> <Button variant="outlined" type="submit" >Generate Model</Button> </div>
                         </div>
 
-                        <div onMouseDown={e => handleMouseDown(e)} style={{display: "flex", flexDirection: "column", cursor: "ew-resize", width: "4px", height: "100vh", background: "#cbe6f7"}}/>
+                        <div onMouseDown={e => handleMouseDown(e)} style={{display: "flex", flexDirection: "column", cursor: "ew-resize", width: "3px", height: "100vh", borderStyle: "none double none none", borderColor: "gray", borderWidth: "4px"}}/>
                          
                 
                     </div>
