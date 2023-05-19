@@ -107,7 +107,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     const [axiom, setAxiom] = useState(init_axiom);
     const [constants, setConstants] = useState(init_constants);
     const [productions, setProductions] = useState(init_productions);
-    const [drawerWidth, setDrawerWidth] = useState(700);
+    const [drawerWidth, setDrawerWidth] = useState(650);
     const [productionsSymbolExpand, setProductionsSymbolExpand] = useState(true);
     const [productionsRuleExpand, setProductionsRuleExpand] = useState([])
     const [constantsExpand, setConstantsExpand] = useState(true);
@@ -354,7 +354,12 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
 const Editor = () =>{
     const [axiom, setAxiom] = useState("A");
     const [constants, setConstants] = useState([["num_gens", 5], ["col_rate", 0.2]]);
-    const [productions, setProductions] = useState([["A", [["A A", 0.5], ["A", 0.5]] ], ["B", [["B B", 0.5], ["B", 0.5]]]]); //forgor to separate AA's with spaces
+    const [productions, setProductions] = useState([["A", [["A A", "0.5"], ["A", "0.5"]] ], ["B", [["B B", "0.5"], ["B", "0.5"]]]]); //forgor to separate AA's with spaces
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        console.log("ERROR IS" ,error);
+    }, [error]);
 
     const getConstants = (constants) => {
         let constantsObj = {};
@@ -390,7 +395,7 @@ const Editor = () =>{
         <div style={{position: "absolute", top: "0", left: "0", bottom: "0", right: "0", overflow: "hidden"} }>
             <div style={{display: "flex", flexDirection: "row"}}>
                 <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions}/>
-                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)}/> }
+                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} setError={setError}/> }
             </div>
         </div>
     )

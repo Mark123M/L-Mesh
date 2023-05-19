@@ -34,7 +34,7 @@ const init_state = {
 let num_gens = 6;
 
 //given a symbol, return the next generation of replacement symbols based on productions.
-const generate_rules = (symbol, productions, constants, params) =>{
+const generate_rules = (symbol, productions, constants, params, setError) =>{
   let symbol_str = symbol.type;
 
   if(!params[symbol.type]){
@@ -58,8 +58,8 @@ const generate_rules = (symbol, productions, constants, params) =>{
   productions[symbol_str].forEach((r)=>{
     new_symbols.push(
       {
-        rule: r.rule.split(" ").map((s)=>get_next_symbol(symbol, s, constants, params)),
-        prob: r.prob
+        rule: r.rule.split(" ").map((s)=>get_next_symbol(symbol, s, constants, params, setError)),
+        prob: get_prob(r.prob, symbol, constants, setError)
       }
     )
   })
@@ -100,13 +100,14 @@ const generate_rules = (symbol, productions, constants, params) =>{
 //SHOULD INCLUDE PRIMITIVE COMMANDS ALWAYS, LIKE F, f, !, [, ], {, }, /, \
 
 
-const get_axiom = (axiom, constants, params) =>{
-  return axiom.split(" ").map((s)=>get_next_symbol(null, s, constants, params));
+const get_axiom = (axiom, constants, params, setError) =>{
+  return axiom.split(" ").map((s)=>get_next_symbol(null, s, constants, params, setError));
 }
 
-const get_next_symbol = (symbol, rule, constants, params) => {
-  
-  //console.log("INITIAL RULE IS: ", rule);
+const get_next_symbol = (symbol, rule, constants, params, setError) => {
+  const baseRule = rule;
+
+  //console.log("INITIAL RULE IS: ", rule, "WITH SYMBOL: ", symbol);
   rule = rule.replaceAll(' ', ''); //remove all whitespaces for safety
   if(!rule.includes('(')) { //if there are no parameters
     //console.log({type: rule});
@@ -141,8 +142,8 @@ const get_next_symbol = (symbol, rule, constants, params) => {
 
   for(let i = 0; i < rule.length; i++) {
     if(rule[i] == ',' && stack.length == 0) { //if theres a comma that is not in a bracket, this is a parameter
-      //console.log("PARAM TPYE: ",type,  params, new_symbol, cur_param); //ohh math.evaluate is fucking up 
-      const val = math.evaluate(cur_param);
+      console.log("PARAM TPYE: ",type, cur_param); //ohh math.evaluate is fucking up 
+      const val = evaluate_expression(cur_param, baseRule, setError);
       new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
       cur_param = "";
       param_idx++;
@@ -157,14 +158,39 @@ const get_next_symbol = (symbol, rule, constants, params) => {
     }
   }
   if(rule[rule.length - 1] != ',') {
-    //console.log("PARAM TPYE: ",type,  params, cur_param); //ohh math.evaluate is fucking up 
-    const val = math.evaluate(cur_param);
+    console.log("PARAM TPYE: ",type, cur_param); //ohh math.evaluate is fucking up 
+    const val = evaluate_expression(cur_param, baseRule, setError);
     new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
     cur_param = "";
     param_idx++;
   }
   //console.log(new_symbol);
   return(new_symbol);
+}
+
+const get_prob = (prob, symbol, constants, setError) => {
+  //strings are by reference but they are immutable so any operation will create a new string anyways 
+  const baseProb = prob;
+
+  console.log("INITIAL PROB: ", prob);
+  if(symbol != null) {
+    Object.keys(symbol).forEach((s)=>{
+      //console.log(s, symbol[s]);
+      if(s != "type"){
+        prob = prob.replaceAll(s, JSON.stringify(symbol[s])); //replace all variables of the production with any fields of symbol 
+      }
+    })
+  }
+  //console.log("PRINTING CONSTANTS", constants);
+  Object.keys(constants).forEach((s)=>{
+    if(s != "num_gen"){
+      prob = prob.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
+    }
+  })
+  console.log("SUBBED PROB: ",prob);
+
+  return evaluate_expression(prob, baseProb, setError);
+
 }
 
 const get_params = (productions, params) => {
@@ -200,6 +226,18 @@ function chooseOne(ruleSet) {
 }  
 
 
+const evaluate_expression = (str, baseStr, setError) => {
+  try {
+    return math.evaluate(str);
+  }
+  catch {
+    //change state for editorform
+    console.log("ERROR EVALUATING PROB:", baseStr, str);
+    setError(`Error evaluating expression: ${baseStr}`);
+    return -1;
+  }
+
+}
 
 const matrix_vector_mult = (m, v) =>{
   return vector_add(scalar_mult(v[0], m.heading), vector_add(scalar_mult(v[1], m.left), scalar_mult(v[2], m.up)));
@@ -344,7 +382,7 @@ const Shape = ({color, wid, points, id, parent_id}) => {
   );
 }
 
-const Render = ({axiom, constants, productions}) => {
+const Render = ({axiom, constants, productions, setError}) => {
   const[objects, setObjects] = useState([]);
   const[shapes, setShapes] = useState([]);
   //{ means start a new shape, } means push the shape into the shapes array to be drawn
@@ -377,7 +415,7 @@ const Render = ({axiom, constants, productions}) => {
   
     for(let i = 0; i < symbols.length; i++) {
       let s = symbols[i];
-      let s2 = generate_rules(s, productions, constants, params);
+      let s2 = generate_rules(s, productions, constants, params, setError);
       if(s2){
         next = next.concat(s2);
       }
@@ -523,7 +561,7 @@ const Render = ({axiom, constants, productions}) => {
   useEffect(()=>{
     console.log("All params:",params);
       
-    let newSymbols = get_axiom(axiom, constants, params); //start with the axiom 
+    let newSymbols = get_axiom(axiom, constants, params, setError); //start with the axiom 
     console.log("INITIAL SYMBOLS", newSymbols);  
     for(let i = 0; i < constants["num_gens"]; i ++) {
       newSymbols = generate(newSymbols);
