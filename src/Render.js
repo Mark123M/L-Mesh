@@ -31,8 +31,6 @@ const init_state = {
     pen: [[128, 83, 51], 0.4, true], 
 }
 
-let num_gens = 6;
-
 //given a symbol, return the next generation of replacement symbols based on productions.
 const generate_rules = (symbol, productions, constants, params, setError) =>{
   let symbol_str = symbol.type;
@@ -58,7 +56,7 @@ const generate_rules = (symbol, productions, constants, params, setError) =>{
   productions[symbol_str].forEach((r)=>{
     new_symbols.push(
       {
-        rule: r.rule.split(" ").map((s)=>get_next_symbol(symbol, s, constants, params, setError)),
+        rule: split_symbol_string(r.rule).map((s)=>get_next_symbol(symbol, s, constants, params, setError)),
         prob: get_prob(r.prob, symbol, constants, setError)
       }
     )
@@ -73,35 +71,9 @@ const generate_rules = (symbol, productions, constants, params, setError) =>{
  
 }
 
-//"name" : val
-/*let constants = {
-  "num_gens": 5,
-  "delta": 22.5,
-  "edge": 0.4,
-  "init_wid": 0.04,
-  "hr": 0.707,
-  "col_rate": [0, 15, 0]
-} */
-
-//let axiom = "A(edge,init_wid,[0,80,0],[128,83,51])"
-
-//"symbol" : "replacements"
-/*let productions = {
-  //default productions
-
-  //custom productions
-  "A(len,wid,lcol,bcol)": [{rule: "[ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ]", prob:1.0}],
-  "F(len,lcol)": [{rule: "S(lcol) /(delta) /(delta) /(delta) /(delta) /(delta) F(len,lcol)", prob:1.0}],
-  "S(lcol)": [{rule: "F(edge,lcol) '(lcol) L", prob: 1.0}],
-  "L": [{rule: "[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", prob: 1.0}],
-
-} */
-//"name" : [param1, param2...]
-//SHOULD INCLUDE PRIMITIVE COMMANDS ALWAYS, LIKE F, f, !, [, ], {, }, /, \
-
 
 const get_axiom = (axiom, constants, params, setError) =>{
-  return axiom.split(" ").map((s)=>get_next_symbol(null, s, constants, params, setError));
+  return split_symbol_string(axiom).map((s)=>get_next_symbol(null, s, constants, params, setError));
 }
 
 const get_next_symbol = (symbol, rule, constants, params, setError) => {
@@ -163,6 +135,10 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
     new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
     cur_param = "";
     param_idx++;
+  }
+
+  if(param_idx != Object.keys(params[type]).length) {
+    setError(`Invalid arguments for ${baseRule}: check arguments with production rule.`);
   }
   //console.log(new_symbol);
   return(new_symbol);
@@ -236,9 +212,36 @@ const evaluate_expression = (str, baseStr, setError) => {
     setError(`Error evaluating expression: ${baseStr}`);
     return -1;
   }
-
 }
+const split_symbol_string = (str) => {
+  let symbols = [];
+  let stack = [];
+  let cur_symbol = "";
 
+  for(let i = 0; i < str.length; i++) {
+    if(str[i] == ' ' && stack.length == 0) { //if theres a space that is not in a bracket, this is a symbol
+      if(cur_symbol != "") {
+        symbols.push(cur_symbol);
+      } 
+      cur_symbol = "";
+      continue;
+    }
+    cur_symbol = cur_symbol + str[i];
+    if(str[i] == '(') { //[ and ] are valid symbols
+      stack.push(str[i]);
+    }
+    else if (str[i] == ')') {
+      stack.pop();
+    }
+  }
+
+  if(cur_symbol != "") {
+    symbols.push(cur_symbol);
+  } 
+  cur_symbol = "";
+  console.log("SPLIT SYMBOLS ARE", symbols);
+  return symbols;
+}
 const matrix_vector_mult = (m, v) =>{
   return vector_add(scalar_mult(v[0], m.heading), vector_add(scalar_mult(v[1], m.left), scalar_mult(v[2], m.up)));
 }
@@ -382,7 +385,27 @@ const Shape = ({color, wid, points, id, parent_id}) => {
   );
 }
 
-const Render = ({axiom, constants, productions, setError}) => {
+const ObjectsList = React.memo(({seed, objects}) => {
+  return(
+    <>
+      {objects.map((o)=>
+        <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
+      )}
+    </>
+  );
+});
+
+const ShapesList = React.memo(({seed, shapes}) => {
+  return (
+    <>
+      {shapes.map((s)=>
+        <Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
+      )}
+    </>
+  );
+});
+
+const RenderItems = React.memo(({axiom, constants, productions, setError}) => {
   const[objects, setObjects] = useState([]);
   const[shapes, setShapes] = useState([]);
   //{ means start a new shape, } means push the shape into the shapes array to be drawn
@@ -406,9 +429,6 @@ const Render = ({axiom, constants, productions, setError}) => {
     "!": ["wid"],
     "'": ["color"],
   });
-
-  const canvas_ref = useRef(null);
-
 
   const generate = (symbols) => {
     let next = [];
@@ -584,25 +604,48 @@ const Render = ({axiom, constants, productions, setError}) => {
     console.log("FINAL SHAPES", shapes);
   }, [shapes])
 
+
+
   //console.log(math.evaluate('[1, 2, 3]').toArray());
   //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
+  return (
+    <>
+      <gridHelper args={[100, 100]}/>
+      <axesHelper renderOrder={1} scale={[100, 100, 100]}/>
+      <ambientLight />
+      <pointLight position={[10, 10, 10]} />
+
+      <ObjectsList objects={objects}/>
+      <ShapesList shapes={shapes}/>
+      
+      <Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
+    </>
+  )
+})
+
+const Render = ({axiom, constants, productions, setError}) => {
+  const controlsRef = useRef(null);
+  const canvas_ref = useRef(null);
+
+  const resetCamera = () => {
+    if(controlsRef.current){
+      controlsRef.current.reset();
+    }
+  }
+
+  useEffect(()=>{
+    document.querySelector('.camera-reset-button').addEventListener('click', resetCamera);
+  }, [])
+  
 
   return (
     <div ref={canvas_ref} style={{top: "0", bottom: "0", left: "0", right: "0", position: "fixed", width: "100%"} }>
         <Canvas>
-            <PerspectiveCamera makeDefault position={[3, 3, 10]} />
-            <OrbitControls enableZoom enablePan enableRotate/>
-            <gridHelper args={[100, 100]}/>
-            <axesHelper renderOrder={1} scale={[100, 100, 100]}/>
-            <ambientLight />
-            <pointLight position={[10, 10, 10]} />
-            {objects.map((o)=>
-              <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
-            )}
-            {shapes.map((s)=>
-              <Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
-            )}
-            <Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
+
+            <PerspectiveCamera makeDefault position={[3, 3, 10]}/>
+            <OrbitControls ref={controlsRef} enableZoom enablePan enableRotate/>
+
+            <RenderItems axiom={axiom} constants={constants} productions={productions} setError={setError} />
         </Canvas>
     </div>
   )

@@ -1,5 +1,5 @@
 import {useRef, useEffect, useState, useCallback} from "react";
-import { Button, TextField, IconButton, List, ListItem, Collapse, Divider, InputLabel, OutlinedInput, InputAdornment, Drawer, ListItemButton} from '@mui/material';
+import { Button, TextField, IconButton, List, ListItem, Collapse, Divider, InputLabel, OutlinedInput, Drawer, Alert, Select, MenuItem, FormControl} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import ExpandLess from '@mui/icons-material/ExpandLess';
@@ -9,14 +9,6 @@ import "@fontsource/open-sans";
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Render from "./Render";
-
-
-const ParamInput = ({name, val, idx, constants, setConstants}) => { 
- 
-    return(
-        <OutlinedInput></OutlinedInput>
-    )
-}
 
 const AxiomInput = ({axiom, setAxiom}) => {
     return(
@@ -66,7 +58,7 @@ const ProductionSymbolInput = ({name, index, handleProductionSymbolChange}) => {
             id="outlined-basic"
             label="Symbol"
             value={name}
-            onChange={(e)=>handleProductionSymbolChange(e.target.value, index)}
+            onChange={(e)=>handleProductionSymbolChange(e.target.value.replaceAll(' ', ''), index)}
             size="small"
             style={{width:"150px"}}
             required
@@ -103,7 +95,7 @@ const ProductionRuleInput = ({rule, prob, index, index2, handleProductionRuleCha
     )
 }
 
-const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxiom, setGlobalConstants, setGlobalProductions}) => {
+const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxiom, setGlobalConstants, setGlobalProductions, error, setError}) => {
     const [axiom, setAxiom] = useState(init_axiom);
     const [constants, setConstants] = useState(init_constants);
     const [productions, setProductions] = useState(init_productions);
@@ -111,6 +103,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     const [productionsSymbolExpand, setProductionsSymbolExpand] = useState(true);
     const [productionsRuleExpand, setProductionsRuleExpand] = useState([])
     const [constantsExpand, setConstantsExpand] = useState(true);
+    const [preset, setPreset] = useState("");
     const minDrawerWidth = 30;
 
     useEffect(()=>{
@@ -198,8 +191,9 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     }
 
 
-    const handleSubmit = (e) =>{
+    const handleSubmit = (e) =>{ //trigger rerender everytime by setting a random state from render component
         e.preventDefault();
+        setError("");
         setGlobalAxiom(axiom);
         setGlobalConstants(constants);
         setGlobalProductions(productions);
@@ -231,11 +225,39 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     const toggleProductionsSymbolExpand = () => {
         setProductionsSymbolExpand(!productionsSymbolExpand);
     }
+    const handlePresetChange = (e) => {
+
+    }
+
+    useEffect(() => {
+        console.log("PRESET VALUE IS", preset);
+    }, [preset]);
 
     return(
         <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
-            <div style={{position: "fixed", top: 0, left: 0, width: "100vw", zIndex: 99999, background: "#27a243",display: "flex", flexDirection: "row", alignItems: "center"}}>
-                <div style={{display:"flex", fontFamily: "Open Sans", color: "white", fontSize: "22px", fontWeight: 500, marginBottom: "10px", marginLeft: "10px"}}> {`L-Mesh`}</div>
+            <div style={{position: "fixed", top: 0, left: 0, width: "100vw", height: "50px", zIndex: 99999, background: "white",display: "flex", flexDirection: "row", alignItems: "center", borderWidth: "2px", borderColor: "gray", borderStyle: "none none solid none"}}>
+                <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "22px", fontWeight: 600, marginLeft: "10px"}}> {`L-Mesh`}</div>
+                
+                <div style={{marginLeft: "8px"}}>
+                    <FormControl fullWidth>
+                        <Select
+                            id="demo-simple-select"
+                            placeholder="Select preset"
+                            value={preset}
+                            onChange={(e)=>setPreset(e.target.value)}
+                            size="small"
+                            sx={{width: "200px", height: "37px"}}
+                        >
+                            <MenuItem value="">
+                                <em>Select preset</em>
+                            </MenuItem>
+                            <MenuItem value={"penis"}>Ten</MenuItem>
+                            <MenuItem value={20}>Twenty</MenuItem>
+                            <MenuItem value={30}>Thirty</MenuItem>
+                        </Select>
+                    </FormControl>
+                </div>
+                <div style={{width: "200px"}} className="camera-reset-button"> <Button variant="outlined" >Center Camera</Button> </div>
             </div>
             
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
@@ -252,7 +274,12 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                 > 
                     <div style={{display: "flex", flexDirection: "row", overflow: "hidden"}}>
                         <div style={{display: "flex", flexDirection: "column", marginLeft: "10px", width: "100%", overflow: "auto"}}>
+
                             <div style={{marginBottom: "8px", marginTop: "50px"}}>
+                                {error !="" && <Alert severity="error"> {error} </Alert>}
+                            </div>
+                            
+                            <div style={{marginBottom: "8px"}}>
                                 <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px"}}> {`Axiom (starting symbols)`}</div>
                                 <AxiomInput axiom={axiom} setAxiom={setAxiom}/>
                             </div>
@@ -356,6 +383,7 @@ const Editor = () =>{
     const [constants, setConstants] = useState([["num_gens", 5], ["col_rate", 0.2]]);
     const [productions, setProductions] = useState([["A", [["A A", "0.5"], ["A", "0.5"]] ], ["B", [["B B", "0.5"], ["B", "0.5"]]]]); //forgor to separate AA's with spaces
     const [error, setError] = useState("");
+    
 
     useEffect(() => {
         console.log("ERROR IS" ,error);
@@ -394,7 +422,7 @@ const Editor = () =>{
     return(
         <div style={{position: "absolute", top: "0", left: "0", bottom: "0", right: "0", overflow: "hidden"} }>
             <div style={{display: "flex", flexDirection: "row"}}>
-                <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions}/>
+                <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions} error={error} setError={setError} />
                 {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} setError={setError}/> }
             </div>
         </div>
