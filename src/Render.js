@@ -116,7 +116,12 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
     if(rule[i] == ',' && stack.length == 0) { //if theres a comma that is not in a bracket, this is a parameter
       console.log("PARAM TPYE: ",type, cur_param); //ohh math.evaluate is fucking up 
       const val = evaluate_expression(cur_param, baseRule, setError);
-      new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
+      try{
+        new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
+      }
+      catch {
+        setError(`Error setting param ${params[type][param_idx]} of symbol ${type}.`);
+      }
       cur_param = "";
       param_idx++;
       continue;
@@ -132,7 +137,14 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
   if(rule[rule.length - 1] != ',') {
     console.log("PARAM TPYE: ",type, cur_param); //ohh math.evaluate is fucking up 
     const val = evaluate_expression(cur_param, baseRule, setError);
-    new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
+
+    try{
+      new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
+    }
+    catch {
+      setError(`Error setting param ${params[type][param_idx]} of symbol ${type}.`);
+    }
+    
     cur_param = "";
     param_idx++;
   }
@@ -292,13 +304,13 @@ const Branch = ({pos, heading, radius, height, id, parent_id, color}) => {
     const {scene} = useThree();
 
     useEffect(()=>{
-      const parent = scene.getObjectByName(parent_id);
+      //const parent = scene.getObjectByName(parent_id);
       position_vector.set(pos[0], pos[1], pos[2]);
       heading_vector.set(heading[0], heading[1], heading[2]);
       heading_vector.normalize();
       local_q.setFromUnitVectors(ey, heading_vector);
       //console.log("CURRENT OBJECT HAS ID: ",id, "PARENT ID",parent_id);
-      if(parent_id) {
+      /*if(parent_id) {
         //console.log(parent);
         parent.add(meshRef.current);
         parent.worldToLocal(position_vector);
@@ -309,7 +321,7 @@ const Branch = ({pos, heading, radius, height, id, parent_id, color}) => {
         world_q.invert();
         // Convert the world rotation quaternion to local rotation quaternion
         local_q.multiplyQuaternions(world_q, local_q);
-      }
+      } */
      
       meshRef.current.position.copy(position_vector);
       meshRef.current.setRotationFromQuaternion(local_q);
@@ -343,7 +355,7 @@ const Shape = ({color, wid, points, id, parent_id}) => {
   const [geometry, setGeometry] = useState(new THREE.ShapeGeometry());
   
   useEffect(()=>{
-    const parent = scene.getObjectByName(parent_id);
+    //const parent = scene.getObjectByName(parent_id);
     mesh_shape = new THREE.Shape();
 
     position_vector.set(points[0][0], points[0][1], points[0][2]);
@@ -385,7 +397,7 @@ const Shape = ({color, wid, points, id, parent_id}) => {
   );
 }
 
-const ObjectsList = React.memo(({seed, objects}) => {
+const ObjectsList = ({seed, objects}) => {
   return(
     <>
       {objects.map((o)=>
@@ -393,9 +405,9 @@ const ObjectsList = React.memo(({seed, objects}) => {
       )}
     </>
   );
-});
+}
 
-const ShapesList = React.memo(({seed, shapes}) => {
+const ShapesList = ({seed, shapes}) => {
   return (
     <>
       {shapes.map((s)=>
@@ -403,9 +415,9 @@ const ShapesList = React.memo(({seed, shapes}) => {
       )}
     </>
   );
-});
+}
 
-const RenderItems = React.memo(({axiom, constants, productions, setError}) => {
+const RenderItems = ({axiom, constants, productions, setError}) => {
   const[objects, setObjects] = useState([]);
   const[shapes, setShapes] = useState([]);
   //{ means start a new shape, } means push the shape into the shapes array to be drawn
@@ -610,8 +622,8 @@ const RenderItems = React.memo(({axiom, constants, productions, setError}) => {
   //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
   return (
     <>
-      <gridHelper args={[100, 100]}/>
-      <axesHelper renderOrder={1} scale={[100, 100, 100]}/>
+      <gridHelper args={[50, 50]}/>
+      <axesHelper renderOrder={1} scale={[50, 50, 50]}/>
       <ambientLight />
       <pointLight position={[10, 10, 10]} />
 
@@ -621,7 +633,7 @@ const RenderItems = React.memo(({axiom, constants, productions, setError}) => {
       <Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
     </>
   )
-})
+}
 
 const Render = ({axiom, constants, productions, setError}) => {
   const controlsRef = useRef(null);

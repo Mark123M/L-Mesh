@@ -1,5 +1,5 @@
 import {useRef, useEffect, useState, useCallback} from "react";
-import { Button, TextField, IconButton, List, ListItem, Collapse, Divider, InputLabel, OutlinedInput, Drawer, Alert, Select, MenuItem, FormControl} from '@mui/material';
+import { Button, TextField, IconButton, List, ListItem, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import ExpandLess from '@mui/icons-material/ExpandLess';
@@ -104,6 +104,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     const [productionsRuleExpand, setProductionsRuleExpand] = useState([])
     const [constantsExpand, setConstantsExpand] = useState(true);
     const [preset, setPreset] = useState("");
+    const [animation, setAnimation] = useState(true);
     const minDrawerWidth = 30;
 
     useEffect(()=>{
@@ -247,17 +248,23 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                             onChange={(e)=>setPreset(e.target.value)}
                             size="small"
                             sx={{width: "200px", height: "37px"}}
+                            displayEmpty
                         >
                             <MenuItem value="">
-                                <em>Select preset</em>
+                                <em>Select Preset</em>
                             </MenuItem>
-                            <MenuItem value={"penis"}>Ten</MenuItem>
-                            <MenuItem value={20}>Twenty</MenuItem>
-                            <MenuItem value={30}>Thirty</MenuItem>
+                            <MenuItem value={"bush"}>Bush</MenuItem>
+                            <MenuItem value={"flower plant"}>Flower plant</MenuItem>
+                            <MenuItem value={"monopodial tree"}>Monopodial tree</MenuItem>
+                            <MenuItem value={"sympodial tree"}>Sympodial tree</MenuItem>
                         </Select>
                     </FormControl>
                 </div>
-                <div style={{width: "200px"}} className="camera-reset-button"> <Button variant="outlined" >Center Camera</Button> </div>
+                <FormControlLabel control={<Checkbox />} label="Animation" />
+                <FormControlLabel control={<Checkbox />} label="Show Grid" />
+                <div style={{width: "160px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
+                <div style={{width: "110px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="contained" >Reference</Button> </div>
+                <div style={{width: "90px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="contained" >EXPORT</Button> </div>
             </div>
             
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
