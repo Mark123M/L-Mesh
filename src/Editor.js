@@ -105,6 +105,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     const [constantsExpand, setConstantsExpand] = useState(true);
     const [preset, setPreset] = useState("");
     const [animation, setAnimation] = useState(true);
+    const [menuOpened, setMenuOpened] = useState(false);
     const minDrawerWidth = 30;
 
     useEffect(()=>{
@@ -230,9 +231,19 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
 
     }
 
+    const openMenu = () => {
+        setMenuOpened(true);
+    }
+    const closeMenu = () => {
+        setMenuOpened(false);
+    }
+
     useEffect(() => {
         console.log("PRESET VALUE IS", preset);
     }, [preset]);
+    useEffect(()=> {
+        console.log(menuOpened ? "menu is opened" : "menu is not opened");
+    }, [menuOpened])
 
     return(
         <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
@@ -264,7 +275,13 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                 <FormControlLabel control={<Checkbox />} label="Show Grid" />
                 <div style={{width: "160px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
                 <div style={{width: "110px"}} className="reference-button"> <Button sx={{width: "100%"}} variant="contained" >Reference</Button> </div>
-                <div style={{width: "90px"}} className="scene-export-button"> <Button sx={{width: "100%"}} variant="contained" >EXPORT</Button> </div>
+                <div style={{display: "flex", flexDirection: "column", marginTop: menuOpened ? "70px" : "0px"}}>
+                    <div style={{width: "90px"}} onMouseEnter={openMenu} onMouseLeave={closeMenu}> <Button sx={{width: "100%"}} variant="contained" >EXPORT</Button> </div>
+                    <div onMouseEnter={openMenu} onMouseLeave={closeMenu} style={{display: menuOpened? "inline" : "none", flexDirection: "column", zIndex:  999999, background: "white", borderColor: "gray", borderStyle: "solid solid solid solid", borderWidth: "1px"}}>
+                        <div className="scene-export-obj-button"> <MenuItem>Export as OBJ</MenuItem> </div>
+                        <div className="scene-export-gltf-button">  <MenuItem>Export as GLTF</MenuItem> </div>
+                    </div>
+                </div>
             </div>
             
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>

@@ -34,6 +34,7 @@ const init_state = {
 }
 
 const obj_exporter = new OBJExporter();
+const gltf_exporter = new GLTFExporter();
 
 //given a symbol, return the next generation of replacement symbols based on productions.
 const generate_rules = (symbol, productions, constants, params, setError) =>{
@@ -53,7 +54,7 @@ const generate_rules = (symbol, productions, constants, params, setError) =>{
   }
 
   if(!(symbol_str in productions)) {
-    console.log("symbol not found in productions");
+    //console.log("symbol not found in productions");
     return;
   }
   let new_symbols = [];
@@ -118,7 +119,7 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
 
   for(let i = 0; i < rule.length; i++) {
     if(rule[i] == ',' && stack.length == 0) { //if theres a comma that is not in a bracket, this is a parameter
-      console.log("PARAM TPYE: ",type, cur_param); //ohh math.evaluate is fucking up 
+      //console.log("PARAM TPYE: ",type, cur_param); //ohh math.evaluate is fucking up 
       const val = evaluate_expression(cur_param, baseRule, setError);
       try{
         new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
@@ -139,7 +140,7 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
     }
   }
   if(rule[rule.length - 1] != ',') {
-    console.log("PARAM TPYE: ",type, cur_param); //ohh math.evaluate is fucking up 
+    //console.log("PARAM TPYE: ",type, cur_param); //ohh math.evaluate is fucking up 
     const val = evaluate_expression(cur_param, baseRule, setError);
 
     try{
@@ -164,7 +165,7 @@ const get_prob = (prob, symbol, constants, setError) => {
   //strings are by reference but they are immutable so any operation will create a new string anyways 
   const baseProb = prob;
 
-  console.log("INITIAL PROB: ", prob);
+  //console.log("INITIAL PROB: ", prob);
   if(symbol != null) {
     Object.keys(symbol).forEach((s)=>{
       //console.log(s, symbol[s]);
@@ -179,7 +180,7 @@ const get_prob = (prob, symbol, constants, setError) => {
       prob = prob.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
     }
   })
-  console.log("SUBBED PROB: ",prob);
+  //console.log("SUBBED PROB: ",prob);
 
   return evaluate_expression(prob, baseProb, setError);
 
@@ -224,7 +225,7 @@ const evaluate_expression = (str, baseStr, setError) => {
   }
   catch {
     //change state for editorform
-    console.log("ERROR EVALUATING PROB:", baseStr, str);
+    //console.log("ERROR EVALUATING PROB:", baseStr, str);
     setError(`Error evaluating expression: ${baseStr}`);
     return -1;
   }
@@ -255,7 +256,7 @@ const split_symbol_string = (str) => {
     symbols.push(cur_symbol);
   } 
   cur_symbol = "";
-  console.log("SPLIT SYMBOLS ARE", symbols);
+  //console.log("SPLIT SYMBOLS ARE", symbols);
   return symbols;
 }
 const matrix_vector_mult = (m, v) =>{
@@ -396,7 +397,7 @@ const Shape = ({color, wid, points, id, parent_id}) => {
   }, [meshRef]); 
   return (
     <mesh mesh ref = {meshRef} name = {id} geometry={geometry}>
-      <meshPhongMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>
+      <meshStandardMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>
     </mesh>
   );
 }
@@ -622,8 +623,8 @@ const RenderItems = ({axiom, constants, productions, setError}) => {
   }, [shapes])
 
   useEffect(()=> {
-    document.querySelector('.scene-export-button').addEventListener('click', handleExport);
-    
+    document.querySelector('.scene-export-obj-button').addEventListener('click', handleExportObj);
+    document.querySelector('.scene-export-gltf-button').addEventListener('click', handleExportGltf);
   }, [])
 
 
@@ -631,21 +632,37 @@ const RenderItems = ({axiom, constants, productions, setError}) => {
   link.style.display = "none";
   document.body.appendChild(link);
 
-  function save(blob, filename) {
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
+  function saveObj(text) {
+    link.href = URL.createObjectURL(
+      new Blob([text], {type: "text/plain" })
+    )
+    link.download = "scene.obj"
+    link.click()
   }
 
-  function saveString(text, filename) {
-    save(new Blob([text], { type: "text/plain" }), filename);
+  function saveGltf(json) {
+    link.href = URL.createObjectURL(
+      new Blob([json], {type:"application/json" })
+    )
+    link.download = "scene.gltf"
+    link.click()
   }
 
-  const handleExport = () => {
-
+  const handleExportObj = () => {
     const result = obj_exporter.parse(scene);
-    saveString(result, "object.obj");
+    saveObj(result);
   };
+
+  const handleExportGltf = () => {
+    gltf_exporter.parse(scene, 
+      (gltf)=>{
+        console.log("GLTF MODEL:", JSON.stringify(gltf));
+        saveGltf(JSON.stringify(gltf));
+      }, 
+      (err)=>{
+        console.log(err);
+      });
+  }; 
 
   //console.log(math.evaluate('[1, 2, 3]').toArray());
   //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
