@@ -263,8 +263,8 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                 <FormControlLabel control={<Checkbox />} label="Animation" />
                 <FormControlLabel control={<Checkbox />} label="Show Grid" />
                 <div style={{width: "160px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
-                <div style={{width: "110px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="contained" >Reference</Button> </div>
-                <div style={{width: "90px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="contained" >EXPORT</Button> </div>
+                <div style={{width: "110px"}} className="reference-button"> <Button sx={{width: "100%"}} variant="contained" >Reference</Button> </div>
+                <div style={{width: "90px"}} className="scene-export-button"> <Button sx={{width: "100%"}} variant="contained" >EXPORT</Button> </div>
             </div>
             
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>

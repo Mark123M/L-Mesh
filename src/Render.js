@@ -8,6 +8,8 @@ import { ShapeUtils } from "three";
 import * as math from "mathjs"
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 //3D turtle interpreter
 //standard basis vectors
@@ -30,6 +32,8 @@ const init_state = {
     up: [0, 0, 1],
     pen: [[128, 83, 51], 0.4, true], 
 }
+
+const obj_exporter = new OBJExporter();
 
 //given a symbol, return the next generation of replacement symbols based on productions.
 const generate_rules = (symbol, productions, constants, params, setError) =>{
@@ -441,6 +445,7 @@ const RenderItems = ({axiom, constants, productions, setError}) => {
     "!": ["wid"],
     "'": ["color"],
   });
+  const { scene } = useThree();
 
   const generate = (symbols) => {
     let next = [];
@@ -616,7 +621,31 @@ const RenderItems = ({axiom, constants, productions, setError}) => {
     console.log("FINAL SHAPES", shapes);
   }, [shapes])
 
+  useEffect(()=> {
+    document.querySelector('.scene-export-button').addEventListener('click', handleExport);
+    
+  }, [])
 
+
+  const link = document.createElement("a");
+  link.style.display = "none";
+  document.body.appendChild(link);
+
+  function save(blob, filename) {
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  }
+
+  function saveString(text, filename) {
+    save(new Blob([text], { type: "text/plain" }), filename);
+  }
+
+  const handleExport = () => {
+
+    const result = obj_exporter.parse(scene);
+    saveString(result, "object.obj");
+  };
 
   //console.log(math.evaluate('[1, 2, 3]').toArray());
   //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
