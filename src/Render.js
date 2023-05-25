@@ -8,6 +8,8 @@ import { ShapeUtils } from "three";
 import * as math from "mathjs"
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 //3D turtle interpreter
 //standard basis vectors
@@ -31,10 +33,11 @@ const init_state = {
     pen: [[128, 83, 51], 0.4, true], 
 }
 
-let num_gens = 6;
+const obj_exporter = new OBJExporter();
+const gltf_exporter = new GLTFExporter();
 
 //given a symbol, return the next generation of replacement symbols based on productions.
-const generate_rules = (symbol, productions, constants, params) =>{
+const generate_rules = (symbol, productions, constants, params, setError) =>{
   let symbol_str = symbol.type;
 
   if(!params[symbol.type]){
@@ -51,15 +54,15 @@ const generate_rules = (symbol, productions, constants, params) =>{
   }
 
   if(!(symbol_str in productions)) {
-    console.log("symbol not found in productions");
+    //console.log("symbol not found in productions");
     return;
   }
   let new_symbols = [];
   productions[symbol_str].forEach((r)=>{
     new_symbols.push(
       {
-        rule: r.rule.split(" ").map((s)=>get_next_symbol(symbol, s, constants, params)),
-        prob: r.prob
+        rule: split_symbol_string(r.rule).map((s)=>get_next_symbol(symbol, s, constants, params, setError)),
+        prob: get_prob(r.prob, symbol, constants, setError)
       }
     )
   })
@@ -73,40 +76,15 @@ const generate_rules = (symbol, productions, constants, params) =>{
  
 }
 
-//"name" : val
-/*let constants = {
-  "num_gens": 5,
-  "delta": 22.5,
-  "edge": 0.4,
-  "init_wid": 0.04,
-  "hr": 0.707,
-  "col_rate": [0, 15, 0]
-} */
 
-//let axiom = "A(edge,init_wid,[0,80,0],[128,83,51])"
-
-//"symbol" : "replacements"
-/*let productions = {
-  //default productions
-
-  //custom productions
-  "A(len,wid,lcol,bcol)": [{rule: "[ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ]", prob:1.0}],
-  "F(len,lcol)": [{rule: "S(lcol) /(delta) /(delta) /(delta) /(delta) /(delta) F(len,lcol)", prob:1.0}],
-  "S(lcol)": [{rule: "F(edge,lcol) '(lcol) L", prob: 1.0}],
-  "L": [{rule: "[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", prob: 1.0}],
-
-} */
-//"name" : [param1, param2...]
-//SHOULD INCLUDE PRIMITIVE COMMANDS ALWAYS, LIKE F, f, !, [, ], {, }, /, \
-
-
-const get_axiom = (axiom, constants, params) =>{
-  return axiom.split(" ").map((s)=>get_next_symbol(null, s, constants, params));
+const get_axiom = (axiom, constants, params, setError) =>{
+  return split_symbol_string(axiom).map((s)=>get_next_symbol(null, s, constants, params, setError));
 }
 
-const get_next_symbol = (symbol, rule, constants, params) => {
-  
-  //console.log("INITIAL RULE IS: ", rule);
+const get_next_symbol = (symbol, rule, constants, params, setError) => {
+  const baseRule = rule;
+
+  //console.log("INITIAL RULE IS: ", rule, "WITH SYMBOL: ", symbol);
   rule = rule.replaceAll(' ', ''); //remove all whitespaces for safety
   if(!rule.includes('(')) { //if there are no parameters
     //console.log({type: rule});
@@ -141,9 +119,14 @@ const get_next_symbol = (symbol, rule, constants, params) => {
 
   for(let i = 0; i < rule.length; i++) {
     if(rule[i] == ',' && stack.length == 0) { //if theres a comma that is not in a bracket, this is a parameter
-      //console.log("PARAM TPYE: ",type,  params, new_symbol, cur_param); //ohh math.evaluate is fucking up 
-      const val = math.evaluate(cur_param);
-      new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
+      //console.log("PARAM TPYE: ",type, cur_param); //ohh math.evaluate is fucking up 
+      const val = evaluate_expression(cur_param, baseRule, setError);
+      try{
+        new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
+      }
+      catch {
+        setError(`Error setting param ${params[type][param_idx]} of symbol ${type}.`);
+      }
       cur_param = "";
       param_idx++;
       continue;
@@ -157,14 +140,50 @@ const get_next_symbol = (symbol, rule, constants, params) => {
     }
   }
   if(rule[rule.length - 1] != ',') {
-    //console.log("PARAM TPYE: ",type,  params, cur_param); //ohh math.evaluate is fucking up 
-    const val = math.evaluate(cur_param);
-    new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
+    //console.log("PARAM TPYE: ",type, cur_param); //ohh math.evaluate is fucking up 
+    const val = evaluate_expression(cur_param, baseRule, setError);
+
+    try{
+      new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
+    }
+    catch {
+      setError(`Error setting param ${params[type][param_idx]} of symbol ${type}.`);
+    }
+    
     cur_param = "";
     param_idx++;
   }
+
+  if(param_idx != Object.keys(params[type]).length) {
+    setError(`Invalid arguments for ${baseRule}: check arguments with production rule.`);
+  }
   //console.log(new_symbol);
   return(new_symbol);
+}
+
+const get_prob = (prob, symbol, constants, setError) => {
+  //strings are by reference but they are immutable so any operation will create a new string anyways 
+  const baseProb = prob;
+
+  //console.log("INITIAL PROB: ", prob);
+  if(symbol != null) {
+    Object.keys(symbol).forEach((s)=>{
+      //console.log(s, symbol[s]);
+      if(s != "type"){
+        prob = prob.replaceAll(s, JSON.stringify(symbol[s])); //replace all variables of the production with any fields of symbol 
+      }
+    })
+  }
+  //console.log("PRINTING CONSTANTS", constants);
+  Object.keys(constants).forEach((s)=>{
+    if(s != "num_gen"){
+      prob = prob.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
+    }
+  })
+  //console.log("SUBBED PROB: ",prob);
+
+  return evaluate_expression(prob, baseProb, setError);
+
 }
 
 const get_params = (productions, params) => {
@@ -200,7 +219,46 @@ function chooseOne(ruleSet) {
 }  
 
 
+const evaluate_expression = (str, baseStr, setError) => {
+  try {
+    return math.evaluate(str);
+  }
+  catch {
+    //change state for editorform
+    //console.log("ERROR EVALUATING PROB:", baseStr, str);
+    setError(`Error evaluating expression: ${baseStr}`);
+    return -1;
+  }
+}
+const split_symbol_string = (str) => {
+  let symbols = [];
+  let stack = [];
+  let cur_symbol = "";
 
+  for(let i = 0; i < str.length; i++) {
+    if(str[i] == ' ' && stack.length == 0) { //if theres a space that is not in a bracket, this is a symbol
+      if(cur_symbol != "") {
+        symbols.push(cur_symbol);
+      } 
+      cur_symbol = "";
+      continue;
+    }
+    cur_symbol = cur_symbol + str[i];
+    if(str[i] == '(') { //[ and ] are valid symbols
+      stack.push(str[i]);
+    }
+    else if (str[i] == ')') {
+      stack.pop();
+    }
+  }
+
+  if(cur_symbol != "") {
+    symbols.push(cur_symbol);
+  } 
+  cur_symbol = "";
+  //console.log("SPLIT SYMBOLS ARE", symbols);
+  return symbols;
+}
 const matrix_vector_mult = (m, v) =>{
   return vector_add(scalar_mult(v[0], m.heading), vector_add(scalar_mult(v[1], m.left), scalar_mult(v[2], m.up)));
 }
@@ -251,13 +309,13 @@ const Branch = ({pos, heading, radius, height, id, parent_id, color}) => {
     const {scene} = useThree();
 
     useEffect(()=>{
-      const parent = scene.getObjectByName(parent_id);
+      //const parent = scene.getObjectByName(parent_id);
       position_vector.set(pos[0], pos[1], pos[2]);
       heading_vector.set(heading[0], heading[1], heading[2]);
       heading_vector.normalize();
       local_q.setFromUnitVectors(ey, heading_vector);
       //console.log("CURRENT OBJECT HAS ID: ",id, "PARENT ID",parent_id);
-      if(parent_id) {
+      /*if(parent_id) {
         //console.log(parent);
         parent.add(meshRef.current);
         parent.worldToLocal(position_vector);
@@ -268,7 +326,7 @@ const Branch = ({pos, heading, radius, height, id, parent_id, color}) => {
         world_q.invert();
         // Convert the world rotation quaternion to local rotation quaternion
         local_q.multiplyQuaternions(world_q, local_q);
-      }
+      } */
      
       meshRef.current.position.copy(position_vector);
       meshRef.current.setRotationFromQuaternion(local_q);
@@ -302,7 +360,7 @@ const Shape = ({color, wid, points, id, parent_id}) => {
   const [geometry, setGeometry] = useState(new THREE.ShapeGeometry());
   
   useEffect(()=>{
-    const parent = scene.getObjectByName(parent_id);
+    //const parent = scene.getObjectByName(parent_id);
     mesh_shape = new THREE.Shape();
 
     position_vector.set(points[0][0], points[0][1], points[0][2]);
@@ -339,12 +397,32 @@ const Shape = ({color, wid, points, id, parent_id}) => {
   }, [meshRef]); 
   return (
     <mesh mesh ref = {meshRef} name = {id} geometry={geometry}>
-      <meshPhongMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>
+      <meshStandardMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>
     </mesh>
   );
 }
 
-const Render = ({axiom, constants, productions}) => {
+const ObjectsList = ({seed, objects}) => {
+  return(
+    <>
+      {objects.map((o)=>
+        <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
+      )}
+    </>
+  );
+}
+
+const ShapesList = ({seed, shapes}) => {
+  return (
+    <>
+      {shapes.map((s)=>
+        <Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
+      )}
+    </>
+  );
+}
+
+const RenderItems = ({axiom, constants, productions, setError}) => {
   const[objects, setObjects] = useState([]);
   const[shapes, setShapes] = useState([]);
   //{ means start a new shape, } means push the shape into the shapes array to be drawn
@@ -368,16 +446,14 @@ const Render = ({axiom, constants, productions}) => {
     "!": ["wid"],
     "'": ["color"],
   });
-
-  const canvas_ref = useRef(null);
-
+  const { scene } = useThree();
 
   const generate = (symbols) => {
     let next = [];
   
     for(let i = 0; i < symbols.length; i++) {
       let s = symbols[i];
-      let s2 = generate_rules(s, productions, constants, params);
+      let s2 = generate_rules(s, productions, constants, params, setError);
       if(s2){
         next = next.concat(s2);
       }
@@ -523,7 +599,7 @@ const Render = ({axiom, constants, productions}) => {
   useEffect(()=>{
     console.log("All params:",params);
       
-    let newSymbols = get_axiom(axiom, constants, params); //start with the axiom 
+    let newSymbols = get_axiom(axiom, constants, params, setError); //start with the axiom 
     console.log("INITIAL SYMBOLS", newSymbols);  
     for(let i = 0; i < constants["num_gens"]; i ++) {
       newSymbols = generate(newSymbols);
@@ -546,24 +622,88 @@ const Render = ({axiom, constants, productions}) => {
     console.log("FINAL SHAPES", shapes);
   }, [shapes])
 
+  useEffect(()=> {
+    document.querySelector('.scene-export-obj-button').addEventListener('click', handleExportObj);
+    document.querySelector('.scene-export-gltf-button').addEventListener('click', handleExportGltf);
+  }, [])
+
+
+  const link = document.createElement("a");
+  link.style.display = "none";
+  document.body.appendChild(link);
+
+  function saveObj(text) {
+    link.href = URL.createObjectURL(
+      new Blob([text], {type: "text/plain" })
+    )
+    link.download = "scene.obj"
+    link.click()
+  }
+
+  function saveGltf(json) {
+    link.href = URL.createObjectURL(
+      new Blob([json], {type:"application/json" })
+    )
+    link.download = "scene.gltf"
+    link.click()
+  }
+
+  const handleExportObj = () => {
+    const result = obj_exporter.parse(scene);
+    saveObj(result);
+  };
+
+  const handleExportGltf = () => {
+    gltf_exporter.parse(scene, 
+      (gltf)=>{
+        console.log("GLTF MODEL:", JSON.stringify(gltf));
+        saveGltf(JSON.stringify(gltf));
+      }, 
+      (err)=>{
+        console.log(err);
+      });
+  }; 
+
   //console.log(math.evaluate('[1, 2, 3]').toArray());
   //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
+  return (
+    <>
+      <gridHelper args={[50, 50]}/>
+      <axesHelper renderOrder={1} scale={[50, 50, 50]}/>
+      <ambientLight />
+      <pointLight position={[10, 10, 10]} />
+
+      <ObjectsList objects={objects}/>
+      <ShapesList shapes={shapes}/>
+      
+      <Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
+    </>
+  )
+}
+
+const Render = ({axiom, constants, productions, setError}) => {
+  const controlsRef = useRef(null);
+  const canvas_ref = useRef(null);
+
+  const resetCamera = () => {
+    if(controlsRef.current){
+      controlsRef.current.reset();
+    }
+  }
+
+  useEffect(()=>{
+    document.querySelector('.camera-reset-button').addEventListener('click', resetCamera);
+  }, [])
+  
 
   return (
-    <div ref={canvas_ref} style={{top: "0", bottom: "0", right: "0", width: "100%"} }>
+    <div ref={canvas_ref} style={{top: "0", bottom: "0", left: "0", right: "0", position: "fixed", width: "100%"} }>
         <Canvas>
-            <PerspectiveCamera makeDefault position={[4, 4, 10]} />
-            <OrbitControls enableZoom enablePan enableRotate/>
-            <axesHelper renderOrder={1} scale={[5, 5, 5]}/>
-            <ambientLight />
-            <pointLight position={[10, 10, 10]} />
-            {objects.map((o)=>
-              <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
-            )}
-            {shapes.map((s)=>
-              <Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
-            )}
-            <Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
+
+            <PerspectiveCamera makeDefault position={[3, 3, 10]}/>
+            <OrbitControls ref={controlsRef} enableZoom enablePan enableRotate/>
+
+            <RenderItems axiom={axiom} constants={constants} productions={productions} setError={setError} />
         </Canvas>
     </div>
   )

@@ -1,78 +1,125 @@
-import {useRef, useEffect, useState} from "react";
-import { Button, TextField, IconButton} from '@mui/material';
+import {useRef, useEffect, useState, useCallback} from "react";
+import { Button, TextField, IconButton, List, ListItem, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 import { v4 as uuidv4 } from "uuid";
 import "@fontsource/open-sans";
 import React from 'react'
 import ReactDOM from 'react-dom'
-import Render from "./plants/Render";
+import Render from "./Render";
 
-const Axiom_Input = ({val, setAxiom}) => {
+const AxiomInput = ({axiom, setAxiom}) => {
     return(
-        <div style={{display: "flex", flexDirection: "row"}}>
-        </div>
+        <TextField
+            id="outlined-basic"
+            label="Symbols"
+            value={axiom}
+            onChange={(e)=>setAxiom(e.target.value)}
+            size="small"
+            style={{width:"150px", marginRight: "8px"}}
+            required
+        />
     )
 }
 
-const Const_Input = ({name, val, idx, constants, setConstants}) => { 
-    const[nameState, setNameState] = useState(name);
-    const [valState, setValState] = useState(val);
-    
-    useEffect(()=>{
-        console.log(name, val, idx, constants);
-    },[]);  
-    
-    //updates the constants array of the parent component
-    const update_constants = (e, type) =>{
-        console.log("getting updated", e.target, type);
-        const cur_array = JSON.parse(JSON.stringify(constants));
-        cur_array[idx][type] = e.target.value;
-        setConstants(cur_array);
-    }
- 
-    return(
-        <div style={{display: "flex", flexDirection: "row", marginBottom: "10px"}}>
-            <TextField
-                id="outlined-basic"
-                className="const-name"
-                label="Name"
-                value={nameState}
-                onChange={(e)=>setNameState(e.target.value)}
-                onBlur={(e)=>update_constants(e, 0)}
-                size="small"
-                style={{width:"150px", marginRight: "10px"}}
-                required
-            />
-            <TextField
-                id="outlined-basic"
-                className="const-value"
-                label="Value"
-                value={valState}
-                onChange={(e)=>setValState(e.target.value)}
-                onBlur={(e)=>update_constants(e, 1)}
-                size="small"
-                style={{width:"120px"}}
-                required
-            />
-            <IconButton>
-                <CloseIcon/>
-            </IconButton>
-        </div>
+const ConstantInput = ({name, val, index, handleConstantInputChange}) => {
+    return (
+        <>
+        <TextField
+            key={`const-name-${index}`}
+            id="outlined-basic"
+            label="Name"
+            value={name}
+            onChange={(e)=>handleConstantInputChange(e.target.value, index, 0)}
+            size="small"
+            style={{width:"150px", marginRight: "8px"}}
+            required
+        />
+        <TextField
+            key={`const-val-${index}`}
+            id="outlined-basic"
+            label="Value"
+            value={val}
+            onChange={(e)=>handleConstantInputChange(e.target.value, index, 1)}
+            size="small"
+            style={{width:"150px"}}
+            required
+        />
+        </>
     )
 }
 
-const Prod_Input = ({name, val, idx, productions, setProductions}) => {
-
+const ProductionSymbolInput = ({name, index, handleProductionSymbolChange}) => {
+    return(
+        <TextField
+            key={`prod-symbol-name-${index}`}
+            id="outlined-basic"
+            label="Symbol"
+            value={name}
+            onChange={(e)=>handleProductionSymbolChange(e.target.value.replaceAll(' ', ''), index)}
+            size="small"
+            style={{width:"150px"}}
+            required
+        />
+    )
 }
 
-const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxiom, setGlobalConstants, setGlobalProductions}) => {
+const ProductionRuleInput = ({rule, prob, index, index2, handleProductionRuleChange}) => {
+    return (
+        <>
+        <TextField
+            key={`prod-rule-name-${index}-${index2}`}
+            id="outlined-textarea"
+            label="rule"
+            value={rule}
+            onChange={(e)=>handleProductionRuleChange(e.target.value, index, index2, 0)}
+            size="small"
+            style={{width:"100%", marginRight: "8px"}}
+            multiline
+            required
+        />
+        <TextField
+            key={`prod-rule-prob-${index}-${index2}`}
+            id="outlined-basic"
+            label="p"
+            value={prob}
+            onChange={(e)=>handleProductionRuleChange(e.target.value, index, index2, 1)}
+            size="small"
+            style={{width:"80px"}}
+            required
+        />
+        
+        </>
+    )
+}
+
+const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxiom, setGlobalConstants, setGlobalProductions, error, setError}) => {
     const [axiom, setAxiom] = useState(init_axiom);
     const [constants, setConstants] = useState(init_constants);
     const [productions, setProductions] = useState(init_productions);
+    const [drawerWidth, setDrawerWidth] = useState(650);
+    const [productionsSymbolExpand, setProductionsSymbolExpand] = useState(true);
+    const [productionsRuleExpand, setProductionsRuleExpand] = useState([])
+    const [constantsExpand, setConstantsExpand] = useState(true);
+    const [preset, setPreset] = useState("");
+    const [animation, setAnimation] = useState(true);
+    const [menuOpened, setMenuOpened] = useState(false);
+    const minDrawerWidth = 30;
 
     useEffect(()=>{
         //console.log("CURRENT PRODUCTIONS ARE", productions);
+        const newProductionsExpand = [...productionsRuleExpand];
+        while(newProductionsExpand.length < productions.length) {
+            newProductionsExpand.push(true);
+        }
+        setProductionsRuleExpand(newProductionsExpand);
     }, [axiom, constants, productions])
+
+    useEffect(()=>{
+        console.log('CURRENT EXPANSION', productionsRuleExpand)
+    }, [productionsRuleExpand])
 
     const handleConstantInputChange = (val, index, type) =>{
         const new_constants = JSON.parse(JSON.stringify(constants));
@@ -84,6 +131,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
         const new_constants = JSON.parse(JSON.stringify(constants));
         new_constants.push(["", ""]);
         setConstants(new_constants);
+        setConstantsExpand(true);
     }
 
     const removeConstant = (index) =>{
@@ -111,20 +159,29 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
         const new_productions = JSON.parse(JSON.stringify(productions));
         new_productions.push(["", [["", ""]]]);
         setProductions(new_productions);
+        setProductionsSymbolExpand(true);
     }
     const addProductionRule = (index) => {
         const new_productions = JSON.parse(JSON.stringify(productions));
+        const newProductionsExpand = [...productionsRuleExpand];
         //console.log(new_productions[index]);
         new_productions[index][1].push(["", ""]);
+        newProductionsExpand[index] = true;
+
         setProductions(new_productions);
+        setProductionsRuleExpand(newProductionsExpand);
     } 
     const removeProductionSymbol = (index) => {
         const new_productions = JSON.parse(JSON.stringify(productions));
+        const newProductionsExpand = [...productionsRuleExpand]; //shallow copy
         for(let i = index; i < productions.length - 1; i++) {
             new_productions[i] = new_productions[i+1]; //2 3 4 5 6
+            newProductionsExpand[i] = newProductionsExpand[i+1];
         }
         new_productions.pop();
+        newProductionsExpand.pop();
         setProductions(new_productions);
+        setProductionsRuleExpand(newProductionsExpand);
     }
     const removeProductionRule = (index, index2) => {
         const new_productions = JSON.parse(JSON.stringify(productions));
@@ -136,118 +193,210 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     }
 
 
-
-    const handleSubmit = (e) =>{
+    const handleSubmit = (e) =>{ //trigger rerender everytime by setting a random state from render component
         e.preventDefault();
+        setError("");
         setGlobalAxiom(axiom);
         setGlobalConstants(constants);
         setGlobalProductions(productions);
     }
 
+    const handleMouseDown = (e) => {
+        document.addEventListener("mouseup", handleMouseUp, true);
+        document.addEventListener("mousemove", handleMouseMove, true);
+    };
+    const handleMouseUp = () => {
+        document.removeEventListener("mouseup", handleMouseUp, true);
+        document.removeEventListener("mousemove", handleMouseMove, true);
+    };
+    const handleMouseMove = useCallback(e => {
+        const newWidth = e.clientX - document.body.offsetLeft;
+        if (newWidth > minDrawerWidth) {
+          setDrawerWidth(newWidth);
+        }
+    }, []);
+    const handleProductionsExpand = (index) => {
+        //console.log("INDEX CLICKED", index, "NEW STATE", productionsRuleExpand.splice(index, 1, !productionsRuleExpand[index]));
+        const newProductionsExpand = [...productionsRuleExpand];
+        newProductionsExpand[index] = !newProductionsExpand[index];
+        setProductionsRuleExpand(newProductionsExpand);
+    }
+    const toggleConstantsExpand = () => {
+        setConstantsExpand(!constantsExpand);
+    }
+    const toggleProductionsSymbolExpand = () => {
+        setProductionsSymbolExpand(!productionsSymbolExpand);
+    }
+    const handlePresetChange = (e) => {
+
+    }
+
+    const openMenu = () => {
+        setMenuOpened(true);
+    }
+    const closeMenu = () => {
+        setMenuOpened(false);
+    }
+
+    useEffect(() => {
+        console.log("PRESET VALUE IS", preset);
+    }, [preset]);
+    useEffect(()=> {
+        console.log(menuOpened ? "menu is opened" : "menu is not opened");
+    }, [menuOpened])
+
     return(
-        <div style={{overflow: "auto", height: "100vh", width: "1000px"}}>
-            <form onSubmit={(e)=>handleSubmit(e)}>
-                <div style={{display: "flex", flexDirection: "column"}}>
-                    
-                    <div style={{fontFamily: "Open Sans", marginBottom: "10px"}}> {`Axiom (starting symbols)`}</div>
-                    <TextField
-                        id="outlined-basic"
-                        label="Symbols"
-                        value={axiom}
-                        onChange={(e)=>setAxiom(e.target.value)}
-                        size="small"
-                        style={{width:"150px", marginRight: "10px"}}
-                        required
-                    />
-            
-                    <div style={{fontFamily: "Open Sans", marginBottom: "15px", marginTop: "20px"}}> {`Constants`}</div>
-                    {constants.map((c, index)=>(
-                        <div key={`const-div-${index}`} style={{display: "flex", flexDirection: "row", marginBottom: "10px"}}>
-                            <TextField
-                                key={`const-name-${index}`}
-                                id="outlined-basic"
-                                label="Name"
-                                value={c[0]}
-                                onChange={(e)=>handleConstantInputChange(e.target.value, index, 0)}
-                                size="small"
-                                style={{width:"150px", marginRight: "10px"}}
-                                required
-                            />
-                            <TextField
-                                key={`const-val-${index}`}
-                                id="outlined-basic"
-                                label="Value"
-                                value={c[1]}
-                                onChange={(e)=>handleConstantInputChange(e.target.value, index, 1)}
-                                size="small"
-                                style={{width:"120px"}}
-                                required
-                            />
-                            <IconButton key={`const-button-${index}`} size="small" onClick={e=>removeConstant(index)}>
-                                <CloseIcon/>
-                            </IconButton>
-                        </div>
-                    ))}
-                    
-                    <div style={{width: "200px"}}> <Button variant="outlined" onClick={addConstant}>Add Constant</Button> </div>
-                    
-                    <div style={{fontFamily: "Open Sans", marginBottom: "15px", marginTop: "20px"}}> {`Production Rules`}</div>
-                    
-                    {productions.map((p, index)=>(
-                        <div key={`prod-div-${index}`} style={{display: "flex", flexDirection: "column", marginBottom: "10px"}}>
-                            <div key={`prod-symbol-div-${index}`} style={{display: "flex", flexDirection: "row", marginBottom: "10px"}}>
-                                <TextField
-                                    key={`prod-symbol-name-${index}`}
-                                    id="outlined-basic"
-                                    label="Symbol"
-                                    value={p[0]}
-                                    onChange={(e)=>handleProductionSymbolChange(e.target.value, index)}
-                                    size="small"
-                                    style={{width:"150px", marginRight: "10px"}}
-                                    required
-                                />
-
-                                <IconButton key={`prod-symbol-button-${index}`} size="small" onClick={e=>removeProductionSymbol(index)}>
-                                    <CloseIcon/>
-                                </IconButton>
-                            </div>
-                            {p[1].map((r, index2)=>{
-                                //console.log(p, r);
-                                return(
-                                <div key={`prod-rule-div-${index}-${index2}`} style={{display: "flex", flexDirection: "row", marginBottom: "10px"}}>
-                                    <TextField
-                                        key={`prod-rule-name-${index}-${index2}`}
-                                        id="outlined-basic"
-                                        label="rule"
-                                        value={r[0]}
-                                        onChange={(e)=>handleProductionRuleChange(e.target.value, index, index2, 0)}
-                                        size="small"
-                                        style={{width:"500px", marginRight: "10px"}}
-                                        required
-                                    />
-                                    <TextField
-                                        key={`prod-rule-prob-${index}-${index2}`}
-                                        id="outlined-basic"
-                                        label="p"
-                                        value={r[1]}
-                                        onChange={(e)=>handleProductionRuleChange(e.target.value, index, index2, 1)}
-                                        size="small"
-                                        style={{width:"80px", marginRight: "10px"}}
-                                        required
-                                    />
-                                    <IconButton key={`prod-rule-button-${index}-${index2}`} size="small" onClick={e=>removeProductionRule(index, index2)}>
-                                        <CloseIcon/>
-                                    </IconButton>
-                                </div>)
-                            })}
-                            <div style={{width: "200px"}}> <Button variant="outlined" onClick={e=>addProductionRule(index)}>Add Rule</Button> </div>
-                        </div>
-                    ))}
-
-                    <div style={{width: "200px"}}> <Button variant="outlined" onClick={addProductionSymbol}>Add Ruleset</Button> </div>
-
-                    <div style={{width: "200px"}}> <Button variant="outlined" type="submit" >Generate Model</Button> </div>
+        <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
+            <div style={{position: "fixed", top: 0, left: 0, width: "100vw", height: "50px", zIndex: 99999, background: "white",display: "flex", flexDirection: "row", alignItems: "center", borderWidth: "2px", borderColor: "gray", borderStyle: "none none solid none"}}>
+                <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "22px", fontWeight: 600, marginLeft: "10px"}}> {`L-Mesh`}</div>
+                
+                <div style={{marginLeft: "8px"}}>
+                    <FormControl fullWidth>
+                        <Select
+                            id="demo-simple-select"
+                            placeholder="Select preset"
+                            value={preset}
+                            onChange={(e)=>setPreset(e.target.value)}
+                            size="small"
+                            sx={{width: "200px", height: "37px"}}
+                            displayEmpty
+                        >
+                            <MenuItem value="">
+                                <em>Select Preset</em>
+                            </MenuItem>
+                            <MenuItem value={"bush"}>Bush</MenuItem>
+                            <MenuItem value={"flower plant"}>Flower plant</MenuItem>
+                            <MenuItem value={"monopodial tree"}>Monopodial tree</MenuItem>
+                            <MenuItem value={"sympodial tree"}>Sympodial tree</MenuItem>
+                        </Select>
+                    </FormControl>
                 </div>
+                <FormControlLabel control={<Checkbox />} label="Animation" />
+                <FormControlLabel control={<Checkbox />} label="Show Grid" />
+                <div style={{width: "160px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
+                <div style={{width: "110px"}} className="reference-button"> <Button sx={{width: "100%"}} variant="contained" >Reference</Button> </div>
+                <div style={{display: "flex", flexDirection: "column", marginTop: menuOpened ? "70px" : "0px"}}>
+                    <div style={{width: "90px"}} onMouseEnter={openMenu} onMouseLeave={closeMenu}> <Button sx={{width: "100%"}} variant="contained" >EXPORT</Button> </div>
+                    <div onMouseEnter={openMenu} onMouseLeave={closeMenu} style={{display: menuOpened? "inline" : "none", flexDirection: "column", zIndex:  999999, background: "white", borderColor: "gray", borderStyle: "solid solid solid solid", borderWidth: "1px"}}>
+                        <div className="scene-export-obj-button"> <MenuItem>Export as OBJ</MenuItem> </div>
+                        <div className="scene-export-gltf-button">  <MenuItem>Export as GLTF</MenuItem> </div>
+                    </div>
+                </div>
+            </div>
+            
+            <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
+                <Drawer
+                    sx={{
+                        flexShrink: 0,
+                        '& .MuiDrawer-paper': {
+                            width: drawerWidth,
+                            boxSizing: 'border-box',
+                        },
+                    }}
+                    variant="permanent"
+                    anchor="left"
+                > 
+                    <div style={{display: "flex", flexDirection: "row", overflow: "hidden"}}>
+                        <div style={{display: "flex", flexDirection: "column", marginLeft: "10px", width: "100%", overflow: "auto"}}>
+
+                            <div style={{marginBottom: "8px", marginTop: "50px"}}>
+                                {error !="" && <Alert severity="error"> {error} </Alert>}
+                            </div>
+                            
+                            <div style={{marginBottom: "8px"}}>
+                                <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px"}}> {`Axiom (starting symbols)`}</div>
+                                <AxiomInput axiom={axiom} setAxiom={setAxiom}/>
+                            </div>
+
+                            <div style={{display: "flex", flexDirection: "row"}}>
+                                <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px", marginTop: "10px"}}> {`Constants`}</div>
+                                <div style={{width: "25px", height: "25px"}}>
+                                    {constantsExpand ? 
+                                    <IconButton onClick={toggleConstantsExpand}>
+                                        <ExpandMore /> 
+                                    </IconButton>: 
+                                    <IconButton onClick={toggleConstantsExpand}>
+                                        <ExpandLess /> 
+                                    </IconButton>} 
+                                </div>
+                            </div>
+                            
+                            <div style={{display: "flex", flexDirection: "column", marginBottom: "12px"}}>
+                                <div>
+                                    <Collapse in={constantsExpand} timeout="auto" unmountOnExit>
+                                        {constants.map((c, index)=>(
+                                            <div key={`const-div-${index}`} style={{display: "flex", flexDirection: "row", marginBottom: "8px"}}>
+                                                <ConstantInput name={c[0]} val={c[1]} index={index} handleConstantInputChange={handleConstantInputChange}/>
+                                                <IconButton sx={{width: "25px", height: "25px"}} key={`const-button-${index}`} size="small" onClick={e=>removeConstant(index)}>
+                                                    <CloseIcon/>
+                                                </IconButton>
+                                            </div>
+                                        ))}
+                                    </Collapse>
+                                </div>
+                                <div style={{width: "200px"}}> <Button variant="outlined" size="small" onClick={addConstant}>+ Constant</Button> </div>
+                            </div>
+                            
+                            <div style={{display: "flex", flexDirection: "row"}}>
+                                <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px", marginTop: "10px"}}> {`Production Rules`}</div>
+                                <div style={{width: "25px", height: "25px"}}>
+                                    {productionsSymbolExpand ? 
+                                    <IconButton onClick={toggleProductionsSymbolExpand}>
+                                        <ExpandMore /> 
+                                    </IconButton>: 
+                                    <IconButton onClick={toggleProductionsSymbolExpand}>
+                                        <ExpandLess /> 
+                                    </IconButton>} 
+                                </div>
+                            </div>
+
+                            <div style={{display: "flex", flexDirection: "column", marginBottom: "20px"}}>
+                                <div>
+                                    <Collapse in={productionsSymbolExpand} timeout="auto" unmountOnExit>
+                                        {productions.map((p, index)=>(
+                                            <div key={`prod-div-${index}`} style={{display: "flex", flexDirection: "column", marginBottom: "8px"}}>
+                                                <div key={`prod-symbol-div-${index}`} style={{display: "flex", flexDirection: "row", marginBottom: "8px"}}>
+                                                    <ProductionSymbolInput name={p[0]} index={index} handleProductionSymbolChange={handleProductionSymbolChange}/>
+                                                    <IconButton key={`prod-symbol-button-${index}`} size="small" onClick={e=>removeProductionSymbol(index)}>
+                                                        <CloseIcon/>
+                                                    </IconButton>
+                                                    {productionsRuleExpand[index] ? 
+                                                    <IconButton onClick={e=>handleProductionsExpand(index)}>
+                                                        <ExpandMore /> 
+                                                    </IconButton>: 
+                                                    <IconButton onClick={e=>handleProductionsExpand(index)}>
+                                                        <ExpandLess /> 
+                                                    </IconButton>}
+                                            
+                                                </div>
+                                                <Collapse sx={{marginLeft: 2}} in={productionsRuleExpand[index]} timeout="auto" unmountOnExit>
+                                                    {p[1].map((r, index2)=>{
+                                                        //console.log(p, r);
+                                                        return(
+                                                        <div key={`prod-rule-div-${index}-${index2}`} style={{display: "flex", flexDirection: "row", marginBottom: "8px"}}>
+                                                            <ProductionRuleInput rule = {r[0]} prob = {r[1]} index = {index} index2 = {index2} handleProductionRuleChange = {handleProductionRuleChange}/>
+                                                            <IconButton sx={{width: "25px", height: "25px"}} key={`prod-rule-button-${index}-${index2}`} size="small" onClick={e=>removeProductionRule(index, index2)}>
+                                                                <CloseIcon/>
+                                                            </IconButton>
+                                                        </div>)
+                                                    })}
+                                                </Collapse>
+                                                <div style={{width: "200px", marginBottom:"10px"}}> <Button variant="outlined" size="small" onClick={e=>addProductionRule(index)}>+ Rule</Button> </div>
+                                            </div>
+                                        ))}
+                                    </Collapse>
+                                </div>
+                                <div style={{width: "200px"}}> <Button variant="outlined" size="small" onClick={addProductionSymbol}>+ Production</Button> </div>
+                            </div>
+                            <div style={{width: "200px"}}> <Button variant="outlined" type="submit" >Generate Model</Button> </div>
+                        </div>
+
+                        <div onMouseDown={e => handleMouseDown(e)} style={{display: "flex", flexDirection: "column", cursor: "ew-resize", width: "4px", height: "100vh", borderStyle: "none double none none", borderColor: "gray", borderWidth: "4px"}}/>
+                         
+                
+                    </div>
+                </Drawer>
+                
             </form>
         </div>
     )
@@ -256,7 +405,13 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
 const Editor = () =>{
     const [axiom, setAxiom] = useState("A");
     const [constants, setConstants] = useState([["num_gens", 5], ["col_rate", 0.2]]);
-    const [productions, setProductions] = useState([["A", [["A A", 0.5], ["A", 0.5]] ], ["B", [["B B", 0.5], ["B", 0.5]]]]); //forgor to separate AA's with spaces
+    const [productions, setProductions] = useState([["A", [["A A", "0.5"], ["A", "0.5"]] ], ["B", [["B B", "0.5"], ["B", "0.5"]]]]); //forgor to separate AA's with spaces
+    const [error, setError] = useState("");
+    
+
+    useEffect(() => {
+        console.log("ERROR IS" ,error);
+    }, [error]);
 
     const getConstants = (constants) => {
         let constantsObj = {};
@@ -291,8 +446,8 @@ const Editor = () =>{
     return(
         <div style={{position: "absolute", top: "0", left: "0", bottom: "0", right: "0", overflow: "hidden"} }>
             <div style={{display: "flex", flexDirection: "row"}}>
-                <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions}/>
-                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)}/> }
+                <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions} error={error} setError={setError} />
+                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} setError={setError}/> }
             </div>
         </div>
     )
