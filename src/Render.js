@@ -10,6 +10,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { PerformanceMonitor } from "@react-three/drei";
 
 //3D turtle interpreter
 //standard basis vectors
@@ -354,7 +355,7 @@ const Branch = ({pos, heading, radius, height, id, parent_id, color}) => {
     return (
         <mesh ref = {meshRef} name = {id} geometry = {base_geometry}> 
             {/*<cylinderGeometry args={[radius, radius, height, 6]}/> */}
-            <meshStandardMaterial color={rgbToHex(color, true)}/>
+            <meshBasicMaterial color={rgbToHex(color, true)}/>
         </mesh>
     )
 }
@@ -403,7 +404,7 @@ const Shape = ({color, wid, points, id, parent_id}) => {
   }, [meshRef]); 
   return (
     <mesh mesh ref = {meshRef} name = {id} geometry={geometry}>
-      <meshStandardMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>
+      <meshBasicMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>
     </mesh>
   );
 }
@@ -700,6 +701,8 @@ const RenderItems = ({axiom, constants, productions, setError}) => {
 const Render = ({axiom, constants, productions, setError}) => {
   const controlsRef = useRef(null);
   const canvas_ref = useRef(null);
+  const [dpr, setDpr] = useState(1);
+
 
   const resetCamera = () => {
     if(controlsRef.current){
@@ -714,12 +717,13 @@ const Render = ({axiom, constants, productions, setError}) => {
 
   return (
     <div ref={canvas_ref} style={{top: "0", bottom: "0", left: "0", right: "0", position: "fixed", width: "100%"} }>
-        <Canvas>
-
+        <Canvas dpr={dpr}>
+          <PerformanceMonitor onChange={({ factor }) => {console.log(factor); setDpr(factor);}} bounds={number=>[40, 60]}>
             <PerspectiveCamera makeDefault position={[3, 3, 10]}/>
             <OrbitControls ref={controlsRef} enableZoom enablePan enableRotate/>
 
             <RenderItems axiom={axiom} constants={constants} productions={productions} setError={setError} />
+          </PerformanceMonitor>
         </Canvas>
     </div>
   )

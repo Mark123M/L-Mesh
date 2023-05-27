@@ -227,9 +227,6 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     const toggleProductionsSymbolExpand = () => {
         setProductionsSymbolExpand(!productionsSymbolExpand);
     }
-    const handlePresetChange = (e) => {
-
-    }
 
     const openMenu = () => {
         setMenuOpened(true);
@@ -240,10 +237,36 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
 
     useEffect(() => {
         console.log("PRESET VALUE IS", preset);
+        if(preset == 1) {
+            setAxiom("A(edge,init_wid,[0,80,0],[128,83,51])");
+            setConstants([
+                ["num_gens", 6], 
+                ["delta", 22.5],
+                ["edge", 0.4],
+                ["init_wid", 0.04],
+                ["hr", 0.707],
+                ["col_rate", "[0, 15, 0]"],
+            ])
+            setProductions([
+                ["A(len,wid,lcol,bcol)", [
+                    ["[ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ]", "1.0"], 
+                ]], 
+                ["F(len,lcol)", [
+                    ["S(lcol) /(delta) /(delta) /(delta) /(delta) /(delta) F(len,lcol)", "1.0"], 
+                ]],
+                ["S(lcol)", [
+                    ["F(edge,lcol) '(lcol) L", "1.0"],
+                ]],
+                ["L", [
+                    ["[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", "1.0"],
+                ]]
+            ])
+        }
     }, [preset]);
     useEffect(()=> {
         console.log(menuOpened ? "menu is opened" : "menu is not opened");
     }, [menuOpened])
+    
 
     return(
         <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
@@ -256,7 +279,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                             id="demo-simple-select"
                             placeholder="Select preset"
                             value={preset}
-                            onChange={(e)=>setPreset(e.target.value)}
+                            onChange={e=>setPreset(e.target.value)}
                             size="small"
                             sx={{width: "200px", height: "37px"}}
                             displayEmpty
@@ -264,10 +287,10 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                             <MenuItem value="">
                                 <em>Select Preset</em>
                             </MenuItem>
-                            <MenuItem value={"bush"}>Bush</MenuItem>
-                            <MenuItem value={"flower plant"}>Flower plant</MenuItem>
-                            <MenuItem value={"monopodial tree"}>Monopodial tree</MenuItem>
-                            <MenuItem value={"sympodial tree"}>Sympodial tree</MenuItem>
+                            <MenuItem value={1}>Bush</MenuItem>
+                            <MenuItem value={2}>Flower plant</MenuItem>
+                            <MenuItem value={3}>Monopodial tree</MenuItem>
+                            <MenuItem value={4}>Sympodial tree</MenuItem>
                         </Select>
                     </FormControl>
                 </div>
