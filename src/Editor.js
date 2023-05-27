@@ -354,7 +354,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                                 <div>
                                     <Collapse in={productionsSymbolExpand} timeout="auto" unmountOnExit>
                                         {productions.map((p, index)=>(
-                                            <div key={`prod-div-${index}`} style={{display: "flex", flexDirection: "column", marginBottom: "8px"}}>
+                                            <div key={`prod-div-${index}`} style={{display: "flex", flexDirection: "column", marginBottom: index == productions.length - 1 ? "-2px" : "8px"}}>
                                                 <div key={`prod-symbol-div-${index}`} style={{display: "flex", flexDirection: "row", marginBottom: "8px"}}>
                                                     <ProductionSymbolInput name={p[0]} index={index} handleProductionSymbolChange={handleProductionSymbolChange}/>
                                                     <IconButton key={`prod-symbol-button-${index}`} size="small" onClick={e=>removeProductionSymbol(index)}>
@@ -386,9 +386,9 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                                         ))}
                                     </Collapse>
                                 </div>
-                                <div style={{width: "200px"}}> <Button variant="outlined" size="small" onClick={addProductionSymbol}>+ Production</Button> </div>
+                                <div style={{width: "200px"}}> <Button variant="outlined"  onClick={addProductionSymbol}>+ Production</Button> </div>
                             </div>
-                            <div style={{width: "200px"}}> <Button variant="outlined" type="submit" >Generate Model</Button> </div>
+                            <div style={{width: "200px"}}> <Button variant="contained" type="submit" >Generate Model</Button> </div>
                         </div>
 
                         <div onMouseDown={e => handleMouseDown(e)} style={{display: "flex", flexDirection: "column", cursor: "ew-resize", width: "4px", height: "100vh", borderStyle: "none double none none", borderColor: "gray", borderWidth: "4px"}}/>

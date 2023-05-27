@@ -35,6 +35,10 @@ const init_state = {
 
 const obj_exporter = new OBJExporter();
 const gltf_exporter = new GLTFExporter();
+THREE.ColorManagement.enabled = true
+THREE.ColorManagement.legacyMode = false
+
+const base_geometry = new THREE.CylinderGeometry(1, 1, 1, 6);
 
 //given a symbol, return the next generation of replacement symbols based on productions.
 const generate_rules = (symbol, productions, constants, params, setError) =>{
@@ -327,7 +331,9 @@ const Branch = ({pos, heading, radius, height, id, parent_id, color}) => {
         // Convert the world rotation quaternion to local rotation quaternion
         local_q.multiplyQuaternions(world_q, local_q);
       } */
-     
+      meshRef.current.scale.x = radius;
+      meshRef.current.scale.z = radius;
+      meshRef.current.scale.y = height;
       meshRef.current.position.copy(position_vector);
       meshRef.current.setRotationFromQuaternion(local_q);
       //meshRef.current.rotation.set(Math.PI/6, 0, 0);
@@ -346,8 +352,8 @@ const Branch = ({pos, heading, radius, height, id, parent_id, color}) => {
     })
 
     return (
-        <mesh ref = {meshRef} name = {id}> 
-            <cylinderGeometry args={[radius, radius, height, 6]}/>
+        <mesh ref = {meshRef} name = {id} geometry = {base_geometry}> 
+            {/*<cylinderGeometry args={[radius, radius, height, 6]}/> */}
             <meshStandardMaterial color={rgbToHex(color, true)}/>
         </mesh>
     )
@@ -405,9 +411,7 @@ const Shape = ({color, wid, points, id, parent_id}) => {
 const ObjectsList = ({seed, objects}) => {
   return(
     <>
-      {objects.map((o)=>
-        <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
-      )}
+   
     </>
   );
 }
@@ -415,9 +419,7 @@ const ObjectsList = ({seed, objects}) => {
 const ShapesList = ({seed, shapes}) => {
   return (
     <>
-      {shapes.map((s)=>
-        <Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
-      )}
+      
     </>
   );
 }
@@ -446,6 +448,9 @@ const RenderItems = ({axiom, constants, productions, setError}) => {
     "!": ["wid"],
     "'": ["color"],
   });
+  const [geometries, setGeometries] = useState({});
+  const [materials, setMaterials] = useState({});
+
   const { scene } = useThree();
 
   const generate = (symbols) => {
@@ -616,10 +621,17 @@ const RenderItems = ({axiom, constants, productions, setError}) => {
 
   useEffect(()=>{
     console.log("FINAL OBJECTS", objects);
+    //objects.forEach((o) => {
+      //<Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
+      
+    //})
   }, [objects])
 
   useEffect(()=>{
     console.log("FINAL SHAPES", shapes);
+    //shapes.forEach((s) => {
+
+    //})
   }, [shapes])
 
   useEffect(()=> {
@@ -673,8 +685,12 @@ const RenderItems = ({axiom, constants, productions, setError}) => {
       <ambientLight />
       <pointLight position={[10, 10, 10]} />
 
-      <ObjectsList objects={objects}/>
-      <ShapesList shapes={shapes}/>
+      {objects.map((o)=>
+        <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
+      )}
+      {shapes.map((s)=>
+        <Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
+      )}
       
       <Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
     </>
