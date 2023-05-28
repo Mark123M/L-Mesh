@@ -309,7 +309,7 @@ const rgbToHex = (rgb, type) => {
 }
 
 //MAKE SURE NOT TO EDIT ANY VECTORS
-const Branch = ({pos, heading, radius, height, id, parent_id, color}) => {
+const Branch = ({pos, heading, radius, height, id, parent_id, material}) => {
     const meshRef = useRef(null);
     const {scene} = useThree();
 
@@ -353,15 +353,15 @@ const Branch = ({pos, heading, radius, height, id, parent_id, color}) => {
     })
 
     return (
-        <mesh ref = {meshRef} name = {id} geometry = {base_geometry}> 
+        <mesh ref = {meshRef} name = {id} geometry = {base_geometry} material={material}> 
             {/*<cylinderGeometry args={[radius, radius, height, 6]}/> */}
-            <meshLambertMaterial color={rgbToHex(color, true)}/>
+            {/*<meshLambertMaterial color={rgbToHex(color, true)}/>*/}
         </mesh>
     )
 }
 
 
-const Shape = ({color, wid, points, id, parent_id}) => {
+const Shape = ({material, wid, points, id, parent_id}) => {
   const meshRef = useRef(null);
   const {scene} = useThree();
   const [geometry, setGeometry] = useState(new THREE.ShapeGeometry());
@@ -403,8 +403,8 @@ const Shape = ({color, wid, points, id, parent_id}) => {
     setGeometry(mesh_geometry);
   }, [meshRef]); 
   return (
-    <mesh mesh ref = {meshRef} name = {id} geometry={geometry}>
-      <meshLambertMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>
+    <mesh ref = {meshRef} name = {id} geometry={geometry} material={material}>
+      {/*<meshLambertMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>*/}
     </mesh>
   );
 }
@@ -449,8 +449,8 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     "!": ["wid"],
     "'": ["color"],
   });
-  const [geometries, setGeometries] = useState({});
   const [materials, setMaterials] = useState({});
+  const [shapeMaterials, setShapeMaterials] = useState({});
 
   const { scene } = useThree();
 
@@ -622,17 +622,26 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
 
   useEffect(()=>{
     console.log("FINAL OBJECTS", objects);
-    //objects.forEach((o) => {
+    const allMaterials = {};
+    objects.forEach((o) => {
       //<Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
-      
-    //})
+      if(!allMaterials[rgbToHex(o[6])]) {
+        allMaterials[rgbToHex(o[6])] = new THREE.MeshLambertMaterial({color: rgbToHex(o[6]), side: THREE.DoubleSide});
+      }
+    })
+    setMaterials(allMaterials);
   }, [objects])
 
   useEffect(()=>{
     console.log("FINAL SHAPES", shapes);
-    //shapes.forEach((s) => {
-
-    //})
+    const allShapeMaterials = {};
+    shapes.forEach((s) => {
+      //<Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
+      if(!allShapeMaterials[rgbToHex(s[0])]) {
+        allShapeMaterials[rgbToHex(s[0])] = new THREE.MeshLambertMaterial({color: rgbToHex(s[0]), side: THREE.DoubleSide});
+      }
+    })
+    setShapeMaterials(allShapeMaterials);
   }, [shapes])
 
   useEffect(()=> {
@@ -691,10 +700,10 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
       <pointLight position={[10, 10, 10]} intensity={0.7} />
 
       {objects.map((o)=>
-        <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
+        <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} material = {materials[rgbToHex(o[6])]}/>
       )}
       {shapes.map((s)=>
-        <Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
+        <Shape key = {uuidv4()} material = {shapeMaterials[rgbToHex(s[0])]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
       )}
       
       <Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
