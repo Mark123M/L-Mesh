@@ -13,8 +13,6 @@ import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { PerformanceMonitor } from "@react-three/drei";
 
 //3D turtle interpreter
-//standard basis vectors
-
 
 let heading_vector = new THREE.Vector3();
 let position_vector = new THREE.Vector3();
@@ -41,7 +39,15 @@ THREE.ColorManagement.legacyMode = false
 
 const base_geometry = new THREE.CylinderGeometry(1, 1, 1, 6);
 
-//given a symbol, return the next generation of replacement symbols based on productions.
+/**
+ * generate_rules(...) takes a symbol return the next generation of symbols based on productions.
+ * @param symbol the predecessor symbol 
+ * @param constants constants of the system
+ * @param productions production rules defining how each symbol is replaced in the next generation
+ * @param params object storing the parameter names of each symbol 
+ * @param setError state function for error
+ * @returns array of symbols
+ */
 const generate_rules = (symbol, productions, constants, params, setError) =>{
   let symbol_str = symbol.type;
 
@@ -71,11 +77,6 @@ const generate_rules = (symbol, productions, constants, params, setError) =>{
       }
     )
   })
-  /*productions[symbol_str].split(" ").forEach((s)=>{
-    console.log("NEW SYMBOLS", symbol, s, get_next_symbol(symbol, s));
-    new_symbols.push(get_next_symbol(symbol, s));
-
-  })*/
   //console.log("NEW SYMBOLS", new_symbols);
   return chooseOne(new_symbols);
  
@@ -86,13 +87,22 @@ const get_axiom = (axiom, constants, params, setError) =>{
   return split_symbol_string(axiom).map((s)=>get_next_symbol(null, s, constants, params, setError));
 }
 
+/**
+ * get_next_symbol(...) returns ONE symbol in the next generation of symbols based on rule
+ * @param symbol the predecessor symbol 
+ * @param rule String of ONE symbol of the successor symbols
+ * @param constants constants of the system
+ * @param params object storing the parameter names of each symbol
+ * @param setError state function for error
+ * @returns ONE symbol of the successor symbols
+ */
 const get_next_symbol = (symbol, rule, constants, params, setError) => {
   const baseRule = rule;
 
   //console.log("INITIAL RULE IS: ", rule, "WITH SYMBOL: ", symbol);
-  rule = rule.replaceAll(' ', ''); //remove all whitespaces for safety
-  if(!rule.includes('(')) { //if there are no parameters
-    //console.log({type: rule});
+  rule = rule.replaceAll(' ', '');
+  if(!rule.includes('(')) { 
+    //if there are no parameters
     return {type: rule};
   }
   const firstIdx = rule.indexOf('(');
@@ -101,18 +111,17 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
   rule = rule.substring(firstIdx + 1, lastIdx);
   //console.log("TRIMMED RULE IS", type, rule);
 
+  //replace occurances of current parameters and constants of the successor symbol
   if(symbol != null) {
     Object.keys(symbol).forEach((s)=>{
-      //console.log(s, symbol[s]);
       if(s != "type"){
-        rule = rule.replaceAll(s, JSON.stringify(symbol[s])); //replace all variables of the production with any fields of symbol 
+        rule = rule.replaceAll(s, JSON.stringify(symbol[s])); //replace all occurances of params in the successor symbol 
       }
     })
   }
-  //console.log("PRINTING CONSTANTS", constants);
   Object.keys(constants).forEach((s)=>{
     if(s != "num_gen"){
-      rule = rule.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
+      rule = rule.replaceAll(s, JSON.stringify(constants[s])); //replace all occurances of constants in the successor symbol
     }
   })
   //console.log("SUBBED RULE IS ", rule, symbol);
@@ -124,7 +133,7 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
 
   for(let i = 0; i < rule.length; i++) {
     if(rule[i] == ',' && stack.length == 0) { //if theres a comma that is not in a bracket, this is a parameter
-      //console.log("PARAM TPYE: ",type, cur_param); //ohh math.evaluate is fucking up 
+      //console.log("PARAM TPYE: ",type, cur_param); 
       const val = evaluate_expression(cur_param, baseRule, setError);
       try{
         new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
@@ -145,7 +154,7 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
     }
   }
   if(rule[rule.length - 1] != ',') {
-    //console.log("PARAM TPYE: ",type, cur_param); //ohh math.evaluate is fucking up 
+    //console.log("PARAM TPYE: ",type, cur_param);
     const val = evaluate_expression(cur_param, baseRule, setError);
 
     try{
@@ -166,20 +175,24 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
   return(new_symbol);
 }
 
+/**
+ * get_prob(...) Evaluates the probability of a rule
+ * @param prob the base string of the probability 
+ * @param symbol the predecessor symbol
+ * @param constants the constants of the system 
+ * @param setError state function for error
+ * @returns a number evaluation of probability
+ */
 const get_prob = (prob, symbol, constants, setError) => {
-  //strings are by reference but they are immutable so any operation will create a new string anyways 
   const baseProb = prob;
-
   //console.log("INITIAL PROB: ", prob);
   if(symbol != null) {
     Object.keys(symbol).forEach((s)=>{
-      //console.log(s, symbol[s]);
       if(s != "type"){
         prob = prob.replaceAll(s, JSON.stringify(symbol[s])); //replace all variables of the production with any fields of symbol 
       }
     })
   }
-  //console.log("PRINTING CONSTANTS", constants);
   Object.keys(constants).forEach((s)=>{
     if(s != "num_gen"){
       prob = prob.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
@@ -188,15 +201,19 @@ const get_prob = (prob, symbol, constants, setError) => {
   //console.log("SUBBED PROB: ",prob);
 
   return evaluate_expression(prob, baseProb, setError);
-
 }
 
+/**
+ * get_params(productions, params) gets the parameter names of each symbol based on productions
+ * @param productions production rules defining how each symbol is replaced in the next generation
+ * @param params initial param object
+ * @returns
+ */
 const get_params = (productions, params) => {
   Object.keys(productions).forEach((s)=>{
 
     if(!s.includes('(')){
       params[s] = [];
-     // console.log(params);
     }
     else {
       const type = s.substring(0, s.indexOf('('));
@@ -211,30 +228,47 @@ const get_params = (productions, params) => {
   //console.log("NEW PARAMS", params, productions);
 }
 
+/**
+ * chooseOne(ruleset) returns a random rule based on the probabilities/weights in a stochastic ruleset
+ * @param ruleSet is a stochastic ruleset from productions
+ * @returns a rule
+ */
 function chooseOne(ruleSet) {
-  let n = Math.random(); // Random number between 0-1
+  let n = Math.random(); 
   let t = 0;
   for(let i = 0; i < ruleSet.length; i++) {
-    t += ruleSet[i].prob; // Keep adding the probability of the options to total
-    if(t > n) { // If the total is more than the random value
-      return ruleSet[i].rule; // Choose that option
+    t += ruleSet[i].prob; 
+    if(t > n) { 
+      return ruleSet[i].rule; 
     }
   }
   return "";
 }  
 
-
+/**
+ * evaluate_expression(str, baseStr, setError) attempts to evaluate a mathematical expression
+ *    and sets an error if unsuccessful
+ * @param str is the mathematical string
+ * @param baseStr is the string before substitution
+ * @param setError state function for error
+ * @returns result if successful, -1 if not
+ */
 const evaluate_expression = (str, baseStr, setError) => {
   try {
     return math.evaluate(str);
   }
   catch {
-    //change state for editorform
     //console.log("ERROR EVALUATING PROB:", baseStr, str);
     setError(`Error evaluating expression: ${baseStr}`);
     return -1;
   }
 }
+
+/**
+ * split_symbol_string(str) splits a string by symbols into an array
+ * @param str is the string symbols 
+ * @returns an array of the split symbols
+ */
 const split_symbol_string = (str) => {
   let symbols = [];
   let stack = [];
@@ -249,7 +283,7 @@ const split_symbol_string = (str) => {
       continue;
     }
     cur_symbol = cur_symbol + str[i];
-    if(str[i] == '(') { //[ and ] are valid symbols
+    if(str[i] == '(') { 
       stack.push(str[i]);
     }
     else if (str[i] == ')') {
@@ -264,6 +298,10 @@ const split_symbol_string = (str) => {
   //console.log("SPLIT SYMBOLS ARE", symbols);
   return symbols;
 }
+
+/**
+ * The following are functions for matrix operations with array representation.
+ */
 const matrix_vector_mult = (m, v) =>{
   return vector_add(scalar_mult(v[0], m.heading), vector_add(scalar_mult(v[1], m.left), scalar_mult(v[2], m.up)));
 }
@@ -304,11 +342,20 @@ const rotate_h = (state, angle) =>{ //turn + -
   state.up = matrix_vector_mult(m, [0, -st, ct]);
 }
 const rgbToHex = (rgb, type) => {
-  //console.log("RGB VALUES ARE", rgb); //some rgb are undefined waht the fuck 
+  //console.log("RGB VALUES ARE", rgb);
   return "#" + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
 }
 
-//MAKE SURE NOT TO EDIT ANY VECTORS
+/**
+ * Branch({...}) is a 3D line component that draws a cylinder with height and radius starting from pos with orientation heading
+ * @param pos the starting position of the line (from state_stack)
+ * @param heading the orientation of the line (from state_stack)
+ * @param height the length of line
+ * @param radius the width of line
+ * @param material meshLambertMaterial for branch
+ * @returns 3D mesh
+ * @TODO scenegraph relationships with id and parent_id? implement rank attribute for meshes
+ */
 const Branch = ({pos, heading, radius, height, id, parent_id, material}) => {
     const meshRef = useRef(null);
     const {scene} = useThree();
@@ -337,8 +384,6 @@ const Branch = ({pos, heading, radius, height, id, parent_id, material}) => {
       meshRef.current.scale.y = height;
       meshRef.current.position.copy(position_vector);
       meshRef.current.setRotationFromQuaternion(local_q);
-      //meshRef.current.rotation.set(Math.PI/6, 0, 0);
-      //console.log((Math.random() * 2 * pitch_t) - pitch_t);
     }, [meshRef]);
 
     let t;
@@ -347,20 +392,22 @@ const Branch = ({pos, heading, radius, height, id, parent_id, material}) => {
       if(!meshRef.current){
           return;
       }
-      // meshRef.current.rotateX(Math.sin(t*2) / 2000);
        //meshRef.current.rotateY(Math.sin(t) / 3000);
-      // meshRef.current.rotateZ(Math.sin(t * 3) / 2000);
     })
 
     return (
         <mesh ref = {meshRef} name = {id} geometry = {base_geometry} material={material}> 
-            {/*<cylinderGeometry args={[radius, radius, height, 6]}/> */}
-            {/*<meshLambertMaterial color={rgbToHex(color, true)}/>*/}
         </mesh>
     )
 }
 
-
+/**
+ * Shape({...}) is a mesh for planar geometry with a vertex array (points)
+ * @param material meshLambertMaterial for the shape
+ * @param points array of vertices for the shape
+ * @returns 3D mesh
+ * @TODO scenegraph relationships with id and parent_id? implement rank attribute for meshes
+ */
 const Shape = ({material, wid, points, id, parent_id}) => {
   const meshRef = useRef(null);
   const {scene} = useThree();
@@ -386,6 +433,7 @@ const Shape = ({material, wid, points, id, parent_id}) => {
     position_vector.set(points[0][0], points[0][1], points[0][2]);
     mesh_shape.lineTo(position_vector.x, position_vector.y);
 
+    //insert the Z attribute into each shape.
     mesh_geometry = new THREE.ShapeGeometry(mesh_shape);
     positions = mesh_geometry.getAttribute('position');
     for(let i = 1; i < positions.count; i++) {
@@ -404,31 +452,22 @@ const Shape = ({material, wid, points, id, parent_id}) => {
   }, [meshRef]); 
   return (
     <mesh ref = {meshRef} name = {id} geometry={geometry} material={material}>
-      {/*<meshLambertMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>*/}
     </mesh>
   );
 }
 
-const ObjectsList = ({seed, objects}) => {
-  return(
-    <>
-   
-    </>
-  );
-}
-
-const ShapesList = ({seed, shapes}) => {
-  return (
-    <>
-      
-    </>
-  );
-}
-
+/**
+ * RenderItems({...}) is a component for all meshes in the scenegraph. It handles the core symbol generation and interpretation. 
+ * @param axiom initial state of the system as a string 
+ * @param constants constants of the system
+ * @param productions production rules defining how each symbol is replaced in the next generation
+ * @param setError state function for error
+ * @param showGridHelper state for showing the grid helper
+ * @returns 3D scene
+ */
 const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) => {
   const[objects, setObjects] = useState([]);
   const[shapes, setShapes] = useState([]);
-  //{ means start a new shape, } means push the shape into the shapes array to be drawn
   const [symbols, setSymbols] = useState([]);
   const [params, setParams] = useState({
     "F": ["len"],
@@ -471,9 +510,17 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     return next;
   }
 
-   //HERE WE FUCKING GOOOO
+   /**
+    * applyRule(...) applies the current symbol to the state of the system (state stack, shape stack, objects, shapes)
+    * @param symbol the current symbol 
+    * @param newObjects array for storing and updating new object info 
+    * @param newShapes array for storing and updating new planar shapes info
+    * @param newStateStack stack for storing and updating new states to the turtle
+    * @param newShapeStack stack for storing and updating shape details (vertices, color)
+    * @returns  
+    */
    const applyRule = (symbol, newObjects, newShapes, newStateStack, newShapeStack) => {
-    //console.log(newStateStack, "WITH TYPE", symbol.type); //pritning out the states
+    //console.log(newStateStack, "WITH TYPE", symbol.type); 
     let last_state = newStateStack[newStateStack.length - 1];
     if(symbol.type == "!") {
       last_state.pen[1] = symbol.wid;
@@ -520,8 +567,6 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
       last_state.left = scalar_mult((1 / vector_len(last_state.left)), last_state.left);
       //U = H x L
       last_state.up = cross_product(last_state.heading, last_state.left); 
-
-      //rotate_u(last_state, Math.PI);
     }
     else if (symbol.type == "[") {
       let new_state = JSON.parse(JSON.stringify(last_state));
@@ -529,9 +574,6 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     }
     else if (symbol.type == "]") {
       newStateStack.pop();
-    }
-    else if (symbol.type == "L") {
-      //drawLeaf(symbol.sz);
     }
     //start a new polygon
     else if (symbol.type == "{") {
@@ -571,7 +613,9 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     setShapes(newShapes);
   }
 
-  //params -> generating symbols -> objects -> shapes 
+  /**
+   * useEffect chain: set params -> generate symbols -> set objects and shapes arrays -> create materials for objects and shapes
+   */
   useEffect(()=>{
     console.log("PRINTING ALL PROPS");
     console.log(axiom);
@@ -649,7 +693,9 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     document.querySelector('.scene-export-gltf-button').addEventListener('click', handleExportGltf);
   }, [])
 
-
+  /**
+   * The following are functions for exporting the scene
+   */
   const link = document.createElement("a");
   link.style.display = "none";
   document.body.appendChild(link);
@@ -711,6 +757,16 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
   )
 }
 
+/**
+ * Render({...}) is the component for the entire canvas
+ * @param axiom initial state of the system as a string 
+ * @param constants constants of the system
+ * @param productions production rules defining how each symbol is replaced in the next generation
+ * @param setError state function for error
+ * @param showGridHelper state for showing the grid helper
+ * @param dpr the resolution of the scene
+ * @returns 3D canvas
+ */
 const Render = ({axiom, constants, productions, setError, showGridHelper, dpr}) => {
   const controlsRef = useRef(null);
   const canvas_ref = useRef(null);
