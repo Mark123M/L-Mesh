@@ -1,14 +1,13 @@
-import {useRef, useEffect, useState, useCallback} from "react";
-import { Button, TextField, IconButton, List, ListItem, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl} from '@mui/material';
+import {useEffect, useState, useCallback} from "react";
+import { Button, TextField, IconButton, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import { v4 as uuidv4 } from "uuid";
 import "@fontsource/open-sans";
 import React from 'react'
-import ReactDOM from 'react-dom'
 import Render from "./Render";
+import { allPresets } from "./Presets";
 
 const AxiomInput = ({axiom, setAxiom}) => {
     return(
@@ -240,32 +239,13 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     }
 
     useEffect(() => {
-        console.log("PRESET VALUE IS", preset);
-        if(preset == 1) {
-            setAxiom("A(edge,init_wid,[0,80,0],[128,83,51])");
-            setConstants([
-                ["num_gens", 6], 
-                ["delta", 22.5],
-                ["edge", 0.4],
-                ["init_wid", 0.04],
-                ["hr", 0.707],
-                ["col_rate", "[0, 15, 0]"],
-            ])
-            setProductions([
-                ["A(len,wid,lcol,bcol)", [
-                    ["[ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ]", "1.0"], 
-                ]], 
-                ["F(len,lcol)", [
-                    ["S(lcol) /(delta) /(delta) /(delta) /(delta) /(delta) F(len,lcol)", "1.0"], 
-                ]],
-                ["S(lcol)", [
-                    ["F(edge,lcol) '(lcol) L", "1.0"],
-                ]],
-                ["L", [
-                    ["[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", "1.0"],
-                ]]
-            ])
-        }
+        console.log("PRESET VALUE IS", preset, allPresets);
+        if(preset != "") {
+            setAxiom(allPresets[preset].axiom);
+            setConstants(allPresets[preset].constants);
+            setProductions(allPresets[preset].productions);
+        } 
+        
     }, [preset]);
     useEffect(()=> {
         console.log(menuOpened ? "menu is opened" : "menu is not opened");
@@ -292,9 +272,14 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                                 <em>Select Preset</em>
                             </MenuItem>
                             <MenuItem value={1}>Bush</MenuItem>
-                            <MenuItem value={2}>Flower plant</MenuItem>
-                            <MenuItem value={3}>Monopodial tree</MenuItem>
-                            <MenuItem value={4}>Sympodial tree</MenuItem>
+                            <MenuItem value={2}>Koch curve 1</MenuItem>
+                            <MenuItem value={3}>Koch curve 2</MenuItem>
+                            <MenuItem value={4}>Koch curve 3</MenuItem>
+                            <MenuItem value={5}>Koch curve 4</MenuItem>
+                            <MenuItem value={6}>Dragon Curve</MenuItem>
+                            <MenuItem value={7}>Sierpiński triangle</MenuItem>
+                            <MenuItem value={8}>Monopodial tree</MenuItem>
+                            <MenuItem value={9}>Sympodial tree</MenuItem>
                         </Select>
                     </FormControl>
                 </div>

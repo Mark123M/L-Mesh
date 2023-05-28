@@ -7,10 +7,8 @@ import { useThree } from "@react-three/fiber";
 import { ShapeUtils } from "three";
 import * as math from "mathjs"
 import React from 'react'
-import ReactDOM from 'react-dom'
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
-import { PerformanceMonitor } from "@react-three/drei";
 
 //3D turtle interpreter
 
