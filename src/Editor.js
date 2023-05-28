@@ -95,7 +95,7 @@ const ProductionRuleInput = ({rule, prob, index, index2, handleProductionRuleCha
     )
 }
 
-const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxiom, setGlobalConstants, setGlobalProductions, error, setError}) => {
+const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxiom, setGlobalConstants, setGlobalProductions, error, setError, showGridHelper, setShowGridHelper, dpr, setDpr}) => {
     const [axiom, setAxiom] = useState(init_axiom);
     const [constants, setConstants] = useState(init_constants);
     const [productions, setProductions] = useState(init_productions);
@@ -106,6 +106,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     const [preset, setPreset] = useState("");
     const [animation, setAnimation] = useState(true);
     const [menuOpened, setMenuOpened] = useState(false);
+    
     const minDrawerWidth = 30;
 
     useEffect(()=>{
@@ -234,6 +235,9 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     const closeMenu = () => {
         setMenuOpened(false);
     }
+    const toggleGridHelper = () => {
+        setShowGridHelper(!showGridHelper);
+    }
 
     useEffect(() => {
         console.log("PRESET VALUE IS", preset);
@@ -295,7 +299,18 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                     </FormControl>
                 </div>
                 <FormControlLabel control={<Checkbox />} label="Animation" />
-                <FormControlLabel control={<Checkbox />} label="Show Grid" />
+                <FormControlLabel control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid" />
+                <TextField
+                    id="outlined-basic"
+                    label="res"
+                    defaultValue={dpr}
+                    //onChange={(e)=>setLocalDpr(e.target.value)}
+                    onBlur={e=>setDpr(e.target.value)}
+                    size="small"
+                    sx={{width: "80px"}}
+                    //style={{height: "30px"}}
+                    required
+                />
                 <div style={{width: "160px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
                 <div style={{width: "110px"}} className="reference-button"> <Button sx={{width: "100%"}} variant="contained" >Reference</Button> </div>
                 <div style={{display: "flex", flexDirection: "column", marginTop: menuOpened ? "70px" : "0px"}}>
@@ -305,6 +320,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                         <div className="scene-export-gltf-button">  <MenuItem>Export as GLTF</MenuItem> </div>
                     </div>
                 </div>
+       
             </div>
             
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
@@ -430,7 +446,8 @@ const Editor = () =>{
     const [constants, setConstants] = useState([["num_gens", 5], ["col_rate", 0.2]]);
     const [productions, setProductions] = useState([["A", [["A A", "0.5"], ["A", "0.5"]] ], ["B", [["B B", "0.5"], ["B", "0.5"]]]]); //forgor to separate AA's with spaces
     const [error, setError] = useState("");
-    
+    const [showGridHelper, setShowGridHelper] = useState(true);
+    const [dpr, setDpr] = useState(1);
 
     useEffect(() => {
         console.log("ERROR IS" ,error);
@@ -469,8 +486,8 @@ const Editor = () =>{
     return(
         <div style={{position: "absolute", top: "0", left: "0", bottom: "0", right: "0", overflow: "hidden"} }>
             <div style={{display: "flex", flexDirection: "row"}}>
-                <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions} error={error} setError={setError} />
-                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} setError={setError}/> }
+                <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions} error={error} setError={setError} showGridHelper={showGridHelper} setShowGridHelper={setShowGridHelper} dpr={dpr} setDpr={setDpr} />
+                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} setError={setError} showGridHelper={showGridHelper} dpr={dpr}/> }
             </div>
         </div>
     )

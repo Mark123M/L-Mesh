@@ -355,7 +355,7 @@ const Branch = ({pos, heading, radius, height, id, parent_id, color}) => {
     return (
         <mesh ref = {meshRef} name = {id} geometry = {base_geometry}> 
             {/*<cylinderGeometry args={[radius, radius, height, 6]}/> */}
-            <meshBasicMaterial color={rgbToHex(color, true)}/>
+            <meshLambertMaterial color={rgbToHex(color, true)}/>
         </mesh>
     )
 }
@@ -404,7 +404,7 @@ const Shape = ({color, wid, points, id, parent_id}) => {
   }, [meshRef]); 
   return (
     <mesh mesh ref = {meshRef} name = {id} geometry={geometry}>
-      <meshBasicMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>
+      <meshLambertMaterial color={rgbToHex(color, false)} side={THREE.DoubleSide}/>
     </mesh>
   );
 }
@@ -425,7 +425,7 @@ const ShapesList = ({seed, shapes}) => {
   );
 }
 
-const RenderItems = ({axiom, constants, productions, setError}) => {
+const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) => {
   const[objects, setObjects] = useState([]);
   const[shapes, setShapes] = useState([]);
   //{ means start a new shape, } means push the shape into the shapes array to be drawn
@@ -681,10 +681,14 @@ const RenderItems = ({axiom, constants, productions, setError}) => {
   //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
   return (
     <>
-      <gridHelper args={[50, 50]}/>
-      <axesHelper renderOrder={1} scale={[50, 50, 50]}/>
+      {showGridHelper &&
+        <>
+          <gridHelper args={[50, 50]}/>
+          <axesHelper renderOrder={1} scale={[50, 50, 50]}/>
+        </>
+      }
       <ambientLight />
-      <pointLight position={[10, 10, 10]} />
+      <pointLight position={[10, 10, 10]} intensity={0.7} />
 
       {objects.map((o)=>
         <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
@@ -698,11 +702,9 @@ const RenderItems = ({axiom, constants, productions, setError}) => {
   )
 }
 
-const Render = ({axiom, constants, productions, setError}) => {
+const Render = ({axiom, constants, productions, setError, showGridHelper, dpr}) => {
   const controlsRef = useRef(null);
   const canvas_ref = useRef(null);
-  const [dpr, setDpr] = useState(1);
-
 
   const resetCamera = () => {
     if(controlsRef.current){
@@ -718,12 +720,9 @@ const Render = ({axiom, constants, productions, setError}) => {
   return (
     <div ref={canvas_ref} style={{top: "0", bottom: "0", left: "0", right: "0", position: "fixed", width: "100%"} }>
         <Canvas dpr={dpr}>
-          <PerformanceMonitor onChange={({ factor }) => {console.log(factor); setDpr(factor);}} bounds={number=>[40, 60]}>
-            <PerspectiveCamera makeDefault position={[3, 3, 10]}/>
-            <OrbitControls ref={controlsRef} enableZoom enablePan enableRotate/>
-
-            <RenderItems axiom={axiom} constants={constants} productions={productions} setError={setError} />
-          </PerformanceMonitor>
+          <PerspectiveCamera makeDefault position={[3, 3, 10]}/>
+          <OrbitControls ref={controlsRef} enableZoom enablePan enableRotate/>
+          <RenderItems axiom={axiom} constants={constants} productions={productions} setError={setError} showGridHelper={showGridHelper} />
         </Canvas>
     </div>
   )
