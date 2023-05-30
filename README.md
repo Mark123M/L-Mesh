@@ -39,5 +39,14 @@ $                      Rotate to vertical (rotates turtle so the up vector is [0
 %                      TODO
 ```
 
-### Stochastic Systems
-The current system can already generate
+## Stochastic Systems
+TODO
+
+## Parametric Systems
+TODO
+
+## Sources
+Prusinkiewicz, Przemyslaw; Lindenmayer, Aristid (1990). The Algorithmic Beauty of Plants. Springer-Verlag. pp. 101–107. ISBN 978-0-387-97297-8.
+[Houdini Kitchen ](https://www.houdinikitchen.net/wp-content/uploads/2019/12/L-systems.pdf)
+[Algorithmic Botany ](https://algorithmicbotany.org/)
+[React Three Fiber (Three Js) Docs](https://docs.pmnd.rs/) 
