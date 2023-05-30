@@ -1,7 +1,7 @@
 # L-Mesh
 Try it out: https://mark123m.github.io/L-Mesh/
 
-## Reference
+## Intro
 L-Mesh is a 3D procedural generation tool for self similar structures. It utilizes the principles of stochastic, parametric L-Systems along with 3D turtle graphics. 
 L-Systems can be used to generate anything from trees, herbaceous plants, plant organs, snowflakes, to even city layouts with a great degree of accuracy and organic feel.
 
