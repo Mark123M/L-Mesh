@@ -7,12 +7,12 @@ L-Systems can be used to generate anything from trees, herbaceous plants, plant 
 
 Fundamentally, L-Systems consists of an **Alphabet**, an **Axiom**, and **Production Rules**. An Alphabet is a set of symbols containing elements that can be replaced and those that couldn't. An Axiom is the initial set of symbols used for the next generations. Production rules dictate how each symbol of the current generation (predecessors) is replaced in the next generation by new symbols (successors).
 
-Given the following: 
-Axiom: A
-Production rules: 
-  A -> A B
-  B -> B B
-The next generations of symbols are: {A B} -> {A B B B} -> {A B B B B B B B} -> {A B B B B B B B B B B B B B B B}...
+Given the following:  <br/>
+Axiom: A <br/>
+Production rules: <br/>
+  A -> A B <br/>
+  B -> B B <br/>
+The next generations of symbols are: {A B} -> {A B B B} -> {A B B B B B B B} -> {A B B B B B B B B B B B B B B B}... <br/>
 
 ## Graphics Interpreter
 To generate 3D structures from a set of symbols, some symbols need to be interpreted with graphics commands. L-Mesh uses a 3D turtle graphics system described in the Algorithmic Beauty of Plants. A "turtle" is similar to a pen that stores it's current position, heading vector (H), left vector (L), up vector (U) where H = L x U. It also stores the stroke width, color, whether or not the "pen" is down, and whether or not to create a vertex. 
@@ -46,7 +46,7 @@ TODO
 TODO
 
 ## Sources
-Prusinkiewicz, Przemyslaw; Lindenmayer, Aristid (1990). The Algorithmic Beauty of Plants. Springer-Verlag. pp. 101–107. ISBN 978-0-387-97297-8.
-[Houdini Kitchen ](https://www.houdinikitchen.net/wp-content/uploads/2019/12/L-systems.pdf)
-[Algorithmic Botany ](https://algorithmicbotany.org/)
+Prusinkiewicz, Przemyslaw; Lindenmayer, Aristid (1990). The Algorithmic Beauty of Plants. Springer-Verlag. pp. 101–107. ISBN 978-0-387-97297-8. <br/>
+[Houdini Kitchen ](https://www.houdinikitchen.net/wp-content/uploads/2019/12/L-systems.pdf) <br/>
+[Algorithmic Botany ](https://algorithmicbotany.org/) <br/>
 [React Three Fiber (Three Js) Docs](https://docs.pmnd.rs/) 
