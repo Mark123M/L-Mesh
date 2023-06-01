@@ -137,7 +137,7 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
         new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
       }
       catch {
-        setError(`Error setting param ${params[type][param_idx]} of symbol ${type}.`);
+        setError(`Error setting param of symbol ${type}.`);
       }
       cur_param = "";
       param_idx++;
@@ -159,14 +159,14 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
       new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
     }
     catch {
-      setError(`Error setting param ${params[type][param_idx]} of symbol ${type}.`);
+      setError(`Error setting param of symbol ${type}.`);
     }
     
     cur_param = "";
     param_idx++;
   }
-
-  if(param_idx != Object.keys(params[type]).length) {
+  //check if the current type is valid in params array and if the number of arguments do not match
+  if(!params[type] || param_idx != params[type].length) {
     setError(`Invalid arguments for ${baseRule}: check arguments with production rule.`);
   }
   //console.log(new_symbol);

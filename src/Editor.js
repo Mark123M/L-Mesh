@@ -272,14 +272,15 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                                 <em>Select Preset</em>
                             </MenuItem>
                             <MenuItem value={1}>Bush</MenuItem>
-                            <MenuItem value={2}>Koch curve 1</MenuItem>
-                            <MenuItem value={3}>Koch curve 2</MenuItem>
-                            <MenuItem value={4}>Koch curve 3</MenuItem>
-                            <MenuItem value={5}>Koch curve 4</MenuItem>
-                            <MenuItem value={6}>Dragon Curve</MenuItem>
-                            <MenuItem value={7}>Sierpiński triangle</MenuItem>
-                            <MenuItem value={8}>Monopodial tree</MenuItem>
-                            <MenuItem value={9}>Sympodial tree</MenuItem>
+                            <MenuItem value={2}>Flower Plant</MenuItem>
+                            <MenuItem value={3}>Koch curve 1</MenuItem>
+                            <MenuItem value={4}>Koch curve 2</MenuItem>
+                            <MenuItem value={5}>Koch curve 3</MenuItem>
+                            <MenuItem value={6}>Koch curve 4</MenuItem>
+                            <MenuItem value={7}>Dragon Curve</MenuItem>
+                            <MenuItem value={8}>Sierpiński triangle</MenuItem>
+                            <MenuItem value={9}>Monopodial tree</MenuItem>
+                            <MenuItem value={10}>Sympodial tree</MenuItem>
                         </Select>
                     </FormControl>
                 </div>

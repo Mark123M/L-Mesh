@@ -26,6 +26,40 @@ export const allPresets = [
         ]
     },
     {
+        axiom: "!(wid) plant", 
+        constants: [
+            ["num_gens", 5],
+            ["delta", 18],
+            ["len", 0.4],
+            ["wid", 0.02],
+            ["lcol", "[29,131,72]"],
+            ["fcol", "[255,160,57]"],
+        ],
+        productions: [
+            ["plant", [
+                ["internode +(delta) [ plant +(delta) flower ] -(delta) -(delta) /(delta) /(delta) [ -(delta) -(delta) leaf ] internode [ +(delta) +(delta) leaf ] -(delta) [ plant flower ] +(delta) +(delta) plant flower", "1.0"],
+            ]],
+            ["internode", [
+                ["F(len) seg [ /(delta) /(delta) &(delta) &(delta) leaf ] [ /(delta) /(delta) ^(delta) ^(delta) leaf ] F(len) seg", "1.0"]
+            ]],
+            ["seg", [
+                ["seg F(len) seg", "1.0"]
+            ]],
+            ["leaf", [
+                ["[ '(lcol) { . +(delta) f(len) . -(delta) f(len) f(len) . -(delta) f(len) . +(delta) | +(delta) f(len) . -(delta) f(len) f(len) . -(delta) f(len) . } ]", "1.0"]
+            ]],
+            ["flower", [
+                ["[ ^(delta) ^(delta) ^(delta) pedicel /(delta) wedge /(delta) /(delta) /(delta) /(delta) wedge /(delta) /(delta) /(delta) /(delta) wedge /(delta) /(delta) /(delta) /(delta) wedge /(delta) /(delta) /(delta) /(delta) wedge ]", "1.0"]
+            ]],
+            ["pedicel", [
+                ["'([255,255,255]) F(len) F(len)", "1.0"]
+            ]],
+            ["wedge", [
+                ["[ ^(delta) F(len) ] [ '(fcol) { &(delta) &(delta) &(delta) &(delta) . -(delta*2) f(len*2) . +(delta*2) f(len*2) . | -(delta*2) f(len*2) . +(delta*2) f(len*2) . } ]", "1.0"]
+            ]]
+        ]
+    },
+    {
         axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
         constants: [
             ["num_gens", 3],
