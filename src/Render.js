@@ -67,13 +67,34 @@ const generate_rules = (symbol, productions, constants, params, setError) =>{
     return;
   }
   let new_symbols = [];
-  productions[symbol_str].forEach((r)=>{
-    new_symbols.push(
-      {
-        rule: split_symbol_string(r.rule).map((s)=>get_next_symbol(symbol, s, constants, params, setError)),
-        prob: get_prob(r.prob, symbol, constants, setError)
+  productions[symbol_str].forEach((rs)=>{
+    let condition = rs.condition;
+
+    //replace occurances of current parameters and constants of the successor symbol
+    if(symbol != null) {
+      Object.keys(symbol).forEach((s)=>{
+        if(s != "type"){
+          condition = condition.replaceAll(s, JSON.stringify(symbol[s])); //replace all occurances of params in the successor symbol 
+        }
+      })
+    }
+    Object.keys(constants).forEach((s)=>{
+      if(s != "num_gen"){
+        condition = condition.replaceAll(s, JSON.stringify(constants[s])); //replace all occurances of constants in the successor symbol
       }
-    )
+    })
+    if(rs.condition == '*' || evaluate_expression(condition, rs.condition, setError)) {
+      rs.ruleset.forEach((r) => {
+        new_symbols.push(
+          {
+            rule: split_symbol_string(r.rule).map((s)=>get_next_symbol(symbol, s, constants, params, setError)),
+            prob: get_prob(r.prob, symbol, constants, setError)
+          }
+        )
+      })
+    }
+
+    
   })
   //console.log("NEW SYMBOLS", new_symbols);
   return chooseOne(new_symbols);

@@ -1,13 +1,30 @@
-import Render from "./Render";
-
-export const Test = {
-    axiom: "A(0)",
+export const TestProps = {
+    axiom: "!(0.1) A(0)",
     constants: {
-        "num_gens": 5,
+        "num_gens": 15,
+        "edge": 1,
+        "delta": 30,
     },
     productions: {
         "A(k)" : [
-            {"rule" : "F(1) A(k+1)", "prob" : "1.0"}
+            {
+                "condition": "k<5",
+                "ruleset": [{"rule" : "F(1) A(k+1)", "prob" : "1.0"}],
+            },
+            {
+                "condition": "k>5",
+                "ruleset": [{"rule" : "F(1) [ +(30) A(k+1) ] [ -(30) A(k+1) ]", "prob" : "1.0"}],
+            },
+            {
+                "condition": "*",
+                "ruleset": [{"rule": "F(1) L A(k+1)", "prob" : "1.0"}],
+            }  
+        ],
+        "L" : [
+            {
+                "condition": "*",
+                "ruleset": [{"rule": "[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", "prob": "1.0"}],
+            }
         ]
     },
 };
