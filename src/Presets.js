@@ -11,18 +11,34 @@ export const allPresets = [
             ["col_rate", "[0, 15, 0]"],
         ],
         productions: [
-            ["A(len,wid,lcol,bcol)", [
-                ["[ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ]", "1.0"], 
-            ]], 
-            ["F(len,lcol)", [
-                ["S(lcol) /(delta) /(delta) /(delta) /(delta) /(delta) F(len,lcol)", "1.0"], 
-            ]],
-            ["S(lcol)", [
-                ["F(edge,lcol) '(lcol) L", "1.0"],
-            ]],
-            ["L", [
-                ["[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", "1.0"],
-            ]]
+            ["A(len,wid,lcol,bcol)", 
+                [["*",
+                    [
+                        ["[ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ] /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) /(delta) [ &(delta) !(wid) '(bcol) F(len,lcol) '(lcol) L A(len,wid*hr,lcol+col_rate,bcol+col_rate) ]", "1.0"], 
+                    ]
+                ]]
+            ], 
+            ["F(len,lcol)", 
+                [["*",
+                    [
+                        ["S(lcol) /(delta) /(delta) /(delta) /(delta) /(delta) F(len,lcol)", "1.0"], 
+                    ]
+                ]]
+            ],
+            ["S(lcol)", 
+                [["*",
+                    [
+                        ["F(edge,lcol) '(lcol) L", "1.0"],
+                    ]
+                ]]
+            ],
+            ["L", 
+                [["*",
+                    [
+                        ["[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", "1.0"],
+                    ]
+                ]]
+            ]
         ]
     },
     {

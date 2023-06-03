@@ -379,7 +379,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                     anchor="left"
                 > 
                     <div style={{display: "flex", flexDirection: "row", overflow: "hidden"}}>
-                        <div style={{display: "flex", flexDirection: "column", marginLeft: "10px", width: "100%", overflow: "auto"}}>
+                        <div style={{display: "flex", flexDirection: "column", marginLeft: "10px", width: "100%", overflowX: "hidden", overflowY: "auto"}}>
 
                             <div style={{marginBottom: "8px", marginTop: "50px"}}>
                                 {error !="" && <Alert severity="error"> {error} </Alert>}
@@ -496,7 +496,7 @@ const Editor = () =>{
         ], 
         ["L",
             [["*",
-                [["[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", "1.0"]]
+                [["[ ^(30) ^(30) { . -(30) f(1) . +(30) f(1) . +(30) f(1) . -(30) | -(30) f(1) . +(30) f(1) . +(30) f(1) } ]", "1.0"]]
             ]],
         ]
     ]); //forgor to separate AA's with spaces
