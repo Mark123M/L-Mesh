@@ -3,7 +3,7 @@ export const TestProps = {
     constants: {
         "num_gens": 15,
         "edge": 1,
-        "delta": 30,
+        "delta": 45,
     },
     productions: {
         "A(k)" : [

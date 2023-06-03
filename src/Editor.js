@@ -3,6 +3,7 @@ import { Button, TextField, IconButton, Collapse, FormControlLabel, Checkbox, Dr
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { v4 as uuidv4 } from "uuid";
 import "@fontsource/open-sans";
 import React from 'react'
@@ -66,32 +67,57 @@ const ProductionSymbolInput = ({name, index, handleProductionSymbolChange}) => {
     )
 }
 
-const ProductionRuleInput = ({rule, prob, index, index2, handleProductionRuleChange}) => {
+const ProductionConditionInput = ({condition, index, index2, handleProductionConditionChange}) => {
+    return (
+        <TextField
+            key={`prod-symbol-condition-${index}-${index2}`}
+            id="outlined-basic"
+            label="Condition"
+            value={condition}
+            onChange={(e)=>handleProductionConditionChange(e.target.value, index, index2)}
+            size="small"
+            style={{width:"150px"}}
+            required
+        />
+    )
+}
+
+const ProductionRuleInput = ({rule, prob, index, index2, index3, handleProductionRuleChange}) => {
     return (
         <>
         <TextField
-            key={`prod-rule-name-${index}-${index2}`}
+            key={`prod-rule-name-${index}-${index2}-${index3}`}
             id="outlined-textarea"
             label="rule"
             value={rule}
-            onChange={(e)=>handleProductionRuleChange(e.target.value, index, index2, 0)}
+            onChange={(e)=>handleProductionRuleChange(e.target.value, index, index2, index3, 0)}
             size="small"
-            style={{width:"100%", marginRight: "8px"}}
+            style={{width:"100%",marginTop: "8px", marginBottom: "8px"}}
             multiline
             required
         />
         <TextField
-            key={`prod-rule-prob-${index}-${index2}`}
+            key={`prod-rule-prob-${index}-${index2}-${index3}`}
             id="outlined-basic"
             label="p"
             value={prob}
-            onChange={(e)=>handleProductionRuleChange(e.target.value, index, index2, 1)}
+            onChange={(e)=>handleProductionRuleChange(e.target.value, index, index2, index3, 1)}
             size="small"
-            style={{width:"80px"}}
+            style={{width:"100%"}}
             required
         />
         
         </>
+    )
+}
+
+const ButtonIcon = ({icon, onClick}) => {
+    return(
+        <div style={{width: "25px", height: "25px", marginLeft: "5px", marginTop: "3px"}}>
+            <IconButton onClick={onClick} size="small">
+                {icon}
+            </IconButton>
+        </div>
     )
 }
 
@@ -110,7 +136,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     const minDrawerWidth = 30;
 
     useEffect(()=>{
-        //console.log("CURRENT PRODUCTIONS ARE", productions);
+        console.log("CURRENT PRODUCTIONS ARE", productions);
         const newProductionsExpand = [...productionsRuleExpand];
         while(newProductionsExpand.length < productions.length) {
             newProductionsExpand.push(true);
@@ -150,28 +176,48 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
         setProductions(new_productions);
     }
 
-    const handleProductionRuleChange = (val, index, index2, type) => {
+    const handleProductionConditionChange = (val, index, index2) => {
         const new_productions = JSON.parse(JSON.stringify(productions));
-        new_productions[index][1][index2][type] = val;
+        new_productions[index][1][index2][0] = val;
+        setProductions(new_productions);
+    }
+
+    const handleProductionRuleChange = (val, index, index2, index3, type) => {
+        const new_productions = JSON.parse(JSON.stringify(productions));
+        console.log(val, index, index2, index3, type, new_productions[index][1][index2][1][index3]);
+        new_productions[index][1][index2][1][index3][type] = val;
         setProductions(new_productions);
     }
 
     const addProductionSymbol = () => {
         const new_productions = JSON.parse(JSON.stringify(productions));
-        new_productions.push(["", [["", ""]]]);
+        new_productions.push(["", [["*",[["", ""]]]]]);
         setProductions(new_productions);
         setProductionsSymbolExpand(true);
     }
-    const addProductionRule = (index) => {
+
+    const addProductionRuleset = (index) => {
+        const new_productions = JSON.parse(JSON.stringify(productions));
+        const newProductionsExpand = [...productionsRuleExpand];
+        new_productions[index][1].push(["*", [["", ""]]]);
+        newProductionsExpand[index] = true;
+
+        setProductions(new_productions);
+        setProductionsRuleExpand(newProductionsExpand);
+    }
+    
+
+    const addProductionRule = (index, index2) => {
         const new_productions = JSON.parse(JSON.stringify(productions));
         const newProductionsExpand = [...productionsRuleExpand];
         //console.log(new_productions[index]);
-        new_productions[index][1].push(["", ""]);
+        new_productions[index][1][index2][1].push(["", ""]);
         newProductionsExpand[index] = true;
 
         setProductions(new_productions);
         setProductionsRuleExpand(newProductionsExpand);
     } 
+
     const removeProductionSymbol = (index) => {
         const new_productions = JSON.parse(JSON.stringify(productions));
         const newProductionsExpand = [...productionsRuleExpand]; //shallow copy
@@ -184,12 +230,22 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
         setProductions(new_productions);
         setProductionsRuleExpand(newProductionsExpand);
     }
-    const removeProductionRule = (index, index2) => {
+
+    const removeProductionRuleset = (index, index2) => {
         const new_productions = JSON.parse(JSON.stringify(productions));
         for(let i = index2; i < productions[index][1].length - 1; i++) {
             new_productions[index][1][i] = new_productions[index][1][i+1];
         }
         new_productions[index][1].pop();
+        setProductions(new_productions);
+    }
+
+    const removeProductionRule = (index, index2, index3) => {
+        const new_productions = JSON.parse(JSON.stringify(productions));
+        for(let i = index3; i < productions[index][1][index2][1].length - 1; i++) {
+            new_productions[index][1][index2][1][i] = new_productions[index][1][index2][1][i+1];
+        }
+        new_productions[index][1][index2][1].pop();
         setProductions(new_productions);
     }
 
@@ -335,44 +391,36 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                             </div>
 
                             <div style={{display: "flex", flexDirection: "row"}}>
-                                <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px", marginTop: "10px"}}> {`Constants`}</div>
-                                <div style={{width: "25px", height: "25px"}}>
-                                    {constantsExpand ? 
-                                    <IconButton onClick={toggleConstantsExpand}>
-                                        <ExpandMore /> 
-                                    </IconButton>: 
-                                    <IconButton onClick={toggleConstantsExpand}>
-                                        <ExpandLess /> 
-                                    </IconButton>} 
-                                </div>
+                                <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px", marginTop: "8px"}}> {`Constants`}</div>
+                                {constantsExpand ? 
+                                <ButtonIcon icon={<ExpandMore />} onClick = {toggleConstantsExpand}/>
+                                : 
+                                <ButtonIcon icon={<ExpandLess />} onClick = {toggleConstantsExpand}/>} 
+                                <ButtonIcon icon={<AddCircleOutlineIcon/>} onClick = {addConstant}/>
                             </div>
                             
-                            <div style={{display: "flex", flexDirection: "column", marginBottom: "12px"}}>
+                            <div style={{display: "flex", flexDirection: "column", marginBottom: "8px"}}>
                                 <div>
                                     <Collapse in={constantsExpand} timeout="auto" unmountOnExit>
                                         {constants.map((c, index)=>(
                                             <div key={`const-div-${index}`} style={{display: "flex", flexDirection: "row", marginBottom: "8px"}}>
                                                 <ConstantInput name={c[0]} val={c[1]} index={index} handleConstantInputChange={handleConstantInputChange}/>
-                                                <IconButton sx={{width: "25px", height: "25px"}} key={`const-button-${index}`} size="small" onClick={e=>removeConstant(index)}>
-                                                    <CloseIcon/>
-                                                </IconButton>
+                                                <ButtonIcon icon={<CloseIcon/>} onClick={e=>removeConstant(index)} key={`const-button-${index}`}/>
                                             </div>
                                         ))}
                                     </Collapse>
                                 </div>
-                                <div style={{width: "200px"}}> <Button variant="outlined" size="small" onClick={addConstant}>+ Constant</Button> </div>
                             </div>
                             
                             <div style={{display: "flex", flexDirection: "row"}}>
-                                <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px", marginTop: "10px"}}> {`Production Rules`}</div>
-                                <div style={{width: "25px", height: "25px"}}>
+                                <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px", marginTop: "8px"}}> {`Production Rules`}</div>
+                                <div style={{width: "100px", display: "flex", flexDirection: "row"}}>
                                     {productionsSymbolExpand ? 
-                                    <IconButton onClick={toggleProductionsSymbolExpand}>
-                                        <ExpandMore /> 
-                                    </IconButton>: 
-                                    <IconButton onClick={toggleProductionsSymbolExpand}>
-                                        <ExpandLess /> 
-                                    </IconButton>} 
+                                        <ButtonIcon icon={<ExpandMore/>} onClick={toggleProductionsSymbolExpand}/>
+                                        : 
+                                        <ButtonIcon icon={<ExpandLess/>} onClick={toggleProductionsSymbolExpand}/>} 
+                        
+                                    <ButtonIcon icon={<AddCircleOutlineIcon/>} onClick={addProductionSymbol}/>
                                 </div>
                             </div>
 
@@ -383,36 +431,39 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                                             <div key={`prod-div-${index}`} style={{display: "flex", flexDirection: "column", marginBottom: index == productions.length - 1 ? "-2px" : "8px"}}>
                                                 <div key={`prod-symbol-div-${index}`} style={{display: "flex", flexDirection: "row", marginBottom: "8px"}}>
                                                     <ProductionSymbolInput name={p[0]} index={index} handleProductionSymbolChange={handleProductionSymbolChange}/>
-                                                    <IconButton key={`prod-symbol-button-${index}`} size="small" onClick={e=>removeProductionSymbol(index)}>
-                                                        <CloseIcon/>
-                                                    </IconButton>
                                                     {productionsRuleExpand[index] ? 
-                                                    <IconButton onClick={e=>handleProductionsExpand(index)}>
-                                                        <ExpandMore /> 
-                                                    </IconButton>: 
-                                                    <IconButton onClick={e=>handleProductionsExpand(index)}>
-                                                        <ExpandLess /> 
-                                                    </IconButton>}
-                                            
+                                                    <ButtonIcon icon = {<ExpandMore/>} onClick = {e=>handleProductionsExpand(index)}/>
+                                                    : 
+                                                    <ButtonIcon icon = {<ExpandLess/>} onClick = {e=>handleProductionsExpand(index)}/>}
+                                                    <ButtonIcon icon={<AddCircleOutlineIcon/>} onClick={(e)=>{addProductionRuleset(index)}}/>
+                                                    <ButtonIcon key={`prod-symbol-button-${index}`} icon = {<CloseIcon/>} onClick={e=>removeProductionSymbol(index)}/>
                                                 </div>
                                                 <Collapse sx={{marginLeft: 2}} in={productionsRuleExpand[index]} timeout="auto" unmountOnExit>
-                                                    {p[1].map((r, index2)=>{
+                                                    {p[1].map((rs, index2)=>{
                                                         //console.log(p, r);
                                                         return(
-                                                        <div key={`prod-rule-div-${index}-${index2}`} style={{display: "flex", flexDirection: "row", marginBottom: "8px"}}>
-                                                            <ProductionRuleInput rule = {r[0]} prob = {r[1]} index = {index} index2 = {index2} handleProductionRuleChange = {handleProductionRuleChange}/>
-                                                            <IconButton sx={{width: "25px", height: "25px"}} key={`prod-rule-button-${index}-${index2}`} size="small" onClick={e=>removeProductionRule(index, index2)}>
-                                                                <CloseIcon/>
-                                                            </IconButton>
+                                                        <div key={`prod-ruleset-div-${index}-${index2}`} style={{display: "flex", flexDirection: "column", marginBottom: "8px", width: "100%"}}>
+                                                            <div style={{display: "flex", flexDirection: "row"}}>
+                                                                <ProductionConditionInput condition = {rs[0]} index = {index} index2 = {index2} handleProductionConditionChange = {handleProductionConditionChange}/>
+                                                                <ButtonIcon icon={<AddCircleOutlineIcon/>} onClick={(e)=>addProductionRule(index, index2)}/>
+                                                                <ButtonIcon icon={<CloseIcon/>} onClick={(e)=>removeProductionRuleset(index, index2)}/>
+                                                            </div>
+                                                            
+                                                            {rs[1].map((r, index3)=>(
+                                                                <div key = {`prod-rule-div-${index}-${index2}-${index3}`} style={{display: "flex", width: "100%", flexDirection: "row"}}>
+                                                                    <div key = {`prod-rule-inner-div-${index}-${index2}-${index3}`} style={{display: "flex", flexDirection: "column", marginLeft: "18px", width: "100%"}}>
+                                                                        <ProductionRuleInput rule={r[0]} prob={r[1]} index={index} index2 = {index2} index3={index3} handleProductionRuleChange={handleProductionRuleChange}/>
+                                                                    </div>
+                                                                    <ButtonIcon icon={<CloseIcon/>} onClick={(e)=>removeProductionRule(index, index2, index3)}/>
+                                                                </div>
+                                                            ))}
                                                         </div>)
                                                     })}
                                                 </Collapse>
-                                                <div style={{width: "200px", marginBottom:"10px"}}> <Button variant="outlined" size="small" onClick={e=>addProductionRule(index)}>+ Rule</Button> </div>
                                             </div>
                                         ))}
                                     </Collapse>
                                 </div>
-                                <div style={{width: "200px"}}> <Button variant="outlined"  onClick={addProductionSymbol}>+ Production</Button> </div>
                             </div>
                             <div style={{width: "200px"}}> <Button variant="contained" type="submit" >Generate Model</Button> </div>
                         </div>
@@ -429,9 +480,26 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
 }
 
 const Editor = () =>{
-    const [axiom, setAxiom] = useState("A");
-    const [constants, setConstants] = useState([["num_gens", 5], ["col_rate", 0.2]]);
-    const [productions, setProductions] = useState([["A", [["A A", "0.5"], ["A", "0.5"]] ], ["B", [["B B", "0.5"], ["B", "0.5"]]]]); //forgor to separate AA's with spaces
+    const [axiom, setAxiom] = useState("!(0.1) A(0)");
+    const [constants, setConstants] = useState([["num_gens", 15], ["col_rate", 0.2]]);
+    const [productions, setProductions] = useState([
+        ["A(k)", 
+            [["k<5", 
+                [["F(1) A(k+1)", "1.0"],]
+            ],
+            ["k>5", 
+                [["F(1) [ +(30) A(k+1) ] [ -(30) A(k+1) ]", "1.0"],]
+            ],
+            ["*",
+                [["F(1) L A(k+1)", "1.0"],]
+            ]]
+        ], 
+        ["L",
+            [["*",
+                [["[ ^(delta) ^(delta) { . -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) . -(delta) | -(delta) f(edge) . +(delta) f(edge) . +(delta) f(edge) } ]", "1.0"]]
+            ]],
+        ]
+    ]); //forgor to separate AA's with spaces
     const [error, setError] = useState("");
     const [showGridHelper, setShowGridHelper] = useState(true);
     const [dpr, setDpr] = useState(1);
@@ -451,12 +519,17 @@ const Editor = () =>{
     const getProductions = (productions) => {
         let productionsObj = {};
         for(let i = 0; i < productions.length; i++) {
-            let ruleArray = [];
+            let rulesetArray = [];
             for(let j = 0; j < productions[i][1].length; j++) {
-                ruleArray.push({rule: productions[i][1][j][0], prob: productions[i][1][j][1]});
+                //rulesetArray.push({condition: productions[i][1][j][0], prob: productions[i][1][j][1]});
                 //ruleObj[productions[i][1][j][0]] = productions[i][1][j][1];
+                let ruleArray = [];
+                for(let k = 0; k < productions[i][1][j][1].length; k++) {
+                    ruleArray.push({rule: productions[i][1][j][1][k][0], prob: productions[i][1][j][1][k][1]});
+                }
+                rulesetArray.push({condition: productions[i][1][j][0], ruleset: ruleArray});
             }
-            productionsObj[productions[i][0]] = ruleArray;
+            productionsObj[productions[i][0]] = rulesetArray;
         }
         return productionsObj;
     }
@@ -474,8 +547,8 @@ const Editor = () =>{
         <div style={{position: "absolute", top: "0", left: "0", bottom: "0", right: "0", overflow: "hidden"} }>
             <div style={{display: "flex", flexDirection: "row"}}>
                 <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions} error={error} setError={setError} showGridHelper={showGridHelper} setShowGridHelper={setShowGridHelper} dpr={dpr} setDpr={setDpr} />
-                {/*<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} setError={setError} showGridHelper={showGridHelper} dpr={dpr}/> */}
-                <Render axiom = {TestProps.axiom} constants = {TestProps.constants} productions = {TestProps.productions} setError = {setError} showGridHelper = {showGridHelper} dpr = {dpr}/>
+                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} setError={setError} showGridHelper={showGridHelper} dpr={dpr}/> }
+                {/*<Render axiom = {TestProps.axiom} constants = {TestProps.constants} productions = {TestProps.productions} setError = {setError} showGridHelper = {showGridHelper} dpr = {dpr}/> */}
             </div>
         </div>
     )
