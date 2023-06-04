@@ -337,7 +337,9 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                             <MenuItem value={7}>Dragon Curve</MenuItem>
                             <MenuItem value={8}>Sierpiński triangle</MenuItem>
                             <MenuItem value={9}>Monopodial tree</MenuItem>
-                            <MenuItem value={10}>Sympodial tree</MenuItem>
+                            <MenuItem value={10}>Monopodial tree 2</MenuItem>
+                            <MenuItem value={11}>Monopodial tree 3</MenuItem>
+                            <MenuItem value={12}>Sympodial tree</MenuItem>
                         </Select>
                     </FormControl>
                 </div>
