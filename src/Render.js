@@ -1,6 +1,6 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { PerspectiveCamera, OrbitControls } from "@react-three/drei";
-import {useRef, useEffect, useState} from "react";
+import {useRef, useEffect, useState, useMemo} from "react";
 import * as THREE from "three"
 import { v4 as uuidv4 } from "uuid";
 import { useThree } from "@react-three/fiber";
@@ -430,7 +430,7 @@ const Branch = ({pos, heading, radius, height, id, parent_id, material}) => {
 const Shape = ({material, wid, points, id, parent_id}) => {
   const meshRef = useRef(null);
   const {scene} = useThree();
-  const [geometry, setGeometry] = useState(new THREE.ShapeGeometry());
+  const [geometry, setGeometry] = useState();
   
   useEffect(()=>{
     //const parent = scene.getObjectByName(parent_id);
@@ -755,12 +755,6 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
   //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
   return (
     <>
-      {showGridHelper &&
-        <>
-          <gridHelper args={[50, 50]}/>
-          <axesHelper renderOrder={1} scale={[50, 50, 50]}/>
-        </>
-      }
       <ambientLight />
       <pointLight position={[10, 10, 10]} intensity={0.7} />
 
@@ -789,6 +783,8 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
 const Render = ({axiom, constants, productions, setError, showGridHelper, dpr}) => {
   const controlsRef = useRef(null);
   const canvas_ref = useRef(null);
+  //const [showGridHelper, setShowGridHelper] = useState(true);
+  const renderItems = useMemo(()=><RenderItems axiom={axiom} constants={constants} productions={productions} setError={setError} showGridHelper={showGridHelper} />, [JSON.stringify(axiom), JSON.stringify(constants), JSON.stringify(productions)])
 
   const resetCamera = () => {
     if(controlsRef.current){
@@ -802,11 +798,17 @@ const Render = ({axiom, constants, productions, setError, showGridHelper, dpr}) 
   
 
   return (
-    <div ref={canvas_ref} style={{top: "0", bottom: "0", left: "0", right: "0", position: "fixed", width: "100%"} }>
+    <div ref={canvas_ref} style={{top: "0", bottom: "0", left: "0", right: "0", position: "fixed", width: "100%"}}>
         <Canvas dpr={dpr}>
           <PerspectiveCamera makeDefault position={[3, 3, 10]}/>
           <OrbitControls ref={controlsRef} enableZoom enablePan enableRotate/>
-          <RenderItems axiom={axiom} constants={constants} productions={productions} setError={setError} showGridHelper={showGridHelper} />
+          {showGridHelper &&
+            <>
+              <gridHelper args={[50, 50]}/>
+              <axesHelper renderOrder={1} scale={[50, 50, 50]}/>
+            </>
+          }
+          {renderItems}
         </Canvas>
     </div>
   )
