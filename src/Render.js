@@ -490,6 +490,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
   const [symbols, setSymbols] = useState([]);
   const [params, setParams] = useState({
     "F": ["len"],
+    "G": ["len"],
     "f": ["len"],
     "+": ["angle"],
     "-": ["angle"],
@@ -544,7 +545,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     if(symbol.type == "!") {
       last_state.pen[1] = symbol.wid;
     }
-    else if (symbol.type == "F") {
+    else if (symbol.type == "F" || symbol.type == "G") {
       //each new object stores: position, direction vector, length, width/radius
       //draw object
       newObjects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1], symbol.id, symbol.parent_id, last_state.pen[0]]);
@@ -643,6 +644,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
 
     let newParams = {
       "F": ["len"],
+      "G": ["len"],
       "f": ["len"],
       "+": ["angle"],
       "-": ["angle"],
