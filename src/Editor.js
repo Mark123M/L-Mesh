@@ -136,7 +136,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     const minDrawerWidth = 30;
 
     useEffect(()=>{
-        console.log("CURRENT PRODUCTIONS ARE", productions);
+        //console.log("CURRENT PRODUCTIONS ARE", productions);
         const newProductionsExpand = [...productionsRuleExpand];
         while(newProductionsExpand.length < productions.length) {
             newProductionsExpand.push(true);
@@ -145,7 +145,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     }, [axiom, constants, productions])
 
     useEffect(()=>{
-        console.log('CURRENT EXPANSION', productionsRuleExpand)
+        //console.log('CURRENT EXPANSION', productionsRuleExpand)
     }, [productionsRuleExpand])
 
     const handleConstantInputChange = (val, index, type) =>{
@@ -184,7 +184,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
 
     const handleProductionRuleChange = (val, index, index2, index3, type) => {
         const new_productions = JSON.parse(JSON.stringify(productions));
-        console.log(val, index, index2, index3, type, new_productions[index][1][index2][1][index3]);
+        //console.log(val, index, index2, index3, type, new_productions[index][1][index2][1][index3]);
         new_productions[index][1][index2][1][index3][type] = val;
         setProductions(new_productions);
     }
@@ -296,7 +296,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     }
 
     useEffect(() => {
-        console.log("PRESET VALUE IS", preset, allPresets);
+        //console.log("PRESET VALUE IS", preset, allPresets);
         if(preset != "") {
             setAxiom(allPresets[preset].axiom);
             setConstants(allPresets[preset].constants);
@@ -305,7 +305,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
         
     }, [preset]);
     useEffect(()=> {
-        console.log(menuOpened ? "menu is opened" : "menu is not opened");
+        //console.log(menuOpened ? "menu is opened" : "menu is not opened");
     }, [menuOpened])
     
 
@@ -505,7 +505,7 @@ const Editor = () =>{
     const [dpr, setDpr] = useState(1);
 
     useEffect(() => {
-        console.log("ERROR IS" ,error);
+        //console.log("ERROR IS" ,error);
     }, [error]);
 
     const getConstants = (constants) => {

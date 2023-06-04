@@ -684,7 +684,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
   }, [symbols])
 
   useEffect(()=>{
-    console.log("FINAL OBJECTS", objects);
+    //console.log("FINAL OBJECTS", objects);
     const allMaterials = {};
     objects.forEach((o) => {
       //<Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
@@ -696,7 +696,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
   }, [objects])
 
   useEffect(()=>{
-    console.log("FINAL SHAPES", shapes);
+    //console.log("FINAL SHAPES", shapes);
     const allShapeMaterials = {};
     shapes.forEach((s) => {
       //<Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
@@ -743,7 +743,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
   const handleExportGltf = () => {
     gltf_exporter.parse(scene, 
       (gltf)=>{
-        console.log("GLTF MODEL:", JSON.stringify(gltf));
+        //console.log("GLTF MODEL:", JSON.stringify(gltf));
         saveGltf(JSON.stringify(gltf));
       }, 
       (err)=>{
