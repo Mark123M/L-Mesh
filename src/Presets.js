@@ -52,27 +52,55 @@ export const allPresets = [
             ["fcol", "[255,160,57]"],
         ],
         productions: [
-            ["plant", [
-                ["internode +(delta) [ plant +(delta) flower ] -(delta) -(delta) /(delta) /(delta) [ -(delta) -(delta) leaf ] internode [ +(delta) +(delta) leaf ] -(delta) [ plant flower ] +(delta) +(delta) plant flower", "1.0"],
-            ]],
-            ["internode", [
-                ["F(len) seg [ /(delta) /(delta) &(delta) &(delta) leaf ] [ /(delta) /(delta) ^(delta) ^(delta) leaf ] F(len) seg", "1.0"]
-            ]],
-            ["seg", [
-                ["seg F(len) seg", "1.0"]
-            ]],
-            ["leaf", [
-                ["[ '(lcol) { . +(delta) f(len) . -(delta) f(len) f(len) . -(delta) f(len) . +(delta) | +(delta) f(len) . -(delta) f(len) f(len) . -(delta) f(len) . } ]", "1.0"]
-            ]],
-            ["flower", [
-                ["[ ^(delta) ^(delta) ^(delta) pedicel /(delta) wedge /(delta) /(delta) /(delta) /(delta) wedge /(delta) /(delta) /(delta) /(delta) wedge /(delta) /(delta) /(delta) /(delta) wedge /(delta) /(delta) /(delta) /(delta) wedge ]", "1.0"]
-            ]],
-            ["pedicel", [
-                ["'([255,255,255]) F(len) F(len)", "1.0"]
-            ]],
-            ["wedge", [
-                ["[ ^(delta) F(len) ] [ '(fcol) { &(delta) &(delta) &(delta) &(delta) . -(delta*2) f(len*2) . +(delta*2) f(len*2) . | -(delta*2) f(len*2) . +(delta*2) f(len*2) . } ]", "1.0"]
-            ]]
+            ["plant", 
+                [["*",
+                    [
+                        ["internode +(delta) [ plant +(delta) flower ] -(delta) -(delta) /(delta) /(delta) [ -(delta) -(delta) leaf ] internode [ +(delta) +(delta) leaf ] -(delta) [ plant flower ] +(delta) +(delta) plant flower", "1.0"],
+                    ]
+                ]]
+            ],
+            ["internode", 
+                [["*",
+                    [
+                        ["F(len) seg [ /(delta) /(delta) &(delta) &(delta) leaf ] [ /(delta) /(delta) ^(delta) ^(delta) leaf ] F(len) seg", "1.0"]
+                    ]
+                ]]
+            ],
+            ["seg", 
+                [["*",
+                    [
+                        ["seg F(len) seg", "1.0"]
+                    ]
+                ]]
+            ],
+            ["leaf", 
+                [["*",
+                    [
+                        ["[ '(lcol) { . +(delta) f(len) . -(delta) f(len) f(len) . -(delta) f(len) . +(delta) | +(delta) f(len) . -(delta) f(len) f(len) . -(delta) f(len) . } ]", "1.0"]
+                    ]
+                ]]
+            ],
+            ["flower", 
+                [["*",
+                    [
+                        ["[ ^(delta) ^(delta) ^(delta) pedicel /(delta) wedge /(delta) /(delta) /(delta) /(delta) wedge /(delta) /(delta) /(delta) /(delta) wedge /(delta) /(delta) /(delta) /(delta) wedge /(delta) /(delta) /(delta) /(delta) wedge ]", "1.0"]
+                    ]
+                ]]
+            ],
+            ["pedicel", 
+                [["*",
+                    [
+                        ["'([255,255,255]) F(len) F(len)", "1.0"]
+                    ]
+                ]]
+            ],
+            ["wedge", 
+                [["*",
+                    [
+                        ["[ ^(delta) F(len) ] [ '(fcol) { &(delta) &(delta) &(delta) &(delta) . -(delta*2) f(len*2) . +(delta*2) f(len*2) . | -(delta*2) f(len*2) . +(delta*2) f(len*2) . } ]", "1.0"]
+                    ]
+                ]]
+            ]
         ]
     },
     {
@@ -83,9 +111,13 @@ export const allPresets = [
             ["d", 90],
         ],
         productions: [
-            ["F(len)", [
-                ["F(l) -(d) F(l) +(d) F(l) +(d) F(l) F(l) -(d) F(l) -(d) F(l) +(d) F(l)", "1.0"],
-            ]]
+            ["F(len)", 
+                [["*",
+                    [
+                        ["F(l) -(d) F(l) +(d) F(l) +(d) F(l) F(l) -(d) F(l) -(d) F(l) +(d) F(l)", "1.0"],
+                    ]
+                ]]
+            ]
         ]
     },
     {
@@ -96,9 +128,13 @@ export const allPresets = [
             ["d", 90],
         ],
         productions: [
-            ["F(len)", [
-                ["F(l) F(l) -(d) F(l) -(d) F(l) -(d) F(l) -(d) F(l) F(l)", "1.0"]
-            ]]
+            ["F(len)", 
+                [["*",
+                    [
+                        ["F(l) F(l) -(d) F(l) -(d) F(l) -(d) F(l) -(d) F(l) F(l)", "1.0"]
+                    ]
+                ]]
+            ]
         ]
     },
     {
@@ -109,9 +145,13 @@ export const allPresets = [
             ["d", 90],
         ],
         productions: [
-            ["F(len)", [
-                ["F(l) F(l) -(d) F(l) -(d) F(l) -(d) F(l) -(d) F(l) -(d) F(l) +(d) F(l)", "1.0"]
-            ]]
+            ["F(len)", 
+                [["*",
+                    [
+                        ["F(l) F(l) -(d) F(l) -(d) F(l) -(d) F(l) -(d) F(l) -(d) F(l) +(d) F(l)", "1.0"]
+                    ]
+                ]]
+            ]
         ]
     },
     {
@@ -122,9 +162,13 @@ export const allPresets = [
             ["d", 90],
         ],
         productions: [
-            ["F(len)", [
-                ["F(l) F(l) -(d) F(l) +(d) F(l) -(d) F(l) -(d) F(l) F(l)", "1.0"]
-            ]]
+            ["F(len)", 
+                [["*",
+                    [
+                        ["F(l) F(l) -(d) F(l) +(d) F(l) -(d) F(l) -(d) F(l) F(l)", "1.0"]
+                    ]
+                ]]
+            ]
         ]
     },
     {
@@ -135,12 +179,20 @@ export const allPresets = [
             ["d", 90],
         ],
         productions: [
-            ["X", [
-                ["X +(d) Y F(l) +(d)", "1.0"]
-            ]],
-            ["Y", [
-                ["-(d) F(l) X -(d) Y", "1.0"]
-            ]],
+            ["X", 
+                [["*",
+                    [
+                        ["X +(d) Y F(l) +(d)", "1.0"]
+                    ]
+                ]]
+            ],
+            ["Y", 
+                [["*",
+                    [
+                        ["-(d) F(l) X -(d) Y", "1.0"]
+                    ]
+                ]]
+            ],
         ]
     },
     {
@@ -151,15 +203,27 @@ export const allPresets = [
             ["d", 60],
         ],
         productions: [
-            ["X", [
-                ["+(d) F(l) Y -(d) F(l) X -(d) F(l) Y +(d)", "1.0"]
-            ]],
-            ["Y", [
-                ["-(d) F(l) X +(d) F(l) Y +(d) F(l) X -(d)", "1.0"]
-            ]],
-            ["F(len)", [
-                ["Z", "1.0"]
-            ]]
+            ["X", 
+                [["*",
+                    [
+                        ["+(d) F(l) Y -(d) F(l) X -(d) F(l) Y +(d)", "1.0"]
+                    ]
+                ]]
+            ],
+            ["Y", 
+                [["*",
+                    [
+                        ["-(d) F(l) X +(d) F(l) Y +(d) F(l) X -(d)", "1.0"]
+                    ]
+                ]]
+            ],
+            ["F(len)", 
+                [["*",
+                    [
+                        ["Z", "1.0"]
+                    ]
+                ]]
+            ]
         ]
     },
 
