@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/L-Mesh/static/css/main.9b1a09bf.css",
-    "main.js": "/L-Mesh/static/js/main.93cca81e.js",
+    "main.js": "/L-Mesh/static/js/main.563baab6.js",
     "static/media/open-sans-all-400-normal.woff": "/L-Mesh/static/media/open-sans-all-400-normal.cb2542fccedadc68d737.woff",
     "static/media/open-sans-cyrillic-ext-400-normal.woff2": "/L-Mesh/static/media/open-sans-cyrillic-ext-400-normal.01b11c560bc52c756c23.woff2",
     "static/media/open-sans-latin-400-normal.woff2": "/L-Mesh/static/media/open-sans-latin-400-normal.a1535f451fb7bb98f526.woff2",
@@ -13,10 +13,10 @@
     "static/media/open-sans-greek-ext-400-normal.woff2": "/L-Mesh/static/media/open-sans-greek-ext-400-normal.1ed998a42083750e175e.woff2",
     "index.html": "/L-Mesh/index.html",
     "main.9b1a09bf.css.map": "/L-Mesh/static/css/main.9b1a09bf.css.map",
-    "main.93cca81e.js.map": "/L-Mesh/static/js/main.93cca81e.js.map"
+    "main.563baab6.js.map": "/L-Mesh/static/js/main.563baab6.js.map"
   },
   "entrypoints": [
     "static/css/main.9b1a09bf.css",
-    "static/js/main.93cca81e.js"
+    "static/js/main.563baab6.js"
   ]
 }
