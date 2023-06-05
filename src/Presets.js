@@ -434,7 +434,7 @@ export const allPresets = [
                 [["*",
                     [
                         ["!(wid) F(len) [ L -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h)", "0.7"],
-                        ["!(wid) F(len) [ L +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h)", "0.3"],
+                        ["!(wid) F(len) [ +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h)", "0.3"],
                     ]
                 ]]
             ],
@@ -442,7 +442,7 @@ export const allPresets = [
                 [["*",
                     [
                         ["!(wid) F(len) [ L +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h)", "0.7"],
-                        ["!(wid) F(len) [ L -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h)", "0.3"]
+                        ["!(wid) F(len) [ -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h)", "0.3"]
                     ]
                 ]]
             ],
