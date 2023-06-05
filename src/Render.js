@@ -767,7 +767,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
         <Shape key = {uuidv4()} material = {shapeMaterials[rgbToHex(s[0])]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
       )}
       
-      <Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>
+      {/*<Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>*/}
     </>
   )
 }

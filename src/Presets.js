@@ -396,6 +396,63 @@ export const allPresets = [
                         ["!(wid) F(len) [ -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h)", "0.3"]
                     ]
                 ]]
+            ],
+            ["L",
+                [["*", 
+                    [
+                        ["[ '([125,177,60]) ^(20) ^(20) { . -(20) f(0.15) . +(20) f(0.15) . +(20) f(0.15) . -(20) | -(20) f(0.15) . +(20) f(0.15) . +(20) f(0.15) } ]", "1.0"]
+                    ]
+                ]]
+            
+            ]
+        ]
+    },
+    {
+        axiom: "A(1, 0.15)",
+        constants: [
+            ["num_gens", 10],
+            ["r1", 0.95],
+            ["r2", 0.80],
+            ["a1", 30],
+            ["a2", 45],
+            ["h", 0.707],
+            ["i", 137.5],
+            ["TURN_T", 12],
+            ["PITCH_T", 12],
+            ["ROLL_T", 20],
+        ],
+        productions: [
+            ["A(len,wid)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(i+random(-TURN_T, TURN_T)) A(len*r1, wid*h)", "0.5"],
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) C(len*r2, wid*h) ] /(i+random(-TURN_T, TURN_T)) A(len*r1, wid*h)", "0.5"]
+                    ]
+                ]]
+            ],
+            ["B(len,wid)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ L -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h)", "0.7"],
+                        ["!(wid) F(len) [ L +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h)", "0.3"],
+                    ]
+                ]]
+            ],
+            ["C(len,wid)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ L +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h)", "0.7"],
+                        ["!(wid) F(len) [ L -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h)", "0.3"]
+                    ]
+                ]]
+            ],
+            ["L",
+                [["*", 
+                    [
+                        ["[ &(random(-30, 90)) '([125,177,60]) ^(20) ^(20) { . -(20) f(0.2) . +(20) f(0.2) . +(20) f(0.2) . -(20) | -(20) f(0.2) . +(20) f(0.2) . +(20) f(0.2) } ]", "1.0"]
+                    ]
+                ]]
+            
             ]
         ]
     }
