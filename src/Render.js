@@ -782,11 +782,11 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
  * @param dpr the resolution of the scene
  * @returns 3D canvas
  */
-const Render = ({axiom, constants, productions, setError, showGridHelper, dpr}) => {
+const Render = ({axiom, constants, productions, setError, showGridHelper, dpr, seed}) => {
   const controlsRef = useRef(null);
   const canvas_ref = useRef(null);
   //const [showGridHelper, setShowGridHelper] = useState(true);
-  const renderItems = useMemo(()=><RenderItems axiom={axiom} constants={constants} productions={productions} setError={setError} showGridHelper={showGridHelper} />, [JSON.stringify(axiom), JSON.stringify(constants), JSON.stringify(productions)])
+  const renderItems = useMemo(()=><RenderItems axiom={axiom} constants={constants} productions={productions} setError={setError} showGridHelper={showGridHelper} />, [JSON.stringify(axiom), JSON.stringify(constants), JSON.stringify(productions), seed])
 
   const resetCamera = () => {
     if(controlsRef.current){

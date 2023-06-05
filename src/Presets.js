@@ -227,7 +227,7 @@ export const allPresets = [
         ]
     },
     {
-        axiom: "A(1,0.1)",
+        axiom: "A(2,0.2)",
         constants: [
             ["num_gens", 10],
             ["r1", 0.9],
@@ -262,7 +262,7 @@ export const allPresets = [
         ]
     },
     {
-        axiom: "A(1,0.1)",
+        axiom: "A(2,0.2)",
         constants: [
             ["num_gens", 10],
             ["r1", 0.9],
@@ -297,7 +297,7 @@ export const allPresets = [
         ]
     },
     {
-        axiom: "A(1,0.1)",
+        axiom: "A(2,0.2)",
         constants: [
             ["num_gens", 10],
             ["r1", 0.9],
@@ -332,7 +332,7 @@ export const allPresets = [
         ]
     },
     {
-        axiom: "A(1,0.1)",
+        axiom: "A(2,0.2)",
         constants: [
             ["num_gens", 10],
             ["r1", 0.9],
