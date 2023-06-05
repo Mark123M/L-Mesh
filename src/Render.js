@@ -79,7 +79,7 @@ const generate_rules = (symbol, productions, constants, params, setError) =>{
       })
     }
     Object.keys(constants).forEach((s)=>{
-      if(s != "num_gen"){
+      if(s != "num_gens"){
         condition = condition.replaceAll(s, JSON.stringify(constants[s])); //replace all occurances of constants in the successor symbol
       }
     })
@@ -139,7 +139,7 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
     })
   }
   Object.keys(constants).forEach((s)=>{
-    if(s != "num_gen"){
+    if(s != "num_gens"){
       rule = rule.replaceAll(s, JSON.stringify(constants[s])); //replace all occurances of constants in the successor symbol
     }
   })
@@ -213,7 +213,7 @@ const get_prob = (prob, symbol, constants, setError) => {
     })
   }
   Object.keys(constants).forEach((s)=>{
-    if(s != "num_gen"){
+    if(s != "num_gens"){
       prob = prob.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
     }
   })
