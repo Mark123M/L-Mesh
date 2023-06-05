@@ -40,9 +40,11 @@ $                      Rotate to vertical (rotates turtle so the up vector is [0
 ```
 
 ## Stochastic Systems
+For natural looking models, each rule can be assigned a weighted probability. 
 TODO
 
 ## Parametric Systems
+Each symbol can be assigned parameters in the production rules. These parameters can then be used for the rule (successor symbols) and the weighted probability. Parameters can also be used for conditions to choose the next successor symbols or send development signals to other parts of your model.  
 TODO
 
 ## Sources
