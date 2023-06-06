@@ -457,9 +457,9 @@ export const allPresets = [
         ]
     },
     {
-        axiom: "A(1, 0.15, 1)",
+        axiom: "A(1.2, 0.15, 1)",
         constants: [
-            ["num_gens", 10],
+            ["num_gens", 11],
             ["r1", 0.95],
             ["r2", 0.80],
             ["a1", 30],
