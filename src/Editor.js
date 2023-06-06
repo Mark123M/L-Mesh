@@ -343,6 +343,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                             <MenuItem value={12}>Sympodial tree</MenuItem>
                             <MenuItem value={13}>Natural tree</MenuItem>
                             <MenuItem value={14}>Natural tree w/ leaves</MenuItem>
+                            <MenuItem value={15}>Natural tree w/ leaves 2</MenuItem>
                         </Select>
                     </FormControl>
                 </div>

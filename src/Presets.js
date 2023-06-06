@@ -455,6 +455,63 @@ export const allPresets = [
             
             ]
         ]
+    },
+    {
+        axiom: "A(1, 0.15, 1)",
+        constants: [
+            ["num_gens", 10],
+            ["r1", 0.95],
+            ["r2", 0.80],
+            ["a1", 30],
+            ["a2", 45],
+            ["h", 0.707],
+            ["i0", 137.5],
+            ["TURN_T", 12],
+            ["PITCH_T", 12],
+            ["ROLL_T", 20],
+        ],
+        productions: [
+            ["A(len,wid,level)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.5"],
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.5"]
+                    ]
+                ]]
+            ],
+            ["B(len,wid,level)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ leaves(level,wid) -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h, level+1)", "0.7"],
+                        ["!(wid) F(len) [ leaves(level,wid) +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h, level+1)", "0.3"],
+                    ]
+                ]]
+            ],
+            ["C(len,wid,level)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ leaves(level,wid) +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h, level+1)", "0.7"],
+                        ["!(wid) F(len) [ leaves(level,wid) -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h, level+1)", "0.3"]
+                    ]
+                ]]
+            ],
+            ["leaves(level,wid)", 
+                [["*",
+                    [
+                        ["[ &(random(-60,60)) /(random(-45, 45)) +(random(-30, 30)) '([125,120,60]) !(min(0.005,wid*h)) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) +(60) L(level/num_gens) ]", "level/num_gens"],
+                        ["[]", "1-level/num_gens"],
+                    ]
+                ]]
+            ],
+            ["L(sz)",
+                [["*", 
+                    [
+                        ["[ /(random(-30, 30)) -(45) '([125,177,60]) { . -(20) f(0.2*sz) . +(20) f(0.2*sz) . +(20) f(0.2*sz) . -(20) | -(20) f(0.2*sz) . +(20) f(0.2*sz) . +(20) f(0.2*sz) } ]", "1.0"]
+                    ]
+                ]]
+            
+            ]
+        ]
     }
 
 

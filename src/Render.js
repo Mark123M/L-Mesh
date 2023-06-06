@@ -79,9 +79,7 @@ const generate_rules = (symbol, productions, constants, params, setError) =>{
       })
     }
     Object.keys(constants).forEach((s)=>{
-      if(s != "num_gens"){
-        condition = condition.replaceAll(s, JSON.stringify(constants[s])); //replace all occurances of constants in the successor symbol
-      }
+      condition = condition.replaceAll(s, JSON.stringify(constants[s])); //replace all occurances of constants in the successor symbol
     })
     if(rs.condition == '*' || evaluate_expression(condition, rs.condition, setError)) {
       rs.ruleset.forEach((r) => {
@@ -139,9 +137,7 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
     })
   }
   Object.keys(constants).forEach((s)=>{
-    if(s != "num_gens"){
       rule = rule.replaceAll(s, JSON.stringify(constants[s])); //replace all occurances of constants in the successor symbol
-    }
   })
   //console.log("SUBBED RULE IS ", rule, symbol);
 
@@ -213,9 +209,7 @@ const get_prob = (prob, symbol, constants, setError) => {
     })
   }
   Object.keys(constants).forEach((s)=>{
-    if(s != "num_gens"){
-      prob = prob.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
-    }
+    prob = prob.replaceAll(s, JSON.stringify(constants[s])); //replace all variables of the production with any constants
   })
   //console.log("SUBBED PROB: ",prob);
 
@@ -278,7 +272,7 @@ const evaluate_expression = (str, baseStr, setError) => {
   }
   catch {
     //console.log("ERROR EVALUATING PROB:", baseStr, str);
-    setError(`Error evaluating expression: ${baseStr}`);
+    setError(`Error evaluating expression: ${baseStr}, ${str}`);
     return -1;
   }
 }
