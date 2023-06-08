@@ -27,6 +27,8 @@ const init_state = {
     heading: [0, 1, 0],
     left: [-1, 0, 0], 
     up: [0, 0, 1],
+    tropism_vector: [0, 1, 0],
+    tropism_const: 0,
     pen: [[128, 83, 51], 0.4, true], 
 }
 
@@ -321,6 +323,9 @@ const matrix_vector_mult = (m, v) =>{
 const cross_product = (a, b) => {
   return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 }
+const dot_product = (v1, v2) => {
+  return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
+}
 const scalar_mult = (c, v) =>{
   return [c * v[0], c * v[1], c * v[2]];
 }
@@ -353,6 +358,17 @@ const rotate_h = (state, angle) =>{ //turn + -
   state.heading = matrix_vector_mult(m, [1, 0, 0]);
   state.left = matrix_vector_mult(m, [0, ct, st]);
   state.up = matrix_vector_mult(m, [0, -st, ct]);
+}
+const rotate_vector_axis = (vector, axis, angle) => {
+  const vector_scale = scalar_mult(Math.cos(angle), vector);
+  const vector_skew = scalar_mult(Math.sin(angle), cross_product(axis, vector));
+  const vector_height = scalar_mult((1 - Math.cos(angle)), scalar_mult(dot_product(axis, vector), axis));
+  return vector_add(vector_scale, vector_add(vector_skew, vector_height));
+}
+const rotate_matrix_axis = (state, axis, angle) => { //uses the rodriguez rotation formula
+  state.heading = rotate_vector_axis(state.heading, axis, angle);
+  state.left = rotate_vector_axis(state.left, axis, angle); 
+  state.up = rotate_vector_axis(state.up, axis, angle); 
 }
 const rgbToHex = (rgb, type) => {
   //console.log("RGB VALUES ARE", rgb);
@@ -501,6 +517,8 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     "}": [],
     "!": ["wid"],
     "'": ["color"],
+    "T": ["vector"],
+    "t": ["e"],
   });
   const [materials, setMaterials] = useState({});
   const [shapeMaterials, setShapeMaterials] = useState({});
@@ -534,7 +552,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     * @returns  
     */
    const applyRule = (symbol, newObjects, newShapes, newStateStack, newShapeStack) => {
-    //console.log(newStateStack, "WITH TYPE", symbol.type); 
+    //last_state is an object so it's pass by reference
     let last_state = newStateStack[newStateStack.length - 1];
     if(symbol.type == "!") {
       last_state.pen[1] = symbol.wid;
@@ -542,6 +560,21 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     else if (symbol.type == "F" || symbol.type == "G") {
       //each new object stores: position, direction vector, length, width/radius
       //draw object
+      if(last_state.tropism_const != 0) {
+        let axis = cross_product(last_state.heading, last_state.tropism_vector);
+        if(axis[0] != 0 || axis[1] != 0 || axis[2] != 0) { //if the axis isn't a zero vector, meaning that heading is already the tropism
+          //console.log("LAST HEADING", last_state.heading);
+          //console.log("AXIS", axis, last_state.tropism_vector);
+          const angle = last_state.tropism_const * vector_len(axis);
+          axis = scalar_mult(1/(vector_len(axis)), axis); //normalize axis
+          rotate_matrix_axis(last_state, axis, angle);
+          //console.log("STATE AFTER TROPISM", last_state.heading, axis, angle); 
+        }
+      }
+      
+      
+      
+
       newObjects.push([vector_add(last_state.pos, scalar_mult(symbol.len/2, last_state.heading)), last_state.heading, symbol.len, last_state.pen[1], symbol.id, symbol.parent_id, last_state.pen[0]]);
       //translate state
       last_state.pos = vector_add(last_state.pos, scalar_mult(symbol.len, last_state.heading));
@@ -605,7 +638,12 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     else if (symbol.type == "'") {
       last_state.pen[0] = symbol.color;
     }
-    
+    else if (symbol.type == "T") { //sets tropism vector
+      last_state.tropism_vector = symbol.vector;
+    }
+    else if (symbol.type == "t") { //sets tropism angle
+      last_state.tropism_const = symbol.e;
+    }
   }
 
   const getAllMeshes = () => {
@@ -614,6 +652,8 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
       heading: [0, 1, 0],
       left: [-1, 0, 0], 
       up: [0, 0, 1],
+      tropism_vector: [0, 1, 0],
+      tropism_const: 0,
       pen: [[128, 83, 51], 0.4, true], }
     ];
     const newShapeStack = [];
@@ -655,6 +695,8 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
       "}": [],
       "!": ["wid"],
       "'": ["color"],
+      "T": ["vector"],
+      "t": ["e"],
     };
     get_params(productions, newParams);
     //console.log("NEW PARAMS", newParams);
@@ -680,7 +722,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
   }, [symbols])
 
   useEffect(()=>{
-    //console.log("FINAL OBJECTS", objects);
+    console.log("FINAL OBJECTS", objects);
     const allMaterials = {};
     objects.forEach((o) => {
       //<Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
@@ -692,7 +734,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
   }, [objects])
 
   useEffect(()=>{
-    //console.log("FINAL SHAPES", shapes);
+    console.log("FINAL SHAPES", shapes);
     const allShapeMaterials = {};
     shapes.forEach((s) => {
       //<Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>

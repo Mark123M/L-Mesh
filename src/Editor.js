@@ -344,6 +344,9 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                             <MenuItem value={13}>Natural tree</MenuItem>
                             <MenuItem value={14}>Natural tree w/ leaves</MenuItem>
                             <MenuItem value={15}>Natural tree w/ leaves 2</MenuItem>
+                            <MenuItem value={16}>gravity test</MenuItem>
+                            <MenuItem value={17}>Weeping Willow</MenuItem>
+                            <MenuItem value={18}>Weeping Willow 2</MenuItem>
                         </Select>
                     </FormControl>
                 </div>
