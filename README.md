@@ -35,6 +35,8 @@ $                      Rotate to vertical (rotates turtle so the up vector is [0
 }                      Complete a polygon
 ! (wid)                Change the width of line
 ` (col)                Change the color
+T (vector)             Change the tropism vector
+t (e)                  Change the tropism constant 
 ~                      TODO
 %                      TODO
 ```
