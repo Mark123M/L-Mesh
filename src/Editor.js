@@ -121,7 +121,7 @@ const ButtonIcon = ({icon, onClick}) => {
     )
 }
 
-const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxiom, setGlobalConstants, setGlobalProductions, error, setError, showGridHelper, setShowGridHelper, dpr, setDpr}) => {
+const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxiom, setGlobalConstants, setGlobalProductions, error, setError, showGridHelper, setShowGridHelper, dpr, setDpr, seed, setSeed}) => {
     const [axiom, setAxiom] = useState(init_axiom);
     const [constants, setConstants] = useState(init_constants);
     const [productions, setProductions] = useState(init_productions);
@@ -256,6 +256,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
         setGlobalAxiom(axiom);
         setGlobalConstants(constants);
         setGlobalProductions(productions);
+        setSeed(Math.random());
     }
 
     const handleMouseDown = (e) => {
@@ -340,6 +341,12 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                             <MenuItem value={10}>Monopodial tree 2</MenuItem>
                             <MenuItem value={11}>Monopodial tree 3</MenuItem>
                             <MenuItem value={12}>Sympodial tree</MenuItem>
+                            <MenuItem value={13}>Natural tree</MenuItem>
+                            <MenuItem value={14}>Natural tree w/ leaves</MenuItem>
+                            <MenuItem value={15}>Natural tree w/ leaves 2</MenuItem>
+                            <MenuItem value={16}>gravity test</MenuItem>
+                            <MenuItem value={17}>Weeping Willow</MenuItem>
+                            <MenuItem value={18}>Weeping Willow 2</MenuItem>
                         </Select>
                     </FormControl>
                 </div>
@@ -505,6 +512,7 @@ const Editor = () =>{
     const [error, setError] = useState("");
     const [showGridHelper, setShowGridHelper] = useState(true);
     const [dpr, setDpr] = useState(1);
+    const [seed, setSeed] = useState(0);
 
     useEffect(() => {
         //console.log("ERROR IS" ,error);
@@ -548,8 +556,8 @@ const Editor = () =>{
     return(
         <div style={{position: "absolute", top: "0", left: "0", bottom: "0", right: "0", overflow: "hidden"} }>
             <div style={{display: "flex", flexDirection: "row"}}>
-                <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions} error={error} setError={setError} showGridHelper={showGridHelper} setShowGridHelper={setShowGridHelper} dpr={dpr} setDpr={setDpr} />
-                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} setError={setError} showGridHelper={showGridHelper} dpr={dpr}/> }
+                <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions} error={error} setError={setError} showGridHelper={showGridHelper} setShowGridHelper={setShowGridHelper} dpr={dpr} setDpr={setDpr} seed={seed} setSeed={setSeed} />
+                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} setError={setError} showGridHelper={showGridHelper} dpr={dpr} seed={seed}/> }
                 {/*<Render axiom = {TestProps.axiom} constants = {TestProps.constants} productions = {TestProps.productions} setError = {setError} showGridHelper = {showGridHelper} dpr = {dpr}/> */}
             </div>
         </div>

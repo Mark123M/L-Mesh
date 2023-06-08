@@ -227,7 +227,7 @@ export const allPresets = [
         ]
     },
     {
-        axiom: "A(1,0.1)",
+        axiom: "A(2,0.2)",
         constants: [
             ["num_gens", 10],
             ["r1", 0.9],
@@ -262,7 +262,7 @@ export const allPresets = [
         ]
     },
     {
-        axiom: "A(1,0.1)",
+        axiom: "A(2,0.2)",
         constants: [
             ["num_gens", 10],
             ["r1", 0.9],
@@ -297,7 +297,7 @@ export const allPresets = [
         ]
     },
     {
-        axiom: "A(1,0.1)",
+        axiom: "A(2,0.2)",
         constants: [
             ["num_gens", 10],
             ["r1", 0.9],
@@ -332,7 +332,7 @@ export const allPresets = [
         ]
     },
     {
-        axiom: "A(1,0.1)",
+        axiom: "A(2,0.2)",
         constants: [
             ["num_gens", 10],
             ["r1", 0.9],
@@ -353,6 +353,252 @@ export const allPresets = [
                 [["*",
                     [
                         ["!(w) F(l) [ +(a1) $ B(l*r1,w*h) ] [ -(a2) $ B(l*r2,w*h) ]", "1.0"] 
+                    ]
+                ]]
+            ],
+        ]
+    },
+    {
+        axiom: "A(1, 0.15)",
+        constants: [
+            ["num_gens", 10],
+            ["r1", 0.95],
+            ["r2", 0.80],
+            ["a1", 30],
+            ["a2", 45],
+            ["h", 0.707],
+            ["i", 137.5],
+            ["TURN_T", 12],
+            ["PITCH_T", 12],
+            ["ROLL_T", 20],
+        ],
+        productions: [
+            ["A(len,wid)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(i+random(-TURN_T, TURN_T)) A(len*r1, wid*h)", "0.5"],
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) C(len*r2, wid*h) ] /(i+random(-TURN_T, TURN_T)) A(len*r1, wid*h)", "0.5"]
+                    ]
+                ]]
+            ],
+            ["B(len,wid)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h)", "0.7"],
+                        ["!(wid) F(len) [ +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h)", "0.3"],
+                    ]
+                ]]
+            ],
+            ["C(len,wid)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h)", "0.7"],
+                        ["!(wid) F(len) [ -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h)", "0.3"]
+                    ]
+                ]]
+            ],
+            ["L",
+                [["*", 
+                    [
+                        ["[ '([125,177,60]) ^(20) ^(20) { . -(20) f(0.15) . +(20) f(0.15) . +(20) f(0.15) . -(20) | -(20) f(0.15) . +(20) f(0.15) . +(20) f(0.15) } ]", "1.0"]
+                    ]
+                ]]
+            
+            ]
+        ]
+    },
+    {
+        axiom: "A(1, 0.15)",
+        constants: [
+            ["num_gens", 10],
+            ["r1", 0.95],
+            ["r2", 0.80],
+            ["a1", 30],
+            ["a2", 45],
+            ["h", 0.707],
+            ["i", 137.5],
+            ["TURN_T", 12],
+            ["PITCH_T", 12],
+            ["ROLL_T", 20],
+        ],
+        productions: [
+            ["A(len,wid)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(i+random(-TURN_T, TURN_T)) A(len*r1, wid*h)", "0.5"],
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) C(len*r2, wid*h) ] /(i+random(-TURN_T, TURN_T)) A(len*r1, wid*h)", "0.5"]
+                    ]
+                ]]
+            ],
+            ["B(len,wid)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ L -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h)", "0.7"],
+                        ["!(wid) F(len) [ +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h)", "0.3"],
+                    ]
+                ]]
+            ],
+            ["C(len,wid)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ L +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h)", "0.7"],
+                        ["!(wid) F(len) [ -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h)", "0.3"]
+                    ]
+                ]]
+            ],
+            ["L",
+                [["*", 
+                    [
+                        ["[ &(random(-30, 90)) '([125,177,60]) ^(20) ^(20) { . -(20) f(0.2) . +(20) f(0.2) . +(20) f(0.2) . -(20) | -(20) f(0.2) . +(20) f(0.2) . +(20) f(0.2) } ]", "1.0"]
+                    ]
+                ]]
+            
+            ]
+        ]
+    },
+    {
+        axiom: "A(1.2, 0.15, 1)",
+        constants: [
+            ["num_gens", 11],
+            ["r1", 0.95],
+            ["r2", 0.80],
+            ["a1", 30],
+            ["a2", 45],
+            ["h", 0.707],
+            ["i0", 137.5],
+            ["TURN_T", 12],
+            ["PITCH_T", 12],
+            ["ROLL_T", 20],
+        ],
+        productions: [
+            ["A(len,wid,level)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.5"],
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.5"]
+                    ]
+                ]]
+            ],
+            ["B(len,wid,level)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ leaves(level,wid) -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h, level+1)", "0.7"],
+                        ["!(wid) F(len) [ leaves(level,wid) +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h, level+1)", "0.3"],
+                    ]
+                ]]
+            ],
+            ["C(len,wid,level)",
+                [["*",
+                    [
+                        ["!(wid) F(len) [ leaves(level,wid) +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h, level+1)", "0.7"],
+                        ["!(wid) F(len) [ leaves(level,wid) -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h, level+1)", "0.3"]
+                    ]
+                ]]
+            ],
+            ["leaves(level,wid)", 
+                [["*",
+                    [
+                        ["[ &(random(-60,60)) /(random(-45, 45)) +(random(-30, 30)) '([125,120,60]) !(min(0.005,wid*h)) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) +(60) L(level/num_gens) ]", "level/num_gens"],
+                        ["[]", "1-level/num_gens"],
+                    ]
+                ]]
+            ],
+            ["L(sz)",
+                [["*", 
+                    [
+                        ["[ /(random(-30, 30)) -(45) '([125,177,60]) { . -(20) f(0.2*sz) . +(20) f(0.2*sz) . +(20) f(0.2*sz) . -(20) | -(20) f(0.2*sz) . +(20) f(0.2*sz) . +(20) f(0.2*sz) } ]", "1.0"]
+                    ]
+                ]]
+            
+            ]
+        ]
+    },
+    {
+        axiom: "!(0.03) F(len) A(len)",
+        constants: [
+            ["num_gens", 10],
+            ["len", 5],
+            ["tt", "[0, -1, 0]"],
+            ["ee", 0.2], 
+            ["angle",45],
+        ],
+        productions: [
+            ["A(size)",
+                [["*",
+                    [
+                        ["T(tt) t(ee) [ &(angle) F(size/1.7) A(size/1.7) ] /(angle) /(angle) /(angle) /(angle) [ &(angle) F(size/1.7) A(size/1.7) ]", "1.0"],
+                    ]
+                ]]
+            ],
+        ]
+    },
+    {
+        axiom: "T(T) t(e) !(0.07) F(1) /(45) A",
+        constants: [
+            ["num_gens", 8],
+            ["d1", 112.5],
+            ["d2", 157.5],
+            ["a", 22.5],
+            ["lr", 1.4],
+            ["T", "[-0.02, -1.00, 0.00]"],
+            ["e", 0.27],
+            ["vr", 1.3]
+        ],
+        productions: [
+            ["A",
+                [["*",
+                    [
+                        ["!(0.05) F(0.5) [ &(a) F(0.5) A ] /(d1) [ &(a) F(0.5) A ] /(d2) [ &(a) F(0.5) A ]", "1.0"],
+                    ]
+                ]]
+            ],
+            ["F(len)",
+                [["*",
+                    [
+                        ["F(len*lr)", "1.0"],
+                    ]
+                ]]
+            ],
+            ["!(wid)",
+                [["*",
+                    [
+                        ["!(wid*vr)", "1.0"],
+                    ]
+                ]]
+            ],
+        ]
+    },
+    {
+        axiom: "T(T) t(e) !(0.02) F(0.5) A",
+        constants: [
+            ["num_gens", 8],
+            ["d1", 112.5],
+            ["d2", 157.5],
+            ["a", 22.5],
+            ["lr", 1.356],
+            ["T", "[-0.2, -1.00, 0.00]"],
+            ["e", 0.27],
+            ["vr", 1.653]
+        ],
+        productions: [
+            ["A",
+                [["*",
+                    [
+                        ["!(0.02) F(0.5) [ &(a) F(0.5) A ] /(d1) [ &(a) F(0.5) A ] /(d2) [ &(a) F(0.5) A ]", "1.0"],
+                    ]
+                ]]
+            ],
+            ["F(len)",
+                [["*",
+                    [
+                        ["F(len*lr)", "1.0"],
+                    ]
+                ]]
+            ],
+            ["!(wid)",
+                [["*",
+                    [
+                        ["!(wid*vr)", "1.0"],
                     ]
                 ]]
             ],
