@@ -449,14 +449,10 @@ const Shape = ({material, wid, points, id, parent_id}) => {
     position_vector.set(points[0][0], points[0][1], points[0][2]);
     mesh_shape.moveTo(position_vector.x, position_vector.y);
 
-    //add a small random value to avoid repeating lineTo calls
-    let rx = Math.random() * 0.000008999999 + 0.000001;
-    let ry = Math.random() * 0.000008999999 + 0.000001;
+    //draw geometry in 2D with lineTo
     for(let i = 1; i < points.length; i++) {
       position_vector.set(points[i][0], points[i][1], points[i][2]);
-      mesh_shape.lineTo(position_vector.x + rx, position_vector.y + ry);
-      rx = Math.random() * 0.000008999999 + 0.000001;
-      ry = Math.random() * 0.000008999999 + 0.000001;
+      mesh_shape.lineTo(position_vector.x, position_vector.y);
     }
 
     position_vector.set(points[0][0], points[0][1], points[0][2]);
