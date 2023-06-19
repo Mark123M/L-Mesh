@@ -9,6 +9,8 @@ import * as math from "mathjs"
 import React from 'react'
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { useLoader } from "@react-three/fiber";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 //3D turtle interpreter
 
@@ -481,6 +483,28 @@ const Shape = ({material, wid, points, id, parent_id}) => {
   );
 }
 
+const CustomMesh = ({pos, heading, link, setError}) => {
+  const extension = link.substring(link.lastIndexOf("."));
+  console.log(extension);
+  
+  if(extension == ".obj") {
+
+  }
+  else if (extension == ".gltf" || extension == ".glb") {
+
+  }
+  else if(extension == ".fbx") {
+
+  }
+  else if(extension == ".stl") {
+
+  }
+  else {
+    setError(`Invalid file extension for ${link}`);
+  }
+
+}
+
 /**
  * RenderItems({...}) is a component for all meshes in the scenegraph. It handles the core symbol generation and interpretation. 
  * @param axiom initial state of the system as a string 
@@ -490,7 +514,7 @@ const Shape = ({material, wid, points, id, parent_id}) => {
  * @param showGridHelper state for showing the grid helper
  * @returns 3D scene
  */
-const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) => {
+const RenderItems = ({axiom, constants, productions, meshImports, setError, showGridHelper}) => {
   const[objects, setObjects] = useState([]);
   const[shapes, setShapes] = useState([]);
   const [symbols, setSymbols] = useState([]);
@@ -671,6 +695,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     console.log(axiom);
     console.log(constants);
     console.log(productions);
+    console.log(meshImports);
 
     let newParams = {
       "F": ["len"],
@@ -798,6 +823,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
       {shapes.map((s)=>
         <Shape key = {uuidv4()} material = {shapeMaterials[rgbToHex(s[0])]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
       )}
+      <CustomMesh link={"google.com/fake/mesh.png"} setError={setError}/>
       
       {/*<Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>*/}
     </>
@@ -814,11 +840,11 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
  * @param dpr the resolution of the scene
  * @returns 3D canvas
  */
-const Render = ({axiom, constants, productions, setError, showGridHelper, dpr, seed}) => {
+const Render = ({axiom, constants, productions, meshImports, setError, showGridHelper, dpr, seed}) => {
   const controlsRef = useRef(null);
   const canvas_ref = useRef(null);
   //const [showGridHelper, setShowGridHelper] = useState(true);
-  const renderItems = useMemo(()=><RenderItems axiom={axiom} constants={constants} productions={productions} setError={setError} showGridHelper={showGridHelper} />, [JSON.stringify(axiom), JSON.stringify(constants), JSON.stringify(productions), seed])
+  const renderItems = useMemo(()=><RenderItems axiom={axiom} constants={constants} productions={productions} meshImports={meshImports} setError={setError} showGridHelper={showGridHelper} />, [JSON.stringify(axiom), JSON.stringify(constants), JSON.stringify(productions), JSON.stringify(meshImports), seed])
 
   const resetCamera = () => {
     if(controlsRef.current){

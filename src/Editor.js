@@ -308,6 +308,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
         setGlobalAxiom(axiom);
         setGlobalConstants(constants);
         setGlobalProductions(productions);
+        setGlobalMeshImports(meshImports);
         setSeed(Math.random());
     }
 
@@ -585,8 +586,8 @@ const Editor = () =>{
         ]
     ]); //forgor to separate AA's with spaces
     const [meshImports, setMeshImports] = useState([
-        ["", ""],
-        ["", ""],
+        ["a", "b"],
+        ["c", "d"],
     ])
     const [error, setError] = useState("");
     const [showGridHelper, setShowGridHelper] = useState(true);
@@ -622,6 +623,15 @@ const Editor = () =>{
         }
         return productionsObj;
     }
+
+    const getMeshImports = (meshImports) => {
+        //console.log("UNPROCESSED MESH IMPORTS", meshImports);
+        let meshImportsObj = {};
+        for(let i = 0; i < meshImports.length; i++) {
+            meshImportsObj[meshImports[i][0]] = meshImports[i][1];
+        }
+        return meshImportsObj;
+    }
     
     useEffect(()=>{
         /*console.log("THE GLOBAL STATES ARE: ");
@@ -636,7 +646,7 @@ const Editor = () =>{
         <div style={{position: "absolute", top: "0", left: "0", bottom: "0", right: "0", overflow: "hidden"} }>
             <div style={{display: "flex", flexDirection: "row"}}>
                 <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} init_mesh_imports={meshImports} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions} setGlobalMeshImports = {setMeshImports} error={error} setError={setError} showGridHelper={showGridHelper} setShowGridHelper={setShowGridHelper} dpr={dpr} setDpr={setDpr} seed={seed} setSeed={setSeed} />
-                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} setError={setError} showGridHelper={showGridHelper} dpr={dpr} seed={seed}/> }
+                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} meshImports = {getMeshImports(meshImports)} setError={setError} showGridHelper={showGridHelper} dpr={dpr} seed={seed}/> }
                 {/*<Render axiom = {TestProps.axiom} constants = {TestProps.constants} productions = {TestProps.productions} setError = {setError} showGridHelper = {showGridHelper} dpr = {dpr}/> */}
             </div>
         </div>
