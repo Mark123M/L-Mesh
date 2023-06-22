@@ -487,10 +487,14 @@ const CustomMesh = ({pos, heading, link, setError}) => {
   const extension = link.substring(link.lastIndexOf("."));
   console.log(extension);
   
+  const model = useLoader(GLTFLoader, link);
+  return <primitive object={model.scene}/>
+
   if(extension == ".obj") {
 
   }
   else if (extension == ".gltf" || extension == ".glb") {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
 
   }
   else if(extension == ".fbx") {
@@ -823,7 +827,7 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
       {shapes.map((s)=>
         <Shape key = {uuidv4()} material = {shapeMaterials[rgbToHex(s[0])]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
       )}
-      <CustomMesh link={"google.com/fake/mesh.png"} setError={setError}/>
+    
       
       {/*<Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>*/}
     </>

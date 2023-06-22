@@ -1,5 +1,5 @@
 import {useEffect, useState, useCallback} from "react";
-import { Button, TextField, IconButton, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl} from '@mui/material';
+import { Button, TextField, IconButton, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl, Typography} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -111,7 +111,7 @@ const ProductionRuleInput = ({rule, prob, index, index2, index3, handleProductio
     )
 }
 
-const MeshImportInput = ({name, link, index, handleMeshImportChange}) => {
+const MeshImportInput = ({name, file, index, handleMeshImportChange}) => {
     return (
         <>
         <TextField
@@ -124,16 +124,21 @@ const MeshImportInput = ({name, link, index, handleMeshImportChange}) => {
             style={{width:"150px", marginRight: "8px"}}
             required
         />
-         <TextField
-            key={`mesh-link-${index}-${link}`}
-            id="outlined-basic"
-            label="Link"
-            defaultValue={link}
-            onBlur={(e)=>handleMeshImportChange(e.target.value, index, 1)}
-            size="small"
-            style={{width:"150px"}}
-            required
+        <input 
+            type="file" 
+            id="custom-mesh-input" 
+            accept=".obj, .gltf, .glb, .fbx, .stl" 
+            onChange={(e) => handleMeshImportChange( [URL.createObjectURL(e.target.files[0]), e.target.files[0].name] , index, 1)}
+            hidden
         />
+        <label htmlFor="custom-mesh-input">
+            <Button variant="outlined" component="span" >
+                Upload
+            </Button>
+        </label>
+        <Typography>
+            {file[1]}
+        </Typography>
         </>
     )
 }
@@ -202,8 +207,10 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     }
 
     const handleMeshImportChange = (val, index, type) => {
+        console.log("CHANGING MESH FILE",val);
         const new_mesh_imports = JSON.parse(JSON.stringify(meshImports));
         new_mesh_imports[index][type] = val;
+        console.log(new_mesh_imports);
         setMeshImports(new_mesh_imports);
     }
 
@@ -544,7 +551,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                                 <Collapse in={meshImportsExpand} timeout="auto" unmountOnExit>
                                     {meshImports.map((m, index) => (
                                         <div key={`mesh-import-div-${index}`} style={{display: "flex", flexDirection: "row", marginBottom: "8px"}}>
-                                            <MeshImportInput name={m[0]} link = {m[1]} index = {index} handleMeshImportChange={handleMeshImportChange}/>
+                                            <MeshImportInput name={m[0]} file = {m[1]} index = {index} handleMeshImportChange={handleMeshImportChange}/>
                                             <ButtonIcon icon={<CloseIcon/>} onClick={e=>removeMeshImport(index)} key={`mesh-import-button-${index}`}/>
                                         </div>
                                     ))}
@@ -586,8 +593,8 @@ const Editor = () =>{
         ]
     ]); //forgor to separate AA's with spaces
     const [meshImports, setMeshImports] = useState([
-        ["a", "b"],
-        ["c", "d"],
+        ["a", ""],
+        ["c", ""],
     ])
     const [error, setError] = useState("");
     const [showGridHelper, setShowGridHelper] = useState(true);
