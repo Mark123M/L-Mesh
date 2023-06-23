@@ -126,12 +126,12 @@ const MeshImportInput = ({name, file, index, handleMeshImportChange}) => {
         />
         <input 
             type="file" 
-            id="custom-mesh-input" 
+            id={`custom-mesh-input-${index}`} 
             accept=".obj, .gltf, .glb, .fbx, .stl" 
             onChange={(e) => handleMeshImportChange( [URL.createObjectURL(e.target.files[0]), e.target.files[0].name] , index, 1)}
             hidden
         />
-        <label htmlFor="custom-mesh-input">
+        <label htmlFor={`custom-mesh-input-${index}`}>
             <Button variant="outlined" component="span" >
                 Upload
             </Button>

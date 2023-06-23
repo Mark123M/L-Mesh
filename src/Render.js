@@ -483,30 +483,49 @@ const Shape = ({material, wid, points, id, parent_id}) => {
   );
 }
 
-const CustomMesh = ({pos, heading, link, setError}) => {
-  const extension = link.substring(link.lastIndexOf("."));
-  console.log(extension);
+const CustomMesh = ({pos, heading, link, name, setError}) => {
+  const extension = name.substring(name.lastIndexOf("."));
+  //const [model, setModel] = useState(null);
+  const meshRef = useRef(null);
+
+ // return <primitive object={gltf.scene} />
+
+  useEffect(()=>{
+    //console.log("PRINTING ALL PROPS FOR CUSTOM MESH", pos, heading, link, name, meshRef?.current);
+    if(extension == ".obj") {
+
+    }
+    else if (extension == ".gltf" || extension == ".glb") {
+     
+    }
+    else if(extension == ".fbx") {
   
-  const model = useLoader(GLTFLoader, link);
-  return <primitive object={model.scene}/>
+    }
+    else if(extension == ".stl") {
+  
+    }
+    else {
+      setError(`Invalid file extension for ${link}`);
+    }
+    
+    //console.log("SETTING POS TO: ", pos, "SETTING HEADING TO: ", heading);
+    position_vector.set(pos[0], pos[1], pos[2]);
+    heading_vector.set(heading[0], heading[1], heading[2]);
+    heading_vector.normalize();
+    local_q.setFromUnitVectors(ey, heading_vector);
 
-  if(extension == ".obj") {
+    meshRef.current.position.copy(position_vector);
+    meshRef.current.setRotationFromQuaternion(local_q); 
 
-  }
-  else if (extension == ".gltf" || extension == ".glb") {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+    console.log(meshRef?.current);
 
-  }
-  else if(extension == ".fbx") {
+  }, [meshRef]);
 
-  }
-  else if(extension == ".stl") {
 
-  }
-  else {
-    setError(`Invalid file extension for ${link}`);
-  }
-
+  
+  return (
+    <primitive ref={meshRef} object={useLoader(GLTFLoader, link).scene.clone()}/>
+  ) 
 }
 
 /**
@@ -521,6 +540,7 @@ const CustomMesh = ({pos, heading, link, setError}) => {
 const RenderItems = ({axiom, constants, productions, meshImports, setError, showGridHelper}) => {
   const[objects, setObjects] = useState([]);
   const[shapes, setShapes] = useState([]);
+  const [meshes, setMeshes] = useState([]);
   const [symbols, setSymbols] = useState([]);
   const [params, setParams] = useState({
     "F": ["len"],
@@ -575,7 +595,7 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
     * @param newShapeStack stack for storing and updating shape details (vertices, color)
     * @returns  
     */
-   const applyRule = (symbol, newObjects, newShapes, newStateStack, newShapeStack) => {
+   const applyRule = (symbol, newObjects, newShapes, newMeshes, newStateStack, newShapeStack) => {
     //last_state is an object so it's pass by reference
     let last_state = newStateStack[newStateStack.length - 1];
     if(symbol.type == "!") {
@@ -668,6 +688,12 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
     else if (symbol.type == "t") { //sets tropism angle
       last_state.tropism_const = symbol.e;
     }
+    else {
+      //custom mesh (link, transformations ...)
+      if(symbol.type in meshImports) {
+        newMeshes.push([last_state.pos, last_state.heading, meshImports[symbol.type]]);
+      }
+    }
   }
 
   const getAllMeshes = () => {
@@ -683,12 +709,14 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
     const newShapeStack = [];
     const newObjects = [];
     const newShapes = [];
+    const newMeshes = [];
     for(let i = 0; i < symbols.length; i ++) {
       let s = symbols[i];
-      applyRule(s, newObjects, newShapes, newStateStack, newShapeStack);
+      applyRule(s, newObjects, newShapes, newMeshes, newStateStack, newShapeStack);
     } 
     setObjects(newObjects);
     setShapes(newShapes);
+    setMeshes(newMeshes);
   }
 
   /**
@@ -770,6 +798,10 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
     setShapeMaterials(allShapeMaterials);
   }, [shapes])
 
+  useEffect(() => {
+    console.log("FINAL MESHES", meshes);
+  }, [meshes])
+
   useEffect(()=> {
     document.querySelector('.scene-export-obj-button').addEventListener('click', handleExportObj);
     document.querySelector('.scene-export-gltf-button').addEventListener('click', handleExportGltf);
@@ -827,8 +859,10 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
       {shapes.map((s)=>
         <Shape key = {uuidv4()} material = {shapeMaterials[rgbToHex(s[0])]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
       )}
-    
-      
+      {meshes.map((m)=>
+        <CustomMesh key = {uuidv4()} pos = {m[0]} heading = {m[1]} link = {m[2][0]} name={m[2][1]}/>
+      )}
+      {/*<CustomMesh link={`blob:http://localhost:3000/faad29a6-7fc4-4818-8723-45a824d2749c`} />*/}
       {/*<Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>*/}
     </>
   )
