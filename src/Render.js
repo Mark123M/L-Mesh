@@ -497,7 +497,7 @@ const CustomMesh = ({pos, heading, model}) => {
     meshRef.current.position.copy(position_vector);
     meshRef.current.setRotationFromQuaternion(local_q); 
 
-    console.log(meshRef?.current);
+    //console.log(meshRef?.current);
 
   }, [meshRef]);
   

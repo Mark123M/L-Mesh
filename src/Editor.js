@@ -575,29 +575,16 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
 }
 
 const Editor = () =>{
-    const [axiom, setAxiom] = useState("!(0.1) A(0)");
-    const [constants, setConstants] = useState([["num_gens", 15], ["col_rate", 0.2]]);
+    const [axiom, setAxiom] = useState("");
+    const [constants, setConstants] = useState([["num_gens", 4],]);
     const [productions, setProductions] = useState([
-        ["A(k)", 
-            [["k<5", 
-                [["F(1) A(k+1)", "1.0"],]
-            ],
-            ["k>5", 
-                [["F(1) [ +(30) A(k+1) ] [ -(30) A(k+1) ]", "1.0"],]
-            ],
-            ["*",
-                [["F(1) L A(k+1)", "1.0"],]
-            ]]
-        ], 
-        ["L",
-            [["*",
-                [["[ ^(30) ^(30) { . -(30) f(1) . +(30) f(1) . +(30) f(1) . -(30) | -(30) f(1) . +(30) f(1) . +(30) f(1) } ]", "1.0"]]
-            ]],
-        ]
+        ["", 
+            [["*", 
+                [["", "1.0"],]
+            ],]
+        ],
     ]); //forgor to separate AA's with spaces
-    const [meshImports, setMeshImports] = useState([
-
-    ])
+    const [meshImports, setMeshImports] = useState([])
     const [error, setError] = useState("");
     const [showGridHelper, setShowGridHelper] = useState(true);
     const [dpr, setDpr] = useState(1);
@@ -663,7 +650,7 @@ const Editor = () =>{
                 setError(`Invalid file extension for ${name}`);
             } 
         }
-        console.log("PROCESSED MESH IMPORTS", meshImportsObj);
+        //console.log("PROCESSED MESH IMPORTS", meshImportsObj);
         return meshImportsObj;
     }
     
