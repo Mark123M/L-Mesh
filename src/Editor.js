@@ -17,6 +17,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 const AxiomInput = ({axiom, setAxiom}) => {
     return(
         <TextField
+            key = {axiom}
             id="outlined-basic"
             label="Symbols"
             defaultValue={axiom}

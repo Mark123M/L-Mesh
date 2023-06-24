@@ -417,14 +417,6 @@ const Branch = ({pos, heading, radius, height, id, parent_id, material}) => {
       meshRef.current.setRotationFromQuaternion(local_q);
     }, [meshRef]);
 
-    let t;
-    useFrame((state)=>{
-      t = state.clock.getElapsedTime();
-      if(!meshRef.current){
-          return;
-      }
-       //meshRef.current.rotateY(Math.sin(t) / 3000);
-    })
 
     return (
         <mesh ref = {meshRef} name = {id} geometry = {base_geometry} material={material}> 
