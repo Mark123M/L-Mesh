@@ -1,10 +1,12 @@
-import React from 'react';
+import React, {Suspense} from 'react';
 
 import Editor from './Editor';
 
 function App() {
   return (
-    <Editor/>
+    <Suspense fallback={<div>Loading Models...</div>}>
+      <Editor/>
+    </Suspense>
   );
 }
 
