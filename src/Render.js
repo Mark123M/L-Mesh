@@ -483,32 +483,12 @@ const Shape = ({material, wid, points, id, parent_id}) => {
   );
 }
 
-const CustomMesh = ({pos, heading, link, name, setError}) => {
-  const extension = name.substring(name.lastIndexOf("."));
+const CustomMesh = ({pos, heading, model}) => {
   //const [model, setModel] = useState(null);
   const meshRef = useRef(null);
 
- // return <primitive object={gltf.scene} />
-
   useEffect(()=>{
     //console.log("PRINTING ALL PROPS FOR CUSTOM MESH", pos, heading, link, name, meshRef?.current);
-    if(extension == ".obj") {
-
-    }
-    else if (extension == ".gltf" || extension == ".glb") {
-     
-    }
-    else if(extension == ".fbx") {
-  
-    }
-    else if(extension == ".stl") {
-  
-    }
-    else {
-      setError(`Invalid file extension for ${link}`);
-    }
-    
-    //console.log("SETTING POS TO: ", pos, "SETTING HEADING TO: ", heading);
     position_vector.set(pos[0], pos[1], pos[2]);
     heading_vector.set(heading[0], heading[1], heading[2]);
     heading_vector.normalize();
@@ -520,13 +500,12 @@ const CustomMesh = ({pos, heading, link, name, setError}) => {
     console.log(meshRef?.current);
 
   }, [meshRef]);
-
-
   
   return (
-    <primitive ref={meshRef} object={useLoader(GLTFLoader, link).scene.clone()}/>
+    <primitive ref={meshRef} object={model.clone()}/>
   ) 
 }
+
 
 /**
  * RenderItems({...}) is a component for all meshes in the scenegraph. It handles the core symbol generation and interpretation. 
@@ -860,9 +839,8 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
         <Shape key = {uuidv4()} material = {shapeMaterials[rgbToHex(s[0])]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
       )}
       {meshes.map((m)=>
-        <CustomMesh key = {uuidv4()} pos = {m[0]} heading = {m[1]} link = {m[2][0]} name={m[2][1]}/>
+        <CustomMesh key = {uuidv4()} pos = {m[0]} heading = {m[1]} model = {m[2]}/>
       )}
-      {/*<CustomMesh link={`blob:http://localhost:3000/faad29a6-7fc4-4818-8723-45a824d2749c`} />*/}
       {/*<Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>*/}
     </>
   )

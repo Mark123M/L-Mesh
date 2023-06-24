@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import {useEffect, useState, useCallback} from "react";
 import { Button, TextField, IconButton, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl, Typography} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -10,6 +11,8 @@ import React from 'react'
 import Render from "./Render";
 import { allPresets } from "./Presets";
 import { TestProps } from "./Test";
+import { useLoader } from "@react-three/fiber";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 const AxiomInput = ({axiom, setAxiom}) => {
     return(
@@ -593,8 +596,7 @@ const Editor = () =>{
         ]
     ]); //forgor to separate AA's with spaces
     const [meshImports, setMeshImports] = useState([
-        ["a", ""],
-        ["c", ""],
+
     ])
     const [error, setError] = useState("");
     const [showGridHelper, setShowGridHelper] = useState(true);
@@ -635,8 +637,33 @@ const Editor = () =>{
         //console.log("UNPROCESSED MESH IMPORTS", meshImports);
         let meshImportsObj = {};
         for(let i = 0; i < meshImports.length; i++) {
-            meshImportsObj[meshImports[i][0]] = meshImports[i][1];
+            if(meshImports[i][1] == ""){
+                continue;
+            } 
+            const link = meshImports[i][1][0];
+            const name = meshImports[i][1][1];
+            //meshImportsObj[meshImports[i][0]] = [null, name];
+            const extension = name.substring(name.lastIndexOf('.'));
+            //console.log("LINK", link, "NAME", name, "EXTENSION", extension);
+            if(extension == ".obj") {
+
+            }
+            else if (extension == ".gltf" || extension == ".glb") {
+                //console.log(""+link);
+                meshImportsObj[meshImports[i][0]] = useLoader(GLTFLoader, ""+link).scene;
+            }
+            else if(extension == ".fbx") {
+          
+            }
+            else if(extension == ".stl") {
+          
+            }
+            else {
+                meshImportsObj[meshImports[i][0]] = null;
+                setError(`Invalid file extension for ${name}`);
+            } 
         }
+        console.log("PROCESSED MESH IMPORTS", meshImportsObj);
         return meshImportsObj;
     }
     
