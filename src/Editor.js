@@ -13,6 +13,10 @@ import { allPresets } from "./Presets";
 import { TestProps } from "./Test";
 import { useLoader } from "@react-three/fiber";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader'
+import { Mesh } from "three";
 
 const AxiomInput = ({axiom, setAxiom}) => {
     return(
@@ -634,17 +638,19 @@ const Editor = () =>{
             const extension = name.substring(name.lastIndexOf('.'));
             //console.log("LINK", link, "NAME", name, "EXTENSION", extension);
             if(extension == ".obj") {
-
+                meshImportsObj[meshImports[i][0]] = useLoader(OBJLoader, ""+link);
             }
             else if (extension == ".gltf" || extension == ".glb") {
                 //console.log(""+link);
                 meshImportsObj[meshImports[i][0]] = useLoader(GLTFLoader, ""+link).scene;
             }
             else if(extension == ".fbx") {
-          
+                meshImportsObj[meshImports[i][0]] = useLoader(FBXLoader, ""+link);
             }
             else if(extension == ".stl") {
+                meshImportsObj[meshImports[i][0]] = new Mesh(useLoader(STLLoader, ""+link));
           
+                //console.log(meshImportsObj[meshImports[i][0]]);
             }
             else {
                 meshImportsObj[meshImports[i][0]] = null;
