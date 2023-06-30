@@ -725,7 +725,7 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
     get_params(productions, newParams);
     //console.log("NEW PARAMS", newParams);
     setParams(newParams); 
-  }, [axiom, constants, productions])
+  }, [axiom, constants, productions, meshImports])
 
   useEffect(()=>{
     console.log("All params:",params);
