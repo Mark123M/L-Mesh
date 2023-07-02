@@ -394,7 +394,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                             value={preset}
                             onChange={e=>setPreset(e.target.value)}
                             size="small"
-                            sx={{width: "200px", height: "37px"}}
+                            sx={{width: "200px", height: "37px", marginLeft: "8px"}}
                             displayEmpty
                         >
                             <MenuItem value="">
@@ -421,8 +421,8 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                         </Select>
                     </FormControl>
                 </div>
-                <FormControlLabel control={<Checkbox />} label="Animation" />
-                <FormControlLabel control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid" />
+                {/*<FormControlLabel control={<Checkbox />} label="Animation" /> */}
+                <FormControlLabel sx={{marginLeft: "8px"}} control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid" />
                 <TextField
                     id="outlined-basic"
                     label="res"
@@ -434,9 +434,9 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                     //style={{height: "30px"}}
                     required
                 />
-                <div style={{width: "160px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
-                <div style={{width: "110px"}} className="reference-button"> <Button sx={{width: "100%"}} variant="contained" >Reference</Button> </div>
-                <div style={{display: "flex", flexDirection: "column", marginTop: menuOpened ? "70px" : "0px"}}>
+                <div style={{width: "160px", marginLeft: "10px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
+                <div style={{width: "110px", marginLeft: "5px"}} className="reference-button"> <Button sx={{width: "100%"}} variant="contained" >Reference</Button> </div>
+                <div style={{display: "flex", flexDirection: "column", marginTop: menuOpened ? "70px" : "0px", marginLeft: "5px"}}>
                     <div style={{width: "90px"}} onMouseEnter={openMenu} onMouseLeave={closeMenu}> <Button sx={{width: "100%"}} variant="contained" >EXPORT</Button> </div>
                     <div onMouseEnter={openMenu} onMouseLeave={closeMenu} style={{display: menuOpened? "inline" : "none", flexDirection: "column", zIndex:  999999, background: "white", borderColor: "gray", borderStyle: "solid solid solid solid", borderWidth: "1px"}}>
                         <div className="scene-export-obj-button"> <MenuItem>Export as OBJ</MenuItem> </div>
