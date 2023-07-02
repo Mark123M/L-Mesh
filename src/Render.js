@@ -16,6 +16,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 let heading_vector = new THREE.Vector3();
 let position_vector = new THREE.Vector3();
+let scale_vector = new THREE.Vector3();
 let local_q = new THREE.Quaternion();
 let world_q = new THREE.Quaternion();
 const ey = new THREE.Vector3(0, 1, 0);
@@ -431,7 +432,7 @@ const Branch = ({pos, heading, radius, height, id, parent_id, material}) => {
  * @returns 3D mesh
  * @TODO scenegraph relationships with id and parent_id? implement rank attribute for meshes
  */
-const Shape = ({material, wid, points, id, parent_id}) => {
+const Shape = ({material, wid, points, id, parent_id, scale}) => {
   const meshRef = useRef(null);
   const {scene} = useThree();
   const [geometry, setGeometry] = useState();
@@ -468,6 +469,9 @@ const Shape = ({material, wid, points, id, parent_id}) => {
     positions.setZ(0, points[0][2]);
     mesh_geometry.setAttribute('position', positions);
     setGeometry(mesh_geometry);
+
+    scale_vector.set(scale[0], scale[1], scale[2]);
+    meshRef.current.scale.copy(scale_vector); 
   }, [meshRef]); 
   return (
     <mesh ref = {meshRef} name = {id} geometry={geometry} material={material}>
@@ -475,19 +479,21 @@ const Shape = ({material, wid, points, id, parent_id}) => {
   );
 }
 
-const CustomMesh = ({pos, heading, model}) => {
+const CustomMesh = ({pos, heading, model, scale}) => {
   //const [model, setModel] = useState(null);
   const meshRef = useRef(null);
 
   useEffect(()=>{
     //console.log("PRINTING ALL PROPS FOR CUSTOM MESH", pos, heading, link, name, meshRef?.current);
     position_vector.set(pos[0], pos[1], pos[2]);
+    scale_vector.set(scale[0], scale[1], scale[2]);
     heading_vector.set(heading[0], heading[1], heading[2]);
     heading_vector.normalize();
     local_q.setFromUnitVectors(ey, heading_vector);
 
     meshRef.current.position.copy(position_vector);
-    meshRef.current.setRotationFromQuaternion(local_q); 
+    meshRef.current.setRotationFromQuaternion(local_q);
+    meshRef.current.scale.copy(scale_vector); 
 
     //console.log(meshRef?.current);
 
@@ -639,7 +645,7 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
     }
     //start a new polygon
     else if (symbol.type == "{") {
-      newShapeStack.push([last_state.pen[0], 1, symbol.id, symbol.parent_id, []]); 
+      newShapeStack.push([last_state.pen[0], 1, symbol.id, symbol.parent_id, [], last_state.scale]); 
     }
     //finish the current polygon
     else if (symbol.type == "}") {
@@ -659,10 +665,14 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
     else if (symbol.type == "t") { //sets tropism angle
       last_state.tropism_const = symbol.e;
     }
+    else if (symbol.type == "S") {
+      last_state.scale = [last_state.scale[0] * symbol.sx, last_state.scale[1] * symbol.sy,  last_state.scale[2] * symbol.sz];
+      //console.log("NEW SCALE", last_state.scale);
+    }
     else {
       //custom mesh (link, transformations ...)
       if(symbol.type in meshImports) {
-        newMeshes.push([last_state.pos, last_state.heading, meshImports[symbol.type]]);
+        newMeshes.push([last_state.pos, last_state.heading, meshImports[symbol.type], last_state.scale]);
       }
     }
   }
@@ -673,6 +683,7 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
       heading: [0, 1, 0],
       left: [-1, 0, 0], 
       up: [0, 0, 1],
+      scale: [1, 1, 1],
       tropism_vector: [0, 1, 0],
       tropism_const: 0,
       pen: [[128, 83, 51], 0.4, true], }
@@ -721,6 +732,7 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
       "'": ["color"],
       "T": ["vector"],
       "t": ["e"],
+      "S": ["sx", "sy", "sz"]
     };
     get_params(productions, newParams);
     //console.log("NEW PARAMS", newParams);
@@ -828,10 +840,10 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
         <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} material = {materials[rgbToHex(o[6])]}/>
       )}
       {shapes.map((s)=>
-        <Shape key = {uuidv4()} material = {shapeMaterials[rgbToHex(s[0])]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
+        <Shape key = {uuidv4()} material = {shapeMaterials[rgbToHex(s[0])]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]} scale = {s[5]}/>
       )}
       {meshes.map((m)=>
-        <CustomMesh key = {uuidv4()} pos = {m[0]} heading = {m[1]} model = {m[2]}/>
+        <CustomMesh key = {uuidv4()} pos = {m[0]} heading = {m[1]} model = {m[2]} scale = {m[3]}/>
       )}
       {/*<Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>*/}
     </>
