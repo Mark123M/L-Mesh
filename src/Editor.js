@@ -602,7 +602,7 @@ const Editor = () =>{
     const getConstants = (constants) => {
         let constantsObj = {};
         for(let i = 0; i < constants.length; i++) {
-            constantsObj[constants[i][0]] = JSON.parse(constants[i][1]);
+            constantsObj[constants[i][0]] = constants[i][1];
         }
         return constantsObj;
     }

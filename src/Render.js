@@ -142,7 +142,7 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
     })
   }
   Object.keys(constants).forEach((s)=>{
-      rule = rule.replaceAll(s, JSON.stringify(constants[s])); //replace all occurances of constants in the successor symbol
+      rule = rule.replaceAll(s, constants[s]); //replace all occurances of constants in the successor symbol
   })
   //console.log("SUBBED RULE IS ", rule, symbol);
 
