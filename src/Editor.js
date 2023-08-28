@@ -1,5 +1,6 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import {useEffect, useState, useCallback} from "react";
-import { Button, TextField, IconButton, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl} from '@mui/material';
+import { Button, TextField, IconButton, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl, Typography} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -10,14 +11,21 @@ import React from 'react'
 import Render from "./Render";
 import { allPresets } from "./Presets";
 import { TestProps } from "./Test";
+import { useLoader } from "@react-three/fiber";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader'
+import { Mesh } from "three";
 
 const AxiomInput = ({axiom, setAxiom}) => {
     return(
         <TextField
+            key = {axiom}
             id="outlined-basic"
             label="Symbols"
-            value={axiom}
-            onChange={(e)=>setAxiom(e.target.value)}
+            defaultValue={axiom}
+            onBlur={(e)=>setAxiom(e.target.value)}
             size="small"
             style={{width:"150px", marginRight: "8px"}}
             required
@@ -29,21 +37,21 @@ const ConstantInput = ({name, val, index, handleConstantInputChange}) => {
     return (
         <>
         <TextField
-            key={`const-name-${index}`}
+            key={`const-name-${index}-${name}`}
             id="outlined-basic"
             label="Name"
-            value={name}
-            onChange={(e)=>handleConstantInputChange(e.target.value, index, 0)}
+            defaultValue={name}
+            onBlur={(e)=>handleConstantInputChange(e.target.value, index, 0)}
             size="small"
             style={{width:"150px", marginRight: "8px"}}
             required
         />
         <TextField
-            key={`const-val-${index}`}
+            key={`const-val-${index}-${val}`}
             id="outlined-basic"
             label="Value"
-            value={val}
-            onChange={(e)=>handleConstantInputChange(e.target.value, index, 1)}
+            defaultValue={val}
+            onBlur={(e)=>handleConstantInputChange(e.target.value, index, 1)}
             size="small"
             style={{width:"150px"}}
             required
@@ -55,11 +63,11 @@ const ConstantInput = ({name, val, index, handleConstantInputChange}) => {
 const ProductionSymbolInput = ({name, index, handleProductionSymbolChange}) => {
     return(
         <TextField
-            key={`prod-symbol-name-${index}`}
+            key={`prod-symbol-name-${index}-${name}`}
             id="outlined-basic"
             label="Symbol"
-            value={name}
-            onChange={(e)=>handleProductionSymbolChange(e.target.value.replaceAll(' ', ''), index)}
+            defaultValue={name}
+            onBlur={(e)=>handleProductionSymbolChange(e.target.value.replaceAll(' ', ''), index)}
             size="small"
             style={{width:"150px"}}
             required
@@ -70,11 +78,11 @@ const ProductionSymbolInput = ({name, index, handleProductionSymbolChange}) => {
 const ProductionConditionInput = ({condition, index, index2, handleProductionConditionChange}) => {
     return (
         <TextField
-            key={`prod-symbol-condition-${index}-${index2}`}
+            key={`prod-symbol-condition-${index}-${index2}-${condition}`}
             id="outlined-basic"
             label="Condition"
-            value={condition}
-            onChange={(e)=>handleProductionConditionChange(e.target.value, index, index2)}
+            defaultValue={condition}
+            onBlur={(e)=>handleProductionConditionChange(e.target.value, index, index2)}
             size="small"
             style={{width:"150px"}}
             required
@@ -86,27 +94,59 @@ const ProductionRuleInput = ({rule, prob, index, index2, index3, handleProductio
     return (
         <>
         <TextField
-            key={`prod-rule-name-${index}-${index2}-${index3}`}
+            key={`prod-rule-name-${index}-${index2}-${index3}-${rule}`}
             id="outlined-textarea"
             label="rule"
-            value={rule}
-            onChange={(e)=>handleProductionRuleChange(e.target.value, index, index2, index3, 0)}
+            defaultValue={rule}
+            onBlur={(e)=>handleProductionRuleChange(e.target.value, index, index2, index3, 0)}
             size="small"
             style={{width:"100%",marginTop: "8px", marginBottom: "8px"}}
             multiline
             required
         />
         <TextField
-            key={`prod-rule-prob-${index}-${index2}-${index3}`}
+            key={`prod-rule-prob-${index}-${index2}-${index3}-${prob}`}
             id="outlined-basic"
             label="p"
-            value={prob}
-            onChange={(e)=>handleProductionRuleChange(e.target.value, index, index2, index3, 1)}
+            defaultValue={prob}
+            onBlur={(e)=>handleProductionRuleChange(e.target.value, index, index2, index3, 1)}
             size="small"
             style={{width:"100%"}}
             required
         />
         
+        </>
+    )
+}
+
+const MeshImportInput = ({name, file, index, handleMeshImportChange}) => {
+    return (
+        <>
+        <TextField
+            key={`mesh-name-${index}-${name}`}
+            id="outlined-basic"
+            label="Name"
+            defaultValue={name}
+            onBlur={(e)=>handleMeshImportChange(e.target.value, index, 0)}
+            size="small"
+            style={{width:"150px", marginRight: "8px"}}
+            required
+        />
+        <input 
+            type="file" 
+            id={`custom-mesh-input-${index}`} 
+            accept=".obj, .gltf, .glb, .fbx, .stl" 
+            onChange={(e) => handleMeshImportChange( [URL.createObjectURL(e.target.files[0]), e.target.files[0].name] , index, 1)}
+            hidden
+        />
+        <label htmlFor={`custom-mesh-input-${index}`}>
+            <Button variant="outlined" component="span" >
+                Upload
+            </Button>
+        </label>
+        <Typography>
+            {file[1]}
+        </Typography>
         </>
     )
 }
@@ -121,14 +161,16 @@ const ButtonIcon = ({icon, onClick}) => {
     )
 }
 
-const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxiom, setGlobalConstants, setGlobalProductions, error, setError, showGridHelper, setShowGridHelper, dpr, setDpr, seed, setSeed}) => {
+const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imports, setGlobalAxiom, setGlobalConstants, setGlobalProductions, setGlobalMeshImports, error, setError, showGridHelper, setShowGridHelper, dpr, setDpr, seed, setSeed}) => {
     const [axiom, setAxiom] = useState(init_axiom);
     const [constants, setConstants] = useState(init_constants);
     const [productions, setProductions] = useState(init_productions);
+    const [meshImports, setMeshImports] = useState(init_mesh_imports);
     const [drawerWidth, setDrawerWidth] = useState(650);
     const [productionsSymbolExpand, setProductionsSymbolExpand] = useState(true);
     const [productionsRuleExpand, setProductionsRuleExpand] = useState([])
     const [constantsExpand, setConstantsExpand] = useState(true);
+    const [meshImportsExpand, setMeshImportsExpand] = useState(true);
     const [preset, setPreset] = useState("");
     const [animation, setAnimation] = useState(true);
     const [menuOpened, setMenuOpened] = useState(false);
@@ -137,12 +179,14 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
 
     useEffect(()=>{
         //console.log("CURRENT PRODUCTIONS ARE", productions);
+        //console.log("CURRENT CONSTANTS ARE", constants);
+        //console.log("CURRENT MESH IMPORTS ARE", meshImports);
         const newProductionsExpand = [...productionsRuleExpand];
         while(newProductionsExpand.length < productions.length) {
             newProductionsExpand.push(true);
         }
         setProductionsRuleExpand(newProductionsExpand);
-    }, [axiom, constants, productions])
+    }, [axiom, constants, productions, meshImports])
 
     useEffect(()=>{
         //console.log('CURRENT EXPANSION', productionsRuleExpand)
@@ -168,6 +212,29 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
         }
         new_constants.pop();
         setConstants(new_constants);
+    }
+
+    const handleMeshImportChange = (val, index, type) => {
+        console.log("CHANGING MESH FILE",val);
+        const new_mesh_imports = JSON.parse(JSON.stringify(meshImports));
+        new_mesh_imports[index][type] = val;
+        console.log(new_mesh_imports);
+        setMeshImports(new_mesh_imports);
+    }
+
+    const addMeshImport = () => {
+        const new_mesh_imports = JSON.parse(JSON.stringify(meshImports));
+        new_mesh_imports.push(["", ""]);
+        setMeshImports(new_mesh_imports);
+    }
+
+    const removeMeshImport = (index) => {
+        const new_mesh_imports = JSON.parse(JSON.stringify(meshImports));
+        for(let i = index; i < meshImports.length - 1; i++) {
+            new_mesh_imports[i] = new_mesh_imports[i+1]; //2 3 4 5 6
+        }
+        new_mesh_imports.pop();
+        setMeshImports(new_mesh_imports);
     }
 
     const handleProductionSymbolChange = (val, index) => {
@@ -256,6 +323,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
         setGlobalAxiom(axiom);
         setGlobalConstants(constants);
         setGlobalProductions(productions);
+        setGlobalMeshImports(meshImports);
         setSeed(Math.random());
     }
 
@@ -281,6 +349,9 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
     }
     const toggleConstantsExpand = () => {
         setConstantsExpand(!constantsExpand);
+    }
+    const toggleMeshImportExpand = () => {
+        setMeshImportsExpand(!meshImportsExpand);
     }
     const toggleProductionsSymbolExpand = () => {
         setProductionsSymbolExpand(!productionsSymbolExpand);
@@ -323,7 +394,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                             value={preset}
                             onChange={e=>setPreset(e.target.value)}
                             size="small"
-                            sx={{width: "200px", height: "37px"}}
+                            sx={{width: "200px", height: "37px", marginLeft: "8px"}}
                             displayEmpty
                         >
                             <MenuItem value="">
@@ -350,8 +421,8 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                         </Select>
                     </FormControl>
                 </div>
-                <FormControlLabel control={<Checkbox />} label="Animation" />
-                <FormControlLabel control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid" />
+                {/*<FormControlLabel control={<Checkbox />} label="Animation" /> */}
+                <FormControlLabel sx={{marginLeft: "8px"}} control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid" />
                 <TextField
                     id="outlined-basic"
                     label="res"
@@ -363,9 +434,9 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                     //style={{height: "30px"}}
                     required
                 />
-                <div style={{width: "160px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
-                <div style={{width: "110px"}} className="reference-button"> <Button sx={{width: "100%"}} variant="contained" >Reference</Button> </div>
-                <div style={{display: "flex", flexDirection: "column", marginTop: menuOpened ? "70px" : "0px"}}>
+                <div style={{width: "160px", marginLeft: "10px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
+                <div style={{width: "110px", marginLeft: "5px"}} className="reference-button"> <Button sx={{width: "100%"}} variant="contained" >Reference</Button> </div>
+                <div style={{display: "flex", flexDirection: "column", marginTop: menuOpened ? "70px" : "0px", marginLeft: "5px"}}>
                     <div style={{width: "90px"}} onMouseEnter={openMenu} onMouseLeave={closeMenu}> <Button sx={{width: "100%"}} variant="contained" >EXPORT</Button> </div>
                     <div onMouseEnter={openMenu} onMouseLeave={closeMenu} style={{display: menuOpened? "inline" : "none", flexDirection: "column", zIndex:  999999, background: "white", borderColor: "gray", borderStyle: "solid solid solid solid", borderWidth: "1px"}}>
                         <div className="scene-export-obj-button"> <MenuItem>Export as OBJ</MenuItem> </div>
@@ -474,7 +545,27 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
                                     </Collapse>
                                 </div>
                             </div>
-                            <div style={{width: "200px"}}> <Button variant="contained" type="submit" >Generate Model</Button> </div>
+                            <div style={{width: "200px", marginBottom: "20px"}}> <Button variant="contained" type="submit">Generate Model</Button> </div>
+
+                            <div style={{display: "flex", flexDirection: "row"}}>
+                                <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px", marginTop: "8px"}}> {`Mesh Import`}</div>
+                                {meshImportsExpand ? 
+                                <ButtonIcon icon={<ExpandMore />} onClick = {toggleMeshImportExpand}/>
+                                : 
+                                <ButtonIcon icon={<ExpandLess />} onClick = {toggleMeshImportExpand}/>} 
+                                <ButtonIcon icon={<AddCircleOutlineIcon/>} onClick = {addMeshImport}/>
+                            </div>
+                            <div style={{display: "flex", flexDirection: "column", marginBottom: "20px"}}>
+                                <Collapse in={meshImportsExpand} timeout="auto" unmountOnExit>
+                                    {meshImports.map((m, index) => (
+                                        <div key={`mesh-import-div-${index}`} style={{display: "flex", flexDirection: "row", marginBottom: "8px"}}>
+                                            <MeshImportInput name={m[0]} file = {m[1]} index = {index} handleMeshImportChange={handleMeshImportChange}/>
+                                            <ButtonIcon icon={<CloseIcon/>} onClick={e=>removeMeshImport(index)} key={`mesh-import-button-${index}`}/>
+                                        </div>
+                                    ))}
+                                </Collapse>
+                            </div>
+                            
                         </div>
 
                         <div onMouseDown={e => handleMouseDown(e)} style={{display: "flex", flexDirection: "column", cursor: "ew-resize", width: "4px", height: "100vh", borderStyle: "none double none none", borderColor: "gray", borderWidth: "4px"}}/>
@@ -489,26 +580,16 @@ const EditorForm = ({init_axiom, init_constants, init_productions, setGlobalAxio
 }
 
 const Editor = () =>{
-    const [axiom, setAxiom] = useState("!(0.1) A(0)");
-    const [constants, setConstants] = useState([["num_gens", 15], ["col_rate", 0.2]]);
+    const [axiom, setAxiom] = useState("");
+    const [constants, setConstants] = useState([["num_gens", 4],]);
     const [productions, setProductions] = useState([
-        ["A(k)", 
-            [["k<5", 
-                [["F(1) A(k+1)", "1.0"],]
-            ],
-            ["k>5", 
-                [["F(1) [ +(30) A(k+1) ] [ -(30) A(k+1) ]", "1.0"],]
-            ],
-            ["*",
-                [["F(1) L A(k+1)", "1.0"],]
-            ]]
-        ], 
-        ["L",
-            [["*",
-                [["[ ^(30) ^(30) { . -(30) f(1) . +(30) f(1) . +(30) f(1) . -(30) | -(30) f(1) . +(30) f(1) . +(30) f(1) } ]", "1.0"]]
-            ]],
-        ]
+        ["", 
+            [["*", 
+                [["", "1.0"],]
+            ],]
+        ],
     ]); //forgor to separate AA's with spaces
+    const [meshImports, setMeshImports] = useState([])
     const [error, setError] = useState("");
     const [showGridHelper, setShowGridHelper] = useState(true);
     const [dpr, setDpr] = useState(1);
@@ -521,7 +602,7 @@ const Editor = () =>{
     const getConstants = (constants) => {
         let constantsObj = {};
         for(let i = 0; i < constants.length; i++) {
-            constantsObj[constants[i][0]] = JSON.parse(constants[i][1]);
+            constantsObj[constants[i][0]] = constants[i][1];
         }
         return constantsObj;
     }
@@ -543,6 +624,42 @@ const Editor = () =>{
         }
         return productionsObj;
     }
+
+    const getMeshImports = (meshImports) => {
+        //console.log("UNPROCESSED MESH IMPORTS", meshImports);
+        let meshImportsObj = {};
+        for(let i = 0; i < meshImports.length; i++) {
+            if(meshImports[i][1] == ""){
+                continue;
+            } 
+            const link = meshImports[i][1][0];
+            const name = meshImports[i][1][1];
+            //meshImportsObj[meshImports[i][0]] = [null, name];
+            const extension = name.substring(name.lastIndexOf('.'));
+            //console.log("LINK", link, "NAME", name, "EXTENSION", extension);
+            if(extension == ".obj") {
+                meshImportsObj[meshImports[i][0]] = useLoader(OBJLoader, ""+link);
+            }
+            else if (extension == ".gltf" || extension == ".glb") {
+                //console.log(""+link);
+                meshImportsObj[meshImports[i][0]] = useLoader(GLTFLoader, ""+link).scene;
+            }
+            else if(extension == ".fbx") {
+                meshImportsObj[meshImports[i][0]] = useLoader(FBXLoader, ""+link);
+            }
+            else if(extension == ".stl") {
+                meshImportsObj[meshImports[i][0]] = new Mesh(useLoader(STLLoader, ""+link));
+          
+                //console.log(meshImportsObj[meshImports[i][0]]);
+            }
+            else {
+                meshImportsObj[meshImports[i][0]] = null;
+                setError(`Invalid file extension for ${name}`);
+            } 
+        }
+        //console.log("PROCESSED MESH IMPORTS", meshImportsObj);
+        return meshImportsObj;
+    }
     
     useEffect(()=>{
         /*console.log("THE GLOBAL STATES ARE: ");
@@ -556,8 +673,8 @@ const Editor = () =>{
     return(
         <div style={{position: "absolute", top: "0", left: "0", bottom: "0", right: "0", overflow: "hidden"} }>
             <div style={{display: "flex", flexDirection: "row"}}>
-                <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions} error={error} setError={setError} showGridHelper={showGridHelper} setShowGridHelper={setShowGridHelper} dpr={dpr} setDpr={setDpr} seed={seed} setSeed={setSeed} />
-                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} setError={setError} showGridHelper={showGridHelper} dpr={dpr} seed={seed}/> }
+                <EditorForm init_axiom={axiom} init_constants={constants} init_productions={productions} init_mesh_imports={meshImports} setGlobalAxiom={setAxiom} setGlobalConstants={setConstants} setGlobalProductions={setProductions} setGlobalMeshImports = {setMeshImports} error={error} setError={setError} showGridHelper={showGridHelper} setShowGridHelper={setShowGridHelper} dpr={dpr} setDpr={setDpr} seed={seed} setSeed={setSeed} />
+                {<Render axiom = {axiom} constants = {getConstants(constants)} productions = {getProductions(productions)} meshImports = {getMeshImports(meshImports)} setError={setError} showGridHelper={showGridHelper} dpr={dpr} seed={seed}/> }
                 {/*<Render axiom = {TestProps.axiom} constants = {TestProps.constants} productions = {TestProps.productions} setError = {setError} showGridHelper = {showGridHelper} dpr = {dpr}/> */}
             </div>
         </div>

@@ -9,11 +9,14 @@ import * as math from "mathjs"
 import React from 'react'
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { useLoader } from "@react-three/fiber";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 //3D turtle interpreter
 
 let heading_vector = new THREE.Vector3();
 let position_vector = new THREE.Vector3();
+let scale_vector = new THREE.Vector3();
 let local_q = new THREE.Quaternion();
 let world_q = new THREE.Quaternion();
 const ey = new THREE.Vector3(0, 1, 0);
@@ -139,7 +142,7 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
     })
   }
   Object.keys(constants).forEach((s)=>{
-      rule = rule.replaceAll(s, JSON.stringify(constants[s])); //replace all occurances of constants in the successor symbol
+      rule = rule.replaceAll(s, constants[s]); //replace all occurances of constants in the successor symbol
   })
   //console.log("SUBBED RULE IS ", rule, symbol);
 
@@ -415,14 +418,6 @@ const Branch = ({pos, heading, radius, height, id, parent_id, material}) => {
       meshRef.current.setRotationFromQuaternion(local_q);
     }, [meshRef]);
 
-    let t;
-    useFrame((state)=>{
-      t = state.clock.getElapsedTime();
-      if(!meshRef.current){
-          return;
-      }
-       //meshRef.current.rotateY(Math.sin(t) / 3000);
-    })
 
     return (
         <mesh ref = {meshRef} name = {id} geometry = {base_geometry} material={material}> 
@@ -437,7 +432,7 @@ const Branch = ({pos, heading, radius, height, id, parent_id, material}) => {
  * @returns 3D mesh
  * @TODO scenegraph relationships with id and parent_id? implement rank attribute for meshes
  */
-const Shape = ({material, wid, points, id, parent_id}) => {
+const Shape = ({material, wid, points, id, parent_id, scale}) => {
   const meshRef = useRef(null);
   const {scene} = useThree();
   const [geometry, setGeometry] = useState();
@@ -449,14 +444,10 @@ const Shape = ({material, wid, points, id, parent_id}) => {
     position_vector.set(points[0][0], points[0][1], points[0][2]);
     mesh_shape.moveTo(position_vector.x, position_vector.y);
 
-    //add a small random value to avoid repeating lineTo calls
-    let rx = Math.random() * 0.000008999999 + 0.000001;
-    let ry = Math.random() * 0.000008999999 + 0.000001;
+    //draw geometry in 2D with lineTo
     for(let i = 1; i < points.length; i++) {
       position_vector.set(points[i][0], points[i][1], points[i][2]);
-      mesh_shape.lineTo(position_vector.x + rx, position_vector.y + ry);
-      rx = Math.random() * 0.000008999999 + 0.000001;
-      ry = Math.random() * 0.000008999999 + 0.000001;
+      mesh_shape.lineTo(position_vector.x, position_vector.y);
     }
 
     position_vector.set(points[0][0], points[0][1], points[0][2]);
@@ -478,12 +469,41 @@ const Shape = ({material, wid, points, id, parent_id}) => {
     positions.setZ(0, points[0][2]);
     mesh_geometry.setAttribute('position', positions);
     setGeometry(mesh_geometry);
+
+    scale_vector.set(scale[0], scale[1], scale[2]);
+    meshRef.current.scale.copy(scale_vector); 
   }, [meshRef]); 
   return (
     <mesh ref = {meshRef} name = {id} geometry={geometry} material={material}>
     </mesh>
   );
 }
+
+const CustomMesh = ({pos, heading, model, scale}) => {
+  //const [model, setModel] = useState(null);
+  const meshRef = useRef(null);
+
+  useEffect(()=>{
+    //console.log("PRINTING ALL PROPS FOR CUSTOM MESH", pos, heading, link, name, meshRef?.current);
+    position_vector.set(pos[0], pos[1], pos[2]);
+    scale_vector.set(scale[0], scale[1], scale[2]);
+    heading_vector.set(heading[0], heading[1], heading[2]);
+    heading_vector.normalize();
+    local_q.setFromUnitVectors(ey, heading_vector);
+
+    meshRef.current.position.copy(position_vector);
+    meshRef.current.setRotationFromQuaternion(local_q);
+    meshRef.current.scale.copy(scale_vector); 
+
+    //console.log(meshRef?.current);
+
+  }, [meshRef]);
+  
+  return (
+    <primitive ref={meshRef} object={model.clone()}/>
+  ) 
+}
+
 
 /**
  * RenderItems({...}) is a component for all meshes in the scenegraph. It handles the core symbol generation and interpretation. 
@@ -494,9 +514,10 @@ const Shape = ({material, wid, points, id, parent_id}) => {
  * @param showGridHelper state for showing the grid helper
  * @returns 3D scene
  */
-const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) => {
+const RenderItems = ({axiom, constants, productions, meshImports, setError, showGridHelper}) => {
   const[objects, setObjects] = useState([]);
   const[shapes, setShapes] = useState([]);
+  const [meshes, setMeshes] = useState([]);
   const [symbols, setSymbols] = useState([]);
   const [params, setParams] = useState({
     "F": ["len"],
@@ -551,7 +572,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     * @param newShapeStack stack for storing and updating shape details (vertices, color)
     * @returns  
     */
-   const applyRule = (symbol, newObjects, newShapes, newStateStack, newShapeStack) => {
+   const applyRule = (symbol, newObjects, newShapes, newMeshes, newStateStack, newShapeStack) => {
     //last_state is an object so it's pass by reference
     let last_state = newStateStack[newStateStack.length - 1];
     if(symbol.type == "!") {
@@ -624,7 +645,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     }
     //start a new polygon
     else if (symbol.type == "{") {
-      newShapeStack.push([last_state.pen[0], 1, symbol.id, symbol.parent_id, []]); 
+      newShapeStack.push([last_state.pen[0], 1, symbol.id, symbol.parent_id, [], last_state.scale]); 
     }
     //finish the current polygon
     else if (symbol.type == "}") {
@@ -644,6 +665,16 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     else if (symbol.type == "t") { //sets tropism angle
       last_state.tropism_const = symbol.e;
     }
+    else if (symbol.type == "S") {
+      last_state.scale = [last_state.scale[0] * symbol.sx, last_state.scale[1] * symbol.sy,  last_state.scale[2] * symbol.sz];
+      //console.log("NEW SCALE", last_state.scale);
+    }
+    else {
+      //custom mesh (link, transformations ...)
+      if(symbol.type in meshImports) {
+        newMeshes.push([last_state.pos, last_state.heading, meshImports[symbol.type], last_state.scale]);
+      }
+    }
   }
 
   const getAllMeshes = () => {
@@ -652,6 +683,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
       heading: [0, 1, 0],
       left: [-1, 0, 0], 
       up: [0, 0, 1],
+      scale: [1, 1, 1],
       tropism_vector: [0, 1, 0],
       tropism_const: 0,
       pen: [[128, 83, 51], 0.4, true], }
@@ -659,12 +691,14 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     const newShapeStack = [];
     const newObjects = [];
     const newShapes = [];
+    const newMeshes = [];
     for(let i = 0; i < symbols.length; i ++) {
       let s = symbols[i];
-      applyRule(s, newObjects, newShapes, newStateStack, newShapeStack);
+      applyRule(s, newObjects, newShapes, newMeshes, newStateStack, newShapeStack);
     } 
     setObjects(newObjects);
     setShapes(newShapes);
+    setMeshes(newMeshes);
   }
 
   /**
@@ -675,6 +709,7 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     console.log(axiom);
     console.log(constants);
     console.log(productions);
+    console.log(meshImports);
 
     let newParams = {
       "F": ["len"],
@@ -697,11 +732,12 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
       "'": ["color"],
       "T": ["vector"],
       "t": ["e"],
+      "S": ["sx", "sy", "sz"]
     };
     get_params(productions, newParams);
     //console.log("NEW PARAMS", newParams);
     setParams(newParams); 
-  }, [axiom, constants, productions])
+  }, [axiom, constants, productions, meshImports])
 
   useEffect(()=>{
     console.log("All params:",params);
@@ -744,6 +780,10 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
     })
     setShapeMaterials(allShapeMaterials);
   }, [shapes])
+
+  useEffect(() => {
+    console.log("FINAL MESHES", meshes);
+  }, [meshes])
 
   useEffect(()=> {
     document.querySelector('.scene-export-obj-button').addEventListener('click', handleExportObj);
@@ -800,9 +840,11 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
         <Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} material = {materials[rgbToHex(o[6])]}/>
       )}
       {shapes.map((s)=>
-        <Shape key = {uuidv4()} material = {shapeMaterials[rgbToHex(s[0])]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
+        <Shape key = {uuidv4()} material = {shapeMaterials[rgbToHex(s[0])]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]} scale = {s[5]}/>
       )}
-      
+      {meshes.map((m)=>
+        <CustomMesh key = {uuidv4()} pos = {m[0]} heading = {m[1]} model = {m[2]} scale = {m[3]}/>
+      )}
       {/*<Branch color={[128, 83, 51]} pos={[1, 1, 2]} heading = {[1, 1, 0]} radius={0.4} height={1}/>*/}
     </>
   )
@@ -818,11 +860,11 @@ const RenderItems = ({axiom, constants, productions, setError, showGridHelper}) 
  * @param dpr the resolution of the scene
  * @returns 3D canvas
  */
-const Render = ({axiom, constants, productions, setError, showGridHelper, dpr, seed}) => {
+const Render = ({axiom, constants, productions, meshImports, setError, showGridHelper, dpr, seed}) => {
   const controlsRef = useRef(null);
   const canvas_ref = useRef(null);
   //const [showGridHelper, setShowGridHelper] = useState(true);
-  const renderItems = useMemo(()=><RenderItems axiom={axiom} constants={constants} productions={productions} setError={setError} showGridHelper={showGridHelper} />, [JSON.stringify(axiom), JSON.stringify(constants), JSON.stringify(productions), seed])
+  const renderItems = useMemo(()=><RenderItems axiom={axiom} constants={constants} productions={productions} meshImports={meshImports} setError={setError} showGridHelper={showGridHelper} />, [JSON.stringify(axiom), JSON.stringify(constants), JSON.stringify(productions), JSON.stringify(meshImports), seed])
 
   const resetCamera = () => {
     if(controlsRef.current){
