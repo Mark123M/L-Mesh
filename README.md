@@ -51,6 +51,20 @@ Each symbol can be assigned parameters in the production rules. These parameters
 New parameters can be derived using mathematical expressions: [MathJS Expressions](https://mathjs.org/docs/expressions/)
 TODO
 
+## Techniques (open to other ideas)
+1. Node rewriting
+2. Edge rewriting
+3. Controlled parameters (gradually increase/decrease a param)
+4. Developmental signals (ex. after 5 generations, render a flower)
+5. Dynamic probability (ex. the smaller the branch, the greater its tropism constant)
+6. Monopodial Branching
+7. Sympodial Branching
+8. Merging mesh for performance
+9. Randomize values (ex. the next branch should turn by a random value within (16, 30))
+10. Modularizing
+11. Assigning to primitives
+12. Simulating tropisms (gravity, light, wind) 
+
 ## Sources
 Prusinkiewicz, Przemyslaw; Lindenmayer, Aristid (1990). The Algorithmic Beauty of Plants. Springer-Verlag. pp. 101–107. ISBN 978-0-387-97297-8. <br/>
 [Houdini Kitchen ](https://www.houdinikitchen.net/wp-content/uploads/2019/12/L-systems.pdf) <br/>
