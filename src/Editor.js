@@ -179,7 +179,9 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const [animation, setAnimation] = useState(true);
     const [menuOpened, setMenuOpened] = useState(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
     const [loginError, setLoginError] = useState(null);
+    const [registerError, setRegisterError] = useState(null);
 
     const user = useSelector((state) => state.user.value);
     const dispatch = useDispatch();
@@ -394,6 +396,24 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
         })
     }
 
+    const handleRegister = (e) => {
+        e.preventDefault();
+        setRegisterError(null);
+        const data = {username: e.target[1].value, password: e.target[3].value, confirm: e.target[5].value};
+        if(data.password != data.confirm) {
+            setRegisterError('Passwords don\'t match');
+            return;
+        }
+        console.log(data);
+        apiService.post('/users', data)
+        .then((res) => {
+            setIsRegisterModalOpen(false);
+            setIsLoginModalOpen(true);
+        }).catch((err) => {
+            setRegisterError("Invalid credentials.");
+        })
+    }
+
     useEffect(() => {
         //console.log("PRESET VALUE IS", preset, allPresets);
         if(preset != "") {
@@ -411,7 +431,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     return(
         <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
 
-            <Navbar preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} user={user}/>
+            <Navbar preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} setIsRegisterModalOpen={setIsRegisterModalOpen} user={user}/>
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
                 <Drawer
                     sx={{
@@ -566,6 +586,42 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                                 required
                             />
                             <Button variant="contained" type='submit'> Login </Button>
+                        </div>
+                    </form>
+                </Box>
+            </Modal>
+            <Modal open={isRegisterModalOpen} onClose={()=>setIsRegisterModalOpen(false)}>
+                <Box sx={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "3px 10px 20px 10px", borderRadius: '7px'}}>
+                    <form onSubmit={handleRegister}>
+                        <div style={{display: 'flex', flexDirection: 'column'}}>
+                        <div style={{width: "25px", height: "25px", marginLeft: 'auto', marginBottom: "5px"}}>
+                            <IconButton onClick={()=>setIsRegisterModalOpen(false)} size="small">
+                                <CloseIcon style={{ fontSize: 20 }}/>
+                            </IconButton>
+                        </div>
+                        {registerError && <Alert severity="error" sx={{marginBottom: "15px"}} > {registerError} </Alert>}
+                            <TextField
+                                id="outlined-basic"
+                                label="Username"
+                                size="small"
+                                style={{width:"250px", marginBottom: '8px'}}
+                                required
+                            />
+                            <TextField
+                                id="outlined-basic"
+                                label="Password"
+                                size="small"
+                                style={{width:"250px", marginBottom: '15px'}}
+                                required
+                            />
+                            <TextField
+                                id="outlined-basic"
+                                label="Confirm Password"
+                                size="small"
+                                style={{width:"250px", marginBottom: '15px'}}
+                                required
+                            />
+                            <Button variant="contained" type='submit'> Register </Button>
                         </div>
                     </form>
                 </Box>

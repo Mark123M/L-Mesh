@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 import { login, logout } from '../reducers/userSlice'
 import { apiService } from '../services/apiService';
 
-export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, user}) {
+export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, user}) {
     const dispatch = useDispatch();
 
     const logoutUser = () => {
@@ -73,16 +73,18 @@ export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOp
                 <div className="scene-export-gltf-button">  <MenuItem>Export as GLTF</MenuItem> </div>
             </div>
         </div>
-        <div style={{marginLeft: "auto", marginRight: "5px"}}> 
+        <div style={{marginLeft: "auto", marginRight: "10px"}}> 
             {user ? (
                     <>
-                        <Typography>Signed in as {user.username}</Typography>
-                        <Button variant="outlined" onClick={()=>{ logoutUser(); dispatch(logout());}} >Logout</Button>
+                        <div style={{display: 'flex'}}>    
+                            <Typography sx={{marginRight: '5px'}}>Logged in as {user.username}</Typography>
+                            <Button variant="outlined" onClick={()=>{ logoutUser(); dispatch(logout());}} >Logout</Button>
+                        </div>
                     </>
                 ) : (
                     <>
-                        <Button sx={{ marginRight: "5px" }} variant="contained" onClick={() => setIsLoginModalOpen(true)}> Login </Button>
-                        <Button variant="outlined"> Register </Button>
+                        <Button sx={{ marginRight: "5px" }} variant="contained" onClick={() => {setIsLoginModalOpen(true); setIsRegisterModalOpen(false);}}> Login </Button>
+                        <Button variant="outlined" onClick={() => {setIsRegisterModalOpen(true); setIsLoginModalOpen(false);}}> Register </Button>
                     </>
                 )}
         </div>
