@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import {useEffect, useState, useCallback} from "react";
-import { Button, TextField, IconButton, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl, Typography} from '@mui/material';
+import { Button, TextField, IconButton, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl, Typography, Modal, Box} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -17,6 +17,10 @@ import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader'
 import { Mesh } from "three";
+import { Navbar } from "./components/Navbar";
+import { apiService, getCookie } from "./services/apiService";
+import { useSelector, useDispatch } from 'react-redux'
+import { login, logout } from './reducers/userSlice'
 
 const AxiomInput = ({axiom, setAxiom}) => {
     return(
@@ -174,7 +178,13 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const [preset, setPreset] = useState("");
     const [animation, setAnimation] = useState(true);
     const [menuOpened, setMenuOpened] = useState(false);
-    
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+    const [loginError, setLoginError] = useState(null);
+    const [registerError, setRegisterError] = useState(null);
+
+    const user = useSelector((state) => state.user.value);
+    const dispatch = useDispatch();
     const minDrawerWidth = 30;
 
     useEffect(()=>{
@@ -189,8 +199,13 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     }, [axiom, constants, productions, meshImports])
 
     useEffect(()=>{
-        //console.log('CURRENT EXPANSION', productionsRuleExpand)
-    }, [productionsRuleExpand])
+        apiService.get('/users/me').then((res) => {
+            if (res) { 
+                console.log(res);
+                dispatch(login(res.data));
+            }
+        })
+    }, [dispatch]);
 
     const handleConstantInputChange = (val, index, type) =>{
         const new_constants = JSON.parse(JSON.stringify(constants));
@@ -366,6 +381,38 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const toggleGridHelper = () => {
         setShowGridHelper(!showGridHelper);
     }
+    const handleLogin = (e) => {
+        e.preventDefault();
+        setLoginError(null);
+        const data = {username: e.target[1].value, password: e.target[3].value}
+        apiService.post('/users/login', data)
+        .then((res) => {
+            // console.log(res);
+            dispatch(login(res.data.token));
+            setIsLoginModalOpen(false);
+        }).catch((err) => {
+            // console.log(err);
+            setLoginError("Invalid credentials.");
+        })
+    }
+
+    const handleRegister = (e) => {
+        e.preventDefault();
+        setRegisterError(null);
+        const data = {username: e.target[1].value, password: e.target[3].value, confirm: e.target[5].value};
+        if(data.password != data.confirm) {
+            setRegisterError('Passwords don\'t match');
+            return;
+        }
+        console.log(data);
+        apiService.post('/users', data)
+        .then((res) => {
+            setIsRegisterModalOpen(false);
+            setIsLoginModalOpen(true);
+        }).catch((err) => {
+            setRegisterError("Invalid credentials.");
+        })
+    }
 
     useEffect(() => {
         //console.log("PRESET VALUE IS", preset, allPresets);
@@ -383,69 +430,8 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
 
     return(
         <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
-            <div style={{position: "fixed", top: 0, left: 0, width: "100vw", height: "50px", zIndex: 99999, background: "white",display: "flex", flexDirection: "row", alignItems: "center", borderWidth: "2px", borderColor: "gray", borderStyle: "none none solid none"}}>
-                <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "22px", fontWeight: 600, marginLeft: "10px"}}> {`L-Mesh`}</div>
-                
-                <div style={{marginLeft: "8px"}}>
-                    <FormControl fullWidth>
-                        <Select
-                            id="demo-simple-select"
-                            placeholder="Select preset"
-                            value={preset}
-                            onChange={e=>setPreset(e.target.value)}
-                            size="small"
-                            sx={{width: "200px", height: "37px", marginLeft: "8px"}}
-                            displayEmpty
-                        >
-                            <MenuItem value="">
-                                <em>Select Preset</em>
-                            </MenuItem>
-                            <MenuItem value={1}>Bush</MenuItem>
-                            <MenuItem value={2}>Flower Plant</MenuItem>
-                            <MenuItem value={3}>Koch curve 1</MenuItem>
-                            <MenuItem value={4}>Koch curve 2</MenuItem>
-                            <MenuItem value={5}>Koch curve 3</MenuItem>
-                            <MenuItem value={6}>Koch curve 4</MenuItem>
-                            <MenuItem value={7}>Dragon Curve</MenuItem>
-                            <MenuItem value={8}>Sierpiński triangle</MenuItem>
-                            <MenuItem value={9}>Monopodial tree</MenuItem>
-                            <MenuItem value={10}>Monopodial tree 2</MenuItem>
-                            <MenuItem value={11}>Monopodial tree 3</MenuItem>
-                            <MenuItem value={12}>Sympodial tree</MenuItem>
-                            <MenuItem value={13}>Natural tree</MenuItem>
-                            <MenuItem value={14}>Natural tree w/ leaves</MenuItem>
-                            <MenuItem value={15}>Natural tree w/ leaves 2</MenuItem>
-                            <MenuItem value={16}>gravity test</MenuItem>
-                            <MenuItem value={17}>Weeping Willow</MenuItem>
-                            <MenuItem value={18}>Weeping Willow 2</MenuItem>
-                        </Select>
-                    </FormControl>
-                </div>
-                {/*<FormControlLabel control={<Checkbox />} label="Animation" /> */}
-                <FormControlLabel sx={{marginLeft: "8px"}} control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid" />
-                <TextField
-                    id="outlined-basic"
-                    label="res"
-                    defaultValue={dpr}
-                    //onChange={(e)=>setLocalDpr(e.target.value)}
-                    onBlur={e=>setDpr(e.target.value)}
-                    size="small"
-                    sx={{width: "80px"}}
-                    //style={{height: "30px"}}
-                    required
-                />
-                <div style={{width: "160px", marginLeft: "10px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
-                <div style={{width: "110px", marginLeft: "5px"}} className="reference-button"> <Button sx={{width: "100%"}} variant="contained" >Reference</Button> </div>
-                <div style={{display: "flex", flexDirection: "column", marginTop: menuOpened ? "70px" : "0px", marginLeft: "5px"}}>
-                    <div style={{width: "90px"}} onMouseEnter={openMenu} onMouseLeave={closeMenu}> <Button sx={{width: "100%"}} variant="contained" >EXPORT</Button> </div>
-                    <div onMouseEnter={openMenu} onMouseLeave={closeMenu} style={{display: menuOpened? "inline" : "none", flexDirection: "column", zIndex:  999999, background: "white", borderColor: "gray", borderStyle: "solid solid solid solid", borderWidth: "1px"}}>
-                        <div className="scene-export-obj-button"> <MenuItem>Export as OBJ</MenuItem> </div>
-                        <div className="scene-export-gltf-button">  <MenuItem>Export as GLTF</MenuItem> </div>
-                    </div>
-                </div>
-       
-            </div>
-            
+
+            <Navbar preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} setIsRegisterModalOpen={setIsRegisterModalOpen} user={user}/>
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
                 <Drawer
                     sx={{
@@ -575,6 +561,71 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                 </Drawer>
                 
             </form>
+            <Modal open={isLoginModalOpen} onClose={()=>setIsLoginModalOpen(false)}>
+                <Box sx={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "3px 10px 20px 10px", borderRadius: '7px'}}>
+                    <form onSubmit={handleLogin}>
+                        <div style={{display: 'flex', flexDirection: 'column'}}>
+                        <div style={{width: "25px", height: "25px", marginLeft: 'auto', marginBottom: "5px"}}>
+                            <IconButton onClick={()=>setIsLoginModalOpen(false)} size="small">
+                                <CloseIcon style={{ fontSize: 20 }}/>
+                            </IconButton>
+                        </div>
+                        {loginError && <Alert severity="error" sx={{marginBottom: "15px"}} > {loginError} </Alert>}
+                            <TextField
+                                id="outlined-basic"
+                                label="Username"
+                                size="small"
+                                style={{width:"250px", marginBottom: '8px'}}
+                                required
+                            />
+                            <TextField
+                                id="outlined-basic"
+                                label="Password"
+                                size="small"
+                                style={{width:"250px", marginBottom: '15px'}}
+                                required
+                            />
+                            <Button variant="contained" type='submit'> Login </Button>
+                        </div>
+                    </form>
+                </Box>
+            </Modal>
+            <Modal open={isRegisterModalOpen} onClose={()=>setIsRegisterModalOpen(false)}>
+                <Box sx={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "3px 10px 20px 10px", borderRadius: '7px'}}>
+                    <form onSubmit={handleRegister}>
+                        <div style={{display: 'flex', flexDirection: 'column'}}>
+                        <div style={{width: "25px", height: "25px", marginLeft: 'auto', marginBottom: "5px"}}>
+                            <IconButton onClick={()=>setIsRegisterModalOpen(false)} size="small">
+                                <CloseIcon style={{ fontSize: 20 }}/>
+                            </IconButton>
+                        </div>
+                        {registerError && <Alert severity="error" sx={{marginBottom: "15px"}} > {registerError} </Alert>}
+                            <TextField
+                                id="outlined-basic"
+                                label="Username"
+                                size="small"
+                                style={{width:"250px", marginBottom: '8px'}}
+                                required
+                            />
+                            <TextField
+                                id="outlined-basic"
+                                label="Password"
+                                size="small"
+                                style={{width:"250px", marginBottom: '15px'}}
+                                required
+                            />
+                            <TextField
+                                id="outlined-basic"
+                                label="Confirm Password"
+                                size="small"
+                                style={{width:"250px", marginBottom: '15px'}}
+                                required
+                            />
+                            <Button variant="contained" type='submit'> Register </Button>
+                        </div>
+                    </form>
+                </Box>
+            </Modal>
         </div>
     )
 }
