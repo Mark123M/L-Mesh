@@ -8,3 +8,9 @@ export const apiService = {
     put: (url, data) => axios.put(baseUrl + url, data),
     delete: (url) => axios.delete(baseUrl + url)
 }
+
+export const getCookie = (key) => {
+    const regex = new RegExp(`(?:(?:^|.*;\\s*)${key}\\s*=\\s*([^;]*).*$)|^.*$`);
+    console.log(document.cookie.replace(regex, "$1"));
+    return document.cookie.replace(regex, "$1");
+}

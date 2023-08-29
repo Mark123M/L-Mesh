@@ -1,8 +1,18 @@
 import React from 'react'
 import { Button, TextField, FormControlLabel, Checkbox, Select, MenuItem, FormControl} from '@mui/material';
 import "@fontsource/open-sans";
+import Typography from '@mui/material/Typography';
+import { useDispatch } from 'react-redux'
+import { login, logout } from '../reducers/userSlice'
+import { apiService } from '../services/apiService';
 
-export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen}) {
+export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, user}) {
+    const dispatch = useDispatch();
+
+    const logoutUser = () => {
+        apiService.post('/users/logout');
+    }
+
     return (
         <div style={{position: "fixed", top: 0, left: 0, width: "100vw", height: "50px", zIndex: 99999, background: "white",display: "flex", flexDirection: "row", alignItems: "center", borderWidth: "2px", borderColor: "gray", borderStyle: "none none solid none"}}>
         <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "22px", fontWeight: 600, marginLeft: "10px"}}> {`L-Mesh`}</div>
@@ -64,8 +74,17 @@ export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOp
             </div>
         </div>
         <div style={{marginLeft: "auto", marginRight: "5px"}}> 
-            <Button sx={{marginRight: "5px"}} variant="contained" onClick={()=>setIsLoginModalOpen(true)}> Login </Button> 
-            <Button variant="outlined"> Register </Button> 
+            {user ? (
+                    <>
+                        <Typography>Signed in as {user.username}</Typography>
+                        <Button variant="outlined" onClick={()=>{ logoutUser(); dispatch(logout());}} >Logout</Button>
+                    </>
+                ) : (
+                    <>
+                        <Button sx={{ marginRight: "5px" }} variant="contained" onClick={() => setIsLoginModalOpen(true)}> Login </Button>
+                        <Button variant="outlined"> Register </Button>
+                    </>
+                )}
         </div>
 
     </div>

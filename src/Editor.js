@@ -18,7 +18,9 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader'
 import { Mesh } from "three";
 import { Navbar } from "./components/Navbar";
-import { apiService } from "./services/apiService";
+import { apiService, getCookie } from "./services/apiService";
+import { useSelector, useDispatch } from 'react-redux'
+import { login, logout } from './reducers/userSlice'
 
 const AxiomInput = ({axiom, setAxiom}) => {
     return(
@@ -177,7 +179,10 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const [animation, setAnimation] = useState(true);
     const [menuOpened, setMenuOpened] = useState(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-    
+    const [loginError, setLoginError] = useState(null);
+
+    const user = useSelector((state) => state.user.value);
+    const dispatch = useDispatch();
     const minDrawerWidth = 30;
 
     useEffect(()=>{
@@ -192,8 +197,13 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     }, [axiom, constants, productions, meshImports])
 
     useEffect(()=>{
-        //console.log('CURRENT EXPANSION', productionsRuleExpand)
-    }, [productionsRuleExpand])
+        apiService.get('/users/me').then((res) => {
+            if (res) { 
+                console.log(res);
+                dispatch(login(res.data));
+            }
+        })
+    }, [dispatch]);
 
     const handleConstantInputChange = (val, index, type) =>{
         const new_constants = JSON.parse(JSON.stringify(constants));
@@ -371,12 +381,16 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     }
     const handleLogin = (e) => {
         e.preventDefault();
+        setLoginError(null);
         const data = {username: e.target[1].value, password: e.target[3].value}
         apiService.post('/users/login', data)
         .then((res) => {
-            console.log(res);
+            // console.log(res);
+            dispatch(login(res.data.token));
+            setIsLoginModalOpen(false);
         }).catch((err) => {
-            console.log(err);
+            // console.log(err);
+            setLoginError("Invalid credentials.");
         })
     }
 
@@ -397,7 +411,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     return(
         <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
 
-            <Navbar preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen}/>
+            <Navbar preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} user={user}/>
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
                 <Drawer
                     sx={{
@@ -536,11 +550,12 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                                 <CloseIcon style={{ fontSize: 20 }}/>
                             </IconButton>
                         </div>
+                        {loginError && <Alert severity="error" sx={{marginBottom: "15px"}} > {loginError} </Alert>}
                             <TextField
                                 id="outlined-basic"
                                 label="Username"
                                 size="small"
-                                style={{width:"250px", marginBottom: '5px'}}
+                                style={{width:"250px", marginBottom: '8px'}}
                                 required
                             />
                             <TextField
