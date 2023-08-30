@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import "@fontsource/open-sans";
 import React from 'react'
 import Render from "./Render";
-import { allPresets } from "./Presets";
+import { publicPresets } from "./Presets";
 import { TestProps } from "./Test";
 import { useLoader } from "@react-three/fiber";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
@@ -182,6 +182,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
     const [loginError, setLoginError] = useState(null);
     const [registerError, setRegisterError] = useState(null);
+    const [userPresets, setUserPresets] = useState([]);
 
     const user = useSelector((state) => state.user.value);
     const dispatch = useDispatch();
@@ -206,6 +207,13 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
             }
         })
     }, [dispatch]);
+
+    useEffect(() => {
+        apiService.get('/lsystems').then((res) => {
+            console.log([{}].concat(res.data.concat(publicPresets)));
+            setUserPresets([{}].concat(res.data.concat(publicPresets)));
+        })
+    }, []);
 
     const handleConstantInputChange = (val, index, type) =>{
         const new_constants = JSON.parse(JSON.stringify(constants));
@@ -415,14 +423,14 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     }
 
     useEffect(() => {
-        //console.log("PRESET VALUE IS", preset, allPresets);
+        //console.log("PRESET VALUE IS", preset, publicPresets);
         if(preset != "") {
-            setAxiom(allPresets[preset].axiom);
-            setConstants(allPresets[preset].constants);
-            setProductions(allPresets[preset].productions);
+            setAxiom(userPresets[preset].axiom);
+            setConstants(userPresets[preset].constants);
+            setProductions(userPresets[preset].productions);
         } 
         
-    }, [preset]);
+    }, [preset, userPresets]);
     useEffect(()=> {
         //console.log(menuOpened ? "menu is opened" : "menu is not opened");
     }, [menuOpened])
@@ -431,7 +439,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     return(
         <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
 
-            <Navbar preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} setIsRegisterModalOpen={setIsRegisterModalOpen} user={user}/>
+            <Navbar userPresets={userPresets} preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} setIsRegisterModalOpen={setIsRegisterModalOpen} user={user}/>
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
                 <Drawer
                     sx={{

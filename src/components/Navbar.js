@@ -1,12 +1,13 @@
 import React from 'react'
-import { Button, TextField, FormControlLabel, Checkbox, Select, MenuItem, FormControl} from '@mui/material';
+import { Button, TextField, FormControlLabel, Checkbox, Select, MenuItem, FormControl, Divider} from '@mui/material';
 import "@fontsource/open-sans";
 import Typography from '@mui/material/Typography';
 import { useDispatch } from 'react-redux'
 import { login, logout } from '../reducers/userSlice'
 import { apiService } from '../services/apiService';
+import { publicPresets } from '../Presets';
 
-export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, user}) {
+export function Navbar({userPresets, preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, user}) {
     const dispatch = useDispatch();
 
     const logoutUser = () => {
@@ -28,31 +29,35 @@ export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOp
                     sx={{width: "200px", height: "37px", marginLeft: "8px"}}
                     displayEmpty
                 >
-                    <MenuItem value="">
-                        <em>Select Preset</em>
-                    </MenuItem>
-                    <MenuItem value={1}>Bush</MenuItem>
-                    <MenuItem value={2}>Flower Plant</MenuItem>
-                    <MenuItem value={3}>Koch curve 1</MenuItem>
-                    <MenuItem value={4}>Koch curve 2</MenuItem>
-                    <MenuItem value={5}>Koch curve 3</MenuItem>
-                    <MenuItem value={6}>Koch curve 4</MenuItem>
-                    <MenuItem value={7}>Dragon Curve</MenuItem>
-                    <MenuItem value={8}>Sierpiński triangle</MenuItem>
-                    <MenuItem value={9}>Monopodial tree</MenuItem>
-                    <MenuItem value={10}>Monopodial tree 2</MenuItem>
-                    <MenuItem value={11}>Monopodial tree 3</MenuItem>
-                    <MenuItem value={12}>Sympodial tree</MenuItem>
-                    <MenuItem value={13}>Natural tree</MenuItem>
-                    <MenuItem value={14}>Natural tree w/ leaves</MenuItem>
-                    <MenuItem value={15}>Natural tree w/ leaves 2</MenuItem>
-                    <MenuItem value={16}>gravity test</MenuItem>
-                    <MenuItem value={17}>Weeping Willow</MenuItem>
-                    <MenuItem value={18}>Weeping Willow 2</MenuItem>
+                    {userPresets.map((p, index) => {
+                        if (index == 0) {
+                            return <div>
+                            <MenuItem key={`user-preset-${0}`} value="">
+                                <em>Select Preset</em>
+                            </MenuItem>
+                            <Divider> <Typography variant="caption"> {user.username} </Typography></Divider>
+                            </div>
+                        }
+                        if (index == userPresets.length - publicPresets.length) {
+                            return  <div>
+                            <Divider> <Typography variant="caption"> Public </Typography></Divider>
+                            <MenuItem key={`user-preset-${index}`} value={index}>
+                                {p.name}
+                            </MenuItem>
+                        </div>
+                        }
+                        return <MenuItem key={`user-preset-${index}`} value={index}>
+                            {p.name}
+                        </MenuItem>
+                    })}
+
                 </Select>
             </FormControl>
         </div>
         {/*<FormControlLabel control={<Checkbox />} label="Animation" /> */}
+        <div style={{marginLeft: "10px"}}> <Button variant="outlined" >Save </Button> </div>
+        <div style={{marginLeft: "5px"}}> <Button variant="outlined" >Save as </Button> </div>
+        <div style={{marginLeft: "5px"}}> <Button variant="outlined" >Delete </Button> </div>
         <FormControlLabel sx={{marginLeft: "8px"}} control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid" />
         <TextField
             id="outlined-basic"
@@ -65,7 +70,7 @@ export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOp
             //style={{height: "30px"}}
             required
         />
-        <div style={{width: "160px", marginLeft: "10px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
+        <div style={{width: "160px", marginLeft: "5px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
         <div style={{display: "flex", flexDirection: "column", marginTop: menuOpened ? "70px" : "0px", marginLeft: "5px"}}>
             <div style={{width: "90px"}} onMouseEnter={openMenu} onMouseLeave={closeMenu}> <Button sx={{width: "100%"}} variant="contained" >EXPORT</Button> </div>
             <div onMouseEnter={openMenu} onMouseLeave={closeMenu} style={{display: menuOpened? "inline" : "none", flexDirection: "column", zIndex:  999999, background: "white", borderColor: "gray", borderStyle: "solid solid solid solid", borderWidth: "1px"}}>
