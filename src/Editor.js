@@ -580,6 +580,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                             />
                             <TextField
                                 id="outlined-basic"
+                                type="password"
                                 label="Password"
                                 size="small"
                                 style={{width:"250px", marginBottom: '15px'}}
@@ -609,6 +610,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                             />
                             <TextField
                                 id="outlined-basic"
+                                type="password"
                                 label="Password"
                                 size="small"
                                 style={{width:"250px", marginBottom: '15px'}}
@@ -616,6 +618,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                             />
                             <TextField
                                 id="outlined-basic"
+                                type="password"
                                 label="Confirm Password"
                                 size="small"
                                 style={{width:"250px", marginBottom: '15px'}}

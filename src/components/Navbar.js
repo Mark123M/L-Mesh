@@ -78,7 +78,7 @@ export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOp
                     <>
                         <div style={{display: 'flex'}}>    
                             <Typography sx={{marginRight: '5px'}}>Logged in as {user.username}</Typography>
-                            <Button variant="outlined" onClick={()=>{ logoutUser(); dispatch(logout());}} >Logout</Button>
+                            <Button variant="outlined" color='error' onClick={()=>{ logoutUser(); dispatch(logout());}} >Logout</Button>
                         </div>
                     </>
                 ) : (
