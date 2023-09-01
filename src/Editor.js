@@ -40,7 +40,7 @@ const AxiomInput = ({axiom, setAxiom}) => {
     return(
         <TextField
             key = {axiom}
-            id="outlined-basic"
+            variant="outlined"
             label="Symbols"
             defaultValue={axiom}
             onBlur={(e)=>setAxiom(e.target.value)}
@@ -56,7 +56,7 @@ const ConstantInput = ({name, val, index, handleConstantInputChange}) => {
         <>
         <TextField
             key={`const-name-${index}-${name}`}
-            id="outlined-basic"
+            variant="outlined"
             label="Name"
             defaultValue={name}
             onBlur={(e)=>handleConstantInputChange(e.target.value, index, 0)}
@@ -66,7 +66,7 @@ const ConstantInput = ({name, val, index, handleConstantInputChange}) => {
         />
         <TextField
             key={`const-val-${index}-${val}`}
-            id="outlined-basic"
+            variant="outlined"
             label="Value"
             defaultValue={val}
             onBlur={(e)=>handleConstantInputChange(e.target.value, index, 1)}
@@ -82,7 +82,7 @@ const ProductionSymbolInput = ({name, index, handleProductionSymbolChange}) => {
     return(
         <TextField
             key={`prod-symbol-name-${index}-${name}`}
-            id="outlined-basic"
+            variant="outlined"
             label="Symbol"
             defaultValue={name}
             onBlur={(e)=>handleProductionSymbolChange(e.target.value.replaceAll(' ', ''), index)}
@@ -97,7 +97,7 @@ const ProductionConditionInput = ({condition, index, index2, handleProductionCon
     return (
         <TextField
             key={`prod-symbol-condition-${index}-${index2}-${condition}`}
-            id="outlined-basic"
+            variant="outlined"
             label="Condition"
             defaultValue={condition}
             onBlur={(e)=>handleProductionConditionChange(e.target.value, index, index2)}
@@ -124,7 +124,7 @@ const ProductionRuleInput = ({rule, prob, index, index2, index3, handleProductio
         />
         <TextField
             key={`prod-rule-prob-${index}-${index2}-${index3}-${prob}`}
-            id="outlined-basic"
+            variant="outlined"
             label="p"
             defaultValue={prob}
             onBlur={(e)=>handleProductionRuleChange(e.target.value, index, index2, index3, 1)}
@@ -142,7 +142,7 @@ const MeshImportInput = ({name, file, index, handleMeshImportChange}) => {
         <>
         <TextField
             key={`mesh-name-${index}-${name}`}
-            id="outlined-basic"
+            variant="outlined"
             label="Name"
             defaultValue={name}
             onBlur={(e)=>handleMeshImportChange(e.target.value, index, 0)}
@@ -595,14 +595,14 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                         </div>
                         {loginError && <Alert severity="error" sx={{marginBottom: "15px"}} > {loginError} </Alert>}
                             <TextField
-                                id="outlined-basic"
+                                variant="outlined"
                                 label="Username"
                                 size="small"
                                 style={{width:"250px", marginBottom: '8px'}}
                                 required
                             />
                             <TextField
-                                id="outlined-basic"
+                                variant="outlined"
                                 type="password"
                                 label="Password"
                                 size="small"
@@ -625,14 +625,14 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                         </div>
                         {registerError && <Alert severity="error" sx={{marginBottom: "15px"}} > {registerError} </Alert>}
                             <TextField
-                                id="outlined-basic"
+                                variant="outlined"
                                 label="Username"
                                 size="small"
                                 style={{width:"250px", marginBottom: '8px'}}
                                 required
                             />
                             <TextField
-                                id="outlined-basic"
+                                variant="outlined"
                                 type="password"
                                 label="Password"
                                 size="small"
@@ -640,7 +640,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                                 required
                             />
                             <TextField
-                                id="outlined-basic"
+                                variant="outlined"
                                 type="password"
                                 label="Confirm Password"
                                 size="small"
