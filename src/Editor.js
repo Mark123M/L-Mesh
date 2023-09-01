@@ -22,6 +22,20 @@ import { apiService, getCookie } from "./services/apiService";
 import { useSelector, useDispatch } from 'react-redux'
 import { login, logout } from './reducers/userSlice'
 
+const initPreset = {
+    name: "Select a preset",
+    axiom: "",
+    constants: [["num_gens", 4],],
+    productions: [
+        ["", 
+            [["*", 
+                [["", "1.0"],]
+            ],]
+        ],
+    ],
+    meshImports: []
+}
+
 const AxiomInput = ({axiom, setAxiom}) => {
     return(
         <TextField
@@ -175,7 +189,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const [productionsRuleExpand, setProductionsRuleExpand] = useState([])
     const [constantsExpand, setConstantsExpand] = useState(true);
     const [meshImportsExpand, setMeshImportsExpand] = useState(true);
-    const [preset, setPreset] = useState("");
+    const [preset, setPreset] = useState(0);
     const [animation, setAnimation] = useState(true);
     const [menuOpened, setMenuOpened] = useState(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -210,10 +224,12 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
 
     useEffect(() => {
         apiService.get('/lsystems').then((res) => {
-            console.log([{}].concat(res.data.concat(publicPresets)));
-            setUserPresets([{}].concat(res.data.concat(publicPresets)));
+            console.log([initPreset].concat(res.data.concat(publicPresets)));
+            setUserPresets([initPreset].concat(res.data.concat(publicPresets)));
+        }).catch((err) => {
+            setUserPresets([initPreset].concat(publicPresets));
         })
-    }, []);
+    }, [user]);
 
     const handleConstantInputChange = (val, index, type) =>{
         const new_constants = JSON.parse(JSON.stringify(constants));
@@ -424,12 +440,11 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
 
     useEffect(() => {
         //console.log("PRESET VALUE IS", preset, publicPresets);
-        if(preset != "") {
+        if (userPresets.length > 0) {
             setAxiom(userPresets[preset].axiom);
             setConstants(userPresets[preset].constants);
             setProductions(userPresets[preset].productions);
-        } 
-        
+        }
     }, [preset, userPresets]);
     useEffect(()=> {
         //console.log(menuOpened ? "menu is opened" : "menu is not opened");
@@ -642,16 +657,10 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
 }
 
 const Editor = () =>{
-    const [axiom, setAxiom] = useState("");
-    const [constants, setConstants] = useState([["num_gens", 4],]);
-    const [productions, setProductions] = useState([
-        ["", 
-            [["*", 
-                [["", "1.0"],]
-            ],]
-        ],
-    ]); //forgor to separate AA's with spaces
-    const [meshImports, setMeshImports] = useState([])
+    const [axiom, setAxiom] = useState(initPreset.axiom);
+    const [constants, setConstants] = useState(initPreset.constants);
+    const [productions, setProductions] = useState(initPreset.productions); //forgor to separate AA's with spaces
+    const [meshImports, setMeshImports] = useState(initPreset.meshImports)
     const [error, setError] = useState("");
     const [showGridHelper, setShowGridHelper] = useState(true);
     const [dpr, setDpr] = useState(1);

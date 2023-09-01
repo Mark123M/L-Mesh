@@ -30,25 +30,19 @@ export function Navbar({userPresets, preset, setPreset, toggleGridHelper, dpr, s
                     displayEmpty
                 >
                     {userPresets.map((p, index) => {
-                        if (index == 0) {
-                            return <div>
-                            <MenuItem key={`user-preset-${0}`} value="">
-                                <em>Select Preset</em>
-                            </MenuItem>
-                            <Divider> <Typography variant="caption"> {user.username} </Typography></Divider>
-                            </div>
-                        }
-                        if (index == userPresets.length - publicPresets.length) {
-                            return  <div>
-                            <Divider> <Typography variant="caption"> Public </Typography></Divider>
-                            <MenuItem key={`user-preset-${index}`} value={index}>
-                                {p.name}
-                            </MenuItem>
-                        </div>
-                        }
-                        return <MenuItem key={`user-preset-${index}`} value={index}>
+                        if (index < userPresets.length - publicPresets.length) {
+                            return <MenuItem key={`user-preset-${index}`} value={index}>
                             {p.name}
-                        </MenuItem>
+                            </MenuItem>
+                        }
+                    })}
+                    <Divider> <Typography variant="caption"> Public </Typography></Divider>
+                    {userPresets.map((p, index) => {
+                        if (index >= userPresets.length - publicPresets.length) {
+                            return <MenuItem key={`user-preset-${index}`} value={index}>
+                            {p.name}
+                            </MenuItem>
+                        }
                     })}
 
                 </Select>
