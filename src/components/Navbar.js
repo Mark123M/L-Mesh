@@ -7,11 +7,29 @@ import { login, logout } from '../reducers/userSlice'
 import { apiService } from '../services/apiService';
 import { publicPresets } from '../Presets';
 
-export function Navbar({userPresets, preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, user}) {
+export function Navbar({axiom, constants, productions, meshImports, userPresets, setUserPresets, preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, setIsDeleteModalOpen, user}) {
     const dispatch = useDispatch();
 
     const logoutUser = () => {
         apiService.post('/users/logout');
+    }
+
+    const updateLSystem = (lsystem_id, data) => {
+        console.log(data);
+        if (lsystem_id) {
+            apiService.put(`/lsystems/${lsystem_id}`, data)
+            .then((res)=> {
+                console.log(res);
+                const newUserPresets = [...userPresets];
+                newUserPresets.splice(preset, 1, data);
+                setUserPresets(newUserPresets);
+                // window.location.reload();
+            })
+            .catch((err) => {
+                console.log("update failed");
+            })
+        }
+        
     }
 
     return (
@@ -49,9 +67,9 @@ export function Navbar({userPresets, preset, setPreset, toggleGridHelper, dpr, s
             </FormControl>
         </div>
         {/*<FormControlLabel control={<Checkbox />} label="Animation" /> */}
-        <div style={{marginLeft: "10px"}}> <Button variant="outlined" >Save </Button> </div>
+        <div style={{marginLeft: "10px"}}> <Button variant="outlined" onClick={()=>updateLSystem(userPresets[preset].lsystem_id, {name: userPresets[preset].name, axiom: axiom, constants: constants, productions: productions, imports: meshImports})} >Save </Button> </div>
         <div style={{marginLeft: "5px"}}> <Button variant="outlined" >Save as </Button> </div>
-        <div style={{marginLeft: "5px"}}> <Button variant="outlined" >Delete </Button> </div>
+        <div style={{marginLeft: "5px"}}> <Button variant="outlined" onClick={()=>setIsDeleteModalOpen(true)} >Delete </Button> </div>
         <FormControlLabel sx={{marginLeft: "8px"}} control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid" />
         <TextField
             id="outlined-basic"
