@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import {useEffect, useState, useCallback} from "react";
-import { Button, TextField, IconButton, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl, Typography, Modal, Box} from '@mui/material';
+import { Button, TextField, IconButton, Collapse, Divider, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl, Typography, Modal, Box, Snackbar} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -198,6 +198,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [loginError, setLoginError] = useState(null);
     const [registerError, setRegisterError] = useState(null);
+    const [saveAsError, setSaveAsError] = useState(null);
     const [userPresets, setUserPresets] = useState([]);
 
     const user = useSelector((state) => state.user.value);
@@ -454,7 +455,22 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     }
 
     const handleSaveAs = (e) => {
+        setSaveAsError(null);
+        const name = e.target[1].value;
+        const newPreset = {name: name, axiom: axiom, constants: constants, productions: productions, imports: meshImports};
+        console.log(name);
+        apiService.post(`/lsystems`, newPreset).then((res) => {
+            setIsSaveAsModalOpen(false);
+            newPreset.lsystem_id = res.data.rows[0].lsystem_id;
+            const newUserPresets = [...userPresets];
+            newUserPresets.splice(1, 0, newPreset);
+            setPreset(1);
+            setUserPresets(newUserPresets);
+        }).catch((err) => {
+            setSaveAsError(err.response.data);
+        })
         e.preventDefault();
+
     }
 
     useEffect(() => {
@@ -474,7 +490,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     return(
         <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
 
-            <Navbar axiom={axiom} constants={constants} productions={productions} meshImports={meshImports} userPresets={userPresets} setUserPresets={setUserPresets} preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} setIsRegisterModalOpen={setIsRegisterModalOpen} setIsDeleteModalOpen={setIsDeleteModalOpen} user={user}/>
+            <Navbar axiom={axiom} constants={constants} productions={productions} meshImports={meshImports} userPresets={userPresets} setUserPresets={setUserPresets} preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} setIsRegisterModalOpen={setIsRegisterModalOpen} setIsDeleteModalOpen={setIsDeleteModalOpen} setIsSaveAsModalOpen={setIsSaveAsModalOpen} user={user}/>
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
                 <Drawer
                     sx={{
@@ -673,17 +689,24 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                 </Box>
             </Modal>
             <Modal open={isDeleteModalOpen} onClose={()=>setIsDeleteModalOpen(false)}>
-                <Box sx={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "3px 10px 20px 10px", borderRadius: '7px'}}>
+                <Box sx={{width:"300px", position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "3px 10px 20px 10px", borderRadius: '7px'}}>
                     <form onSubmit={handleDelete}>
                         <div style={{display: 'flex', flexDirection: 'column'}}>
-                            <div style={{width: "25px", height: "25px", marginLeft: 'auto', marginBottom: "5px"}}>
-                                <IconButton onClick={()=>setIsDeleteModalOpen(false)} size="small">
-                                    <CloseIcon style={{ fontSize: 20 }}/>
-                                </IconButton>
+                            <div style={{display: 'flex', flexDirection: 'row', marginBottom: "5px"}}>
+                                <Typography variant="h6">Delete preset? </Typography>
+                                <div style={{width: "25px", height: "25px", marginLeft: 'auto', marginBottom: "5px"}}>
+                                    <IconButton onClick={()=>setIsDeleteModalOpen(false)} size="small">
+                                        <CloseIcon style={{ fontSize: 20 }}/>
+                                    </IconButton>
+                                </div>
                             </div>
-                            <Typography>Are you sure you want to delete this preset? </Typography>
-                            <Button type="submit" variant="contained" color='error' >Delete</Button>
-                            <Button variant="outlined" onClick={()=>setIsDeleteModalOpen(false)} >Cancel</Button>
+                            <Divider></Divider>
+                            <Typography variant="body1"> Are you sure you want to delete <b>{userPresets[preset]?.name}</b>?</Typography>
+                        
+                            <div style={{marginTop: "10px"}}>
+                                <Button type="submit" variant="contained" color='error' >Delete</Button>
+                                <Button sx={{marginLeft: "10px"}} variant="outlined" onClick={()=>setIsDeleteModalOpen(false)} >Cancel</Button>
+                            </div>
                         
                         </div>
                     </form>
@@ -691,20 +714,31 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
 
             </Modal>
             <Modal open={isSaveAsModalOpen} onClose={()=>setIsSaveAsModalOpen(false)}>
-                <Box sx={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "3px 10px 20px 10px", borderRadius: '7px'}}>
+                <Box sx={{width:"300px", position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "3px 10px 20px 10px", borderRadius: '7px'}}>
                     <form onSubmit={handleSaveAs}>
                         <div style={{display: 'flex', flexDirection: 'column'}}>
-                            <div style={{width: "25px", height: "25px", marginLeft: 'auto', marginBottom: "5px"}}>
-                                <IconButton onClick={()=>setIsSaveAsModalOpen(false)} size="small">
-                                    <CloseIcon style={{ fontSize: 20 }}/>
-                                </IconButton>
+                            <div style={{display: 'flex', flexDirection: 'row', marginBottom: "5px"}}>
+                                <Typography variant="h6">New preset: </Typography>
+                                <div style={{width: "25px", height: "25px", marginLeft: 'auto', marginBottom: "5px"}}>
+                                    <IconButton onClick={()=>setIsSaveAsModalOpen(false)} size="small">
+                                        <CloseIcon style={{ fontSize: 20 }}/>
+                                    </IconButton>
+                                </div>
                             </div>
-                            <Typography>Are you sure you want to delete this preset? </Typography>
-                            <div style={{display: 'flex', flexDirection: 'column'}}>
-
+                            <Divider></Divider>
+                            {saveAsError && <Alert severity="error" sx={{marginBottom: "15px"}} > {saveAsError} </Alert>}
+                            <TextField
+                                variant="outlined"
+                                label="Preset name"
+                                size="small"
+                                style={{marginTop: "10px", width:"250px", marginBottom: '8px'}}
+                                required
+                            />
+                        
+                            <div style={{marginTop: "10px"}}>
+                                <Button type="submit" variant="contained" >Create</Button>
+                                <Button sx={{marginLeft: "10px"}} variant="outlined" onClick={()=>setIsSaveAsModalOpen(false)} >Cancel</Button>
                             </div>
-                            <Button type="submit" variant="contained" color='error' >Delete</Button>
-                            <Button variant="outlined" onClick={()=>setIsSaveAsModalOpen(false)} >Cancel</Button>
                         
                         </div>
                     </form>

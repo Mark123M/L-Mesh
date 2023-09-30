@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, TextField, FormControlLabel, Checkbox, Select, MenuItem, FormControl, Divider} from '@mui/material';
+import { Button, TextField, FormControlLabel, Checkbox, Select, MenuItem, FormControl, Divider, Snackbar} from '@mui/material';
 import "@fontsource/open-sans";
 import Typography from '@mui/material/Typography';
 import { useDispatch } from 'react-redux'
@@ -7,7 +7,7 @@ import { login, logout } from '../reducers/userSlice'
 import { apiService } from '../services/apiService';
 import { publicPresets } from '../Presets';
 
-export function Navbar({axiom, constants, productions, meshImports, userPresets, setUserPresets, preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, setIsDeleteModalOpen, user}) {
+export function Navbar({axiom, constants, productions, meshImports, userPresets, setUserPresets, preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, setIsDeleteModalOpen, setIsSaveAsModalOpen, user}) {
     const dispatch = useDispatch();
 
     const logoutUser = () => {
@@ -68,7 +68,7 @@ export function Navbar({axiom, constants, productions, meshImports, userPresets,
         </div>
         {/*<FormControlLabel control={<Checkbox />} label="Animation" /> */}
         <div style={{marginLeft: "10px"}}> <Button variant="outlined" onClick={()=>updateLSystem(userPresets[preset].lsystem_id, {name: userPresets[preset].name, axiom: axiom, constants: constants, productions: productions, imports: meshImports})} >Save </Button> </div>
-        <div style={{marginLeft: "5px"}}> <Button variant="outlined" >Save as </Button> </div>
+        <div style={{marginLeft: "5px"}}> <Button variant="outlined" onClick={()=>setIsSaveAsModalOpen(true)} >Save as </Button> </div>
         <div style={{marginLeft: "5px"}}> <Button variant="outlined" onClick={()=>setIsDeleteModalOpen(true)} >Delete </Button> </div>
         <FormControlLabel sx={{marginLeft: "8px"}} control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid" />
         <TextField
