@@ -200,6 +200,8 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const [registerError, setRegisterError] = useState(null);
     const [saveAsError, setSaveAsError] = useState(null);
     const [userPresets, setUserPresets] = useState([]);
+    const [successToast, setSuccessToast] = useState();
+    const [failToast, setFailToast] = useState();
 
     const user = useSelector((state) => state.user.value);
     const dispatch = useDispatch();
@@ -219,15 +221,19 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     useEffect(()=>{
         apiService.get('/users/me').then((res) => {
             if (res) { 
-                console.log(res);
+                // console.log(res);
                 dispatch(login(res.data));
             }
         })
     }, [dispatch]);
 
     useEffect(() => {
+        if(user) {
+            // console.log(user.username);
+            setSuccessToast(`Hello, ${user.username}!`);
+        }
         apiService.get('/lsystems').then((res) => {
-            console.log([initPreset].concat(res.data.concat(publicPresets)));
+            // console.log([initPreset].concat(res.data.concat(publicPresets)));
             setUserPresets([initPreset].concat(res.data.concat(publicPresets)));
         }).catch((err) => {
             setUserPresets([initPreset].concat(publicPresets));
@@ -257,10 +263,10 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     }
 
     const handleMeshImportChange = (val, index, type) => {
-        console.log("CHANGING MESH FILE",val);
+        // console.log("CHANGING MESH FILE",val);
         const new_mesh_imports = JSON.parse(JSON.stringify(meshImports));
         new_mesh_imports[index][type] = val;
-        console.log(new_mesh_imports);
+        // console.log(new_mesh_imports);
         setMeshImports(new_mesh_imports);
     }
 
@@ -431,11 +437,12 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
             setRegisterError('Passwords don\'t match');
             return;
         }
-        console.log(data);
+        // console.log(data);
         apiService.post('/users', data)
         .then((res) => {
             setIsRegisterModalOpen(false);
             setIsLoginModalOpen(true);
+            setSuccessToast(`Welcome, ${data.username}!`)
         }).catch((err) => {
             setRegisterError("Invalid credentials.");
         })
@@ -447,10 +454,11 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
             setIsDeleteModalOpen(false);
             const newUserPresets = [...userPresets];
             newUserPresets.splice(preset, 1);
+            setSuccessToast(`${userPresets[preset].name} has been deleted.`)
             setUserPresets(newUserPresets);
         }).catch((err) => {
             setIsDeleteModalOpen(false);
-            console.log("Failed to delete preset.");
+            // console.log("Failed to delete preset.");
         })
     }
 
@@ -458,7 +466,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
         setSaveAsError(null);
         const name = e.target[1].value;
         const newPreset = {name: name, axiom: axiom, constants: constants, productions: productions, imports: meshImports};
-        console.log(name);
+        // console.log(name);
         apiService.post(`/lsystems`, newPreset).then((res) => {
             setIsSaveAsModalOpen(false);
             newPreset.lsystem_id = res.data.rows[0].lsystem_id;
@@ -466,6 +474,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
             newUserPresets.splice(1, 0, newPreset);
             setPreset(1);
             setUserPresets(newUserPresets);
+            setSuccessToast(`Successfully created ${name}`)
         }).catch((err) => {
             setSaveAsError(err.response.data);
         })
@@ -476,7 +485,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     useEffect(() => {
         //console.log("PRESET VALUE IS", preset, publicPresets);
         if (userPresets.length > 0) {
-            console.log("current preset", userPresets[preset]);
+            // console.log("current preset", userPresets[preset]);
             setAxiom(userPresets[preset].axiom);
             setConstants(userPresets[preset].constants);
             setProductions(userPresets[preset].productions);
@@ -490,7 +499,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     return(
         <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
 
-            <Navbar axiom={axiom} constants={constants} productions={productions} meshImports={meshImports} userPresets={userPresets} setUserPresets={setUserPresets} preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} setIsRegisterModalOpen={setIsRegisterModalOpen} setIsDeleteModalOpen={setIsDeleteModalOpen} setIsSaveAsModalOpen={setIsSaveAsModalOpen} user={user}/>
+            <Navbar axiom={axiom} constants={constants} productions={productions} meshImports={meshImports} userPresets={userPresets} setUserPresets={setUserPresets} preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} setIsRegisterModalOpen={setIsRegisterModalOpen} setIsDeleteModalOpen={setIsDeleteModalOpen} setIsSaveAsModalOpen={setIsSaveAsModalOpen} setSuccessToast={setSuccessToast} setFailToast={setFailToast} user={user}/>
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
                 <Drawer
                     sx={{
@@ -745,6 +754,16 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                 </Box>
 
             </Modal>
+            <Snackbar open={successToast?true:false} autoHideDuration={6000} onClose={()=>setSuccessToast(null)}>
+                <Alert onClose={()=>setSuccessToast(null)} severity="success" variant="filled">
+                    {successToast}
+                </Alert>
+            </Snackbar>
+            <Snackbar open={failToast?true:false} autoHideDuration={6000} onClose={()=>setFailToast(null)}>
+                <Alert onClose={()=>setFailToast(null)} severity="error" variant="filled">
+                    {failToast}
+                </Alert>
+            </Snackbar>
         </div>
     )
 }
