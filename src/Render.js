@@ -825,7 +825,7 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
         saveGltf(JSON.stringify(gltf));
       }, 
       (err)=>{
-        console.log(err);
+        // console.log(err);
       });
   }; 
 

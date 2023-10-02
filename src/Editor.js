@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import {useEffect, useState, useCallback} from "react";
-import { Button, TextField, IconButton, Collapse, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl, Typography, Modal, Box} from '@mui/material';
+import { Button, TextField, IconButton, Collapse, Divider, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl, Typography, Modal, Box, Snackbar} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import "@fontsource/open-sans";
 import React from 'react'
 import Render from "./Render";
-import { allPresets } from "./Presets";
+import { publicPresets } from "./Presets";
 import { TestProps } from "./Test";
 import { useLoader } from "@react-three/fiber";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
@@ -22,11 +22,25 @@ import { apiService, getCookie } from "./services/apiService";
 import { useSelector, useDispatch } from 'react-redux'
 import { login, logout } from './reducers/userSlice'
 
+const initPreset = {
+    name: "Select a preset",
+    axiom: "",
+    constants: [["num_gens", 4],],
+    productions: [
+        ["", 
+            [["*", 
+                [["", "1.0"],]
+            ],]
+        ],
+    ],
+    meshImports: []
+}
+
 const AxiomInput = ({axiom, setAxiom}) => {
     return(
         <TextField
             key = {axiom}
-            id="outlined-basic"
+            variant="outlined"
             label="Symbols"
             defaultValue={axiom}
             onBlur={(e)=>setAxiom(e.target.value)}
@@ -42,7 +56,7 @@ const ConstantInput = ({name, val, index, handleConstantInputChange}) => {
         <>
         <TextField
             key={`const-name-${index}-${name}`}
-            id="outlined-basic"
+            variant="outlined"
             label="Name"
             defaultValue={name}
             onBlur={(e)=>handleConstantInputChange(e.target.value, index, 0)}
@@ -52,7 +66,7 @@ const ConstantInput = ({name, val, index, handleConstantInputChange}) => {
         />
         <TextField
             key={`const-val-${index}-${val}`}
-            id="outlined-basic"
+            variant="outlined"
             label="Value"
             defaultValue={val}
             onBlur={(e)=>handleConstantInputChange(e.target.value, index, 1)}
@@ -68,7 +82,7 @@ const ProductionSymbolInput = ({name, index, handleProductionSymbolChange}) => {
     return(
         <TextField
             key={`prod-symbol-name-${index}-${name}`}
-            id="outlined-basic"
+            variant="outlined"
             label="Symbol"
             defaultValue={name}
             onBlur={(e)=>handleProductionSymbolChange(e.target.value.replaceAll(' ', ''), index)}
@@ -83,7 +97,7 @@ const ProductionConditionInput = ({condition, index, index2, handleProductionCon
     return (
         <TextField
             key={`prod-symbol-condition-${index}-${index2}-${condition}`}
-            id="outlined-basic"
+            variant="outlined"
             label="Condition"
             defaultValue={condition}
             onBlur={(e)=>handleProductionConditionChange(e.target.value, index, index2)}
@@ -99,7 +113,7 @@ const ProductionRuleInput = ({rule, prob, index, index2, index3, handleProductio
         <>
         <TextField
             key={`prod-rule-name-${index}-${index2}-${index3}-${rule}`}
-            id="outlined-textarea"
+            variant="outlined"
             label="rule"
             defaultValue={rule}
             onBlur={(e)=>handleProductionRuleChange(e.target.value, index, index2, index3, 0)}
@@ -110,7 +124,7 @@ const ProductionRuleInput = ({rule, prob, index, index2, index3, handleProductio
         />
         <TextField
             key={`prod-rule-prob-${index}-${index2}-${index3}-${prob}`}
-            id="outlined-basic"
+            variant="outlined"
             label="p"
             defaultValue={prob}
             onBlur={(e)=>handleProductionRuleChange(e.target.value, index, index2, index3, 1)}
@@ -128,7 +142,7 @@ const MeshImportInput = ({name, file, index, handleMeshImportChange}) => {
         <>
         <TextField
             key={`mesh-name-${index}-${name}`}
-            id="outlined-basic"
+            variant="outlined"
             label="Name"
             defaultValue={name}
             onBlur={(e)=>handleMeshImportChange(e.target.value, index, 0)}
@@ -175,13 +189,19 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const [productionsRuleExpand, setProductionsRuleExpand] = useState([])
     const [constantsExpand, setConstantsExpand] = useState(true);
     const [meshImportsExpand, setMeshImportsExpand] = useState(true);
-    const [preset, setPreset] = useState("");
+    const [preset, setPreset] = useState(0);
     const [animation, setAnimation] = useState(true);
     const [menuOpened, setMenuOpened] = useState(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+    const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [loginError, setLoginError] = useState(null);
     const [registerError, setRegisterError] = useState(null);
+    const [saveAsError, setSaveAsError] = useState(null);
+    const [userPresets, setUserPresets] = useState([]);
+    const [successToast, setSuccessToast] = useState();
+    const [failToast, setFailToast] = useState();
 
     const user = useSelector((state) => state.user.value);
     const dispatch = useDispatch();
@@ -201,11 +221,24 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     useEffect(()=>{
         apiService.get('/users/me').then((res) => {
             if (res) { 
-                console.log(res);
+                // console.log(res);
                 dispatch(login(res.data));
             }
         })
     }, [dispatch]);
+
+    useEffect(() => {
+        if(user) {
+            // console.log(user.username);
+            setSuccessToast(`Hello, ${user.username}!`);
+        }
+        apiService.get('/lsystems').then((res) => {
+            // console.log([initPreset].concat(res.data.concat(publicPresets)));
+            setUserPresets([initPreset].concat(res.data.concat(publicPresets)));
+        }).catch((err) => {
+            setUserPresets([initPreset].concat(publicPresets));
+        })
+    }, [user]);
 
     const handleConstantInputChange = (val, index, type) =>{
         const new_constants = JSON.parse(JSON.stringify(constants));
@@ -230,10 +263,10 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     }
 
     const handleMeshImportChange = (val, index, type) => {
-        console.log("CHANGING MESH FILE",val);
+        // console.log("CHANGING MESH FILE",val);
         const new_mesh_imports = JSON.parse(JSON.stringify(meshImports));
         new_mesh_imports[index][type] = val;
-        console.log(new_mesh_imports);
+        // console.log(new_mesh_imports);
         setMeshImports(new_mesh_imports);
     }
 
@@ -404,25 +437,60 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
             setRegisterError('Passwords don\'t match');
             return;
         }
-        console.log(data);
+        // console.log(data);
         apiService.post('/users', data)
         .then((res) => {
             setIsRegisterModalOpen(false);
             setIsLoginModalOpen(true);
+            setSuccessToast(`Welcome, ${data.username}!`)
         }).catch((err) => {
             setRegisterError("Invalid credentials.");
         })
     }
 
+    const handleDelete = (e) => {
+        e.preventDefault();
+        apiService.delete(`/lsystems/${userPresets[preset].lsystem_id}`).then((res) => {
+            setIsDeleteModalOpen(false);
+            const newUserPresets = [...userPresets];
+            newUserPresets.splice(preset, 1);
+            setSuccessToast(`${userPresets[preset].name} has been deleted.`)
+            setUserPresets(newUserPresets);
+        }).catch((err) => {
+            setIsDeleteModalOpen(false);
+            // console.log("Failed to delete preset.");
+        })
+    }
+
+    const handleSaveAs = (e) => {
+        setSaveAsError(null);
+        const name = e.target[1].value;
+        const newPreset = {name: name, axiom: axiom, constants: constants, productions: productions, imports: meshImports};
+        // console.log(name);
+        apiService.post(`/lsystems`, newPreset).then((res) => {
+            setIsSaveAsModalOpen(false);
+            newPreset.lsystem_id = res.data.rows[0].lsystem_id;
+            const newUserPresets = [...userPresets];
+            newUserPresets.splice(1, 0, newPreset);
+            setPreset(1);
+            setUserPresets(newUserPresets);
+            setSuccessToast(`Successfully created ${name}`)
+        }).catch((err) => {
+            setSaveAsError(err.response.data);
+        })
+        e.preventDefault();
+
+    }
+
     useEffect(() => {
-        //console.log("PRESET VALUE IS", preset, allPresets);
-        if(preset != "") {
-            setAxiom(allPresets[preset].axiom);
-            setConstants(allPresets[preset].constants);
-            setProductions(allPresets[preset].productions);
-        } 
-        
-    }, [preset]);
+        //console.log("PRESET VALUE IS", preset, publicPresets);
+        if (userPresets.length > 0) {
+            // console.log("current preset", userPresets[preset]);
+            setAxiom(userPresets[preset].axiom);
+            setConstants(userPresets[preset].constants);
+            setProductions(userPresets[preset].productions);
+        }
+    }, [preset, userPresets]);
     useEffect(()=> {
         //console.log(menuOpened ? "menu is opened" : "menu is not opened");
     }, [menuOpened])
@@ -431,7 +499,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     return(
         <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
 
-            <Navbar preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} setIsRegisterModalOpen={setIsRegisterModalOpen} user={user}/>
+            <Navbar axiom={axiom} constants={constants} productions={productions} meshImports={meshImports} userPresets={userPresets} setUserPresets={setUserPresets} preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} setIsRegisterModalOpen={setIsRegisterModalOpen} setIsDeleteModalOpen={setIsDeleteModalOpen} setIsSaveAsModalOpen={setIsSaveAsModalOpen} setSuccessToast={setSuccessToast} setFailToast={setFailToast} user={user}/>
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
                 <Drawer
                     sx={{
@@ -572,14 +640,15 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                         </div>
                         {loginError && <Alert severity="error" sx={{marginBottom: "15px"}} > {loginError} </Alert>}
                             <TextField
-                                id="outlined-basic"
+                                variant="outlined"
                                 label="Username"
                                 size="small"
                                 style={{width:"250px", marginBottom: '8px'}}
                                 required
                             />
                             <TextField
-                                id="outlined-basic"
+                                variant="outlined"
+                                type="password"
                                 label="Password"
                                 size="small"
                                 style={{width:"250px", marginBottom: '15px'}}
@@ -601,21 +670,23 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                         </div>
                         {registerError && <Alert severity="error" sx={{marginBottom: "15px"}} > {registerError} </Alert>}
                             <TextField
-                                id="outlined-basic"
+                                variant="outlined"
                                 label="Username"
                                 size="small"
                                 style={{width:"250px", marginBottom: '8px'}}
                                 required
                             />
                             <TextField
-                                id="outlined-basic"
+                                variant="outlined"
+                                type="password"
                                 label="Password"
                                 size="small"
                                 style={{width:"250px", marginBottom: '15px'}}
                                 required
                             />
                             <TextField
-                                id="outlined-basic"
+                                variant="outlined"
+                                type="password"
                                 label="Confirm Password"
                                 size="small"
                                 style={{width:"250px", marginBottom: '15px'}}
@@ -626,21 +697,82 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                     </form>
                 </Box>
             </Modal>
+            <Modal open={isDeleteModalOpen} onClose={()=>setIsDeleteModalOpen(false)}>
+                <Box sx={{width:"300px", position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "3px 10px 20px 10px", borderRadius: '7px'}}>
+                    <form onSubmit={handleDelete}>
+                        <div style={{display: 'flex', flexDirection: 'column'}}>
+                            <div style={{display: 'flex', flexDirection: 'row', marginBottom: "5px"}}>
+                                <Typography variant="h6">Delete preset? </Typography>
+                                <div style={{width: "25px", height: "25px", marginLeft: 'auto', marginBottom: "5px"}}>
+                                    <IconButton onClick={()=>setIsDeleteModalOpen(false)} size="small">
+                                        <CloseIcon style={{ fontSize: 20 }}/>
+                                    </IconButton>
+                                </div>
+                            </div>
+                            <Divider></Divider>
+                            <Typography variant="body1"> Are you sure you want to delete <b>{userPresets[preset]?.name}</b>?</Typography>
+                        
+                            <div style={{marginTop: "10px"}}>
+                                <Button type="submit" variant="contained" color='error' >Delete</Button>
+                                <Button sx={{marginLeft: "10px"}} variant="outlined" onClick={()=>setIsDeleteModalOpen(false)} >Cancel</Button>
+                            </div>
+                        
+                        </div>
+                    </form>
+                </Box>
+
+            </Modal>
+            <Modal open={isSaveAsModalOpen} onClose={()=>setIsSaveAsModalOpen(false)}>
+                <Box sx={{width:"300px", position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "3px 10px 20px 10px", borderRadius: '7px'}}>
+                    <form onSubmit={handleSaveAs}>
+                        <div style={{display: 'flex', flexDirection: 'column'}}>
+                            <div style={{display: 'flex', flexDirection: 'row', marginBottom: "5px"}}>
+                                <Typography variant="h6">New preset: </Typography>
+                                <div style={{width: "25px", height: "25px", marginLeft: 'auto', marginBottom: "5px"}}>
+                                    <IconButton onClick={()=>setIsSaveAsModalOpen(false)} size="small">
+                                        <CloseIcon style={{ fontSize: 20 }}/>
+                                    </IconButton>
+                                </div>
+                            </div>
+                            <Divider></Divider>
+                            {saveAsError && <Alert severity="error" sx={{marginBottom: "15px"}} > {saveAsError} </Alert>}
+                            <TextField
+                                variant="outlined"
+                                label="Preset name"
+                                size="small"
+                                style={{marginTop: "10px", width:"250px", marginBottom: '8px'}}
+                                required
+                            />
+                        
+                            <div style={{marginTop: "10px"}}>
+                                <Button type="submit" variant="contained" >Create</Button>
+                                <Button sx={{marginLeft: "10px"}} variant="outlined" onClick={()=>setIsSaveAsModalOpen(false)} >Cancel</Button>
+                            </div>
+                        
+                        </div>
+                    </form>
+                </Box>
+
+            </Modal>
+            <Snackbar open={successToast?true:false} autoHideDuration={6000} onClose={()=>setSuccessToast(null)}>
+                <Alert onClose={()=>setSuccessToast(null)} severity="success" variant="filled">
+                    {successToast}
+                </Alert>
+            </Snackbar>
+            <Snackbar open={failToast?true:false} autoHideDuration={6000} onClose={()=>setFailToast(null)}>
+                <Alert onClose={()=>setFailToast(null)} severity="error" variant="filled">
+                    {failToast}
+                </Alert>
+            </Snackbar>
         </div>
     )
 }
 
 const Editor = () =>{
-    const [axiom, setAxiom] = useState("");
-    const [constants, setConstants] = useState([["num_gens", 4],]);
-    const [productions, setProductions] = useState([
-        ["", 
-            [["*", 
-                [["", "1.0"],]
-            ],]
-        ],
-    ]); //forgor to separate AA's with spaces
-    const [meshImports, setMeshImports] = useState([])
+    const [axiom, setAxiom] = useState(initPreset.axiom);
+    const [constants, setConstants] = useState(initPreset.constants);
+    const [productions, setProductions] = useState(initPreset.productions); //forgor to separate AA's with spaces
+    const [meshImports, setMeshImports] = useState(initPreset.meshImports)
     const [error, setError] = useState("");
     const [showGridHelper, setShowGridHelper] = useState(true);
     const [dpr, setDpr] = useState(1);

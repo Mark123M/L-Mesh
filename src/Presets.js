@@ -1,6 +1,6 @@
-export const allPresets = [
-    {},
+export const publicPresets = [
     {
+        name: "Bush",
         axiom: "A(edge,init_wid,[0,80,0],[128,83,51])",
         constants: [
             ["num_gens", 6], 
@@ -42,6 +42,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Flower Plant",
         axiom: "!(wid) plant", 
         constants: [
             ["num_gens", 5],
@@ -104,6 +105,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Koch curve 1",
         axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
         constants: [
             ["num_gens", 3],
@@ -121,6 +123,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Koch curve 2",
         axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
         constants:[
             ["num_gens", 4],
@@ -138,6 +141,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Koch curve 3",
         axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
         constants:[
             ["num_gens", 4],
@@ -155,6 +159,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Koch curve 4",
         axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
         constants:[
             ["num_gens", 3],
@@ -172,6 +177,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Dragon Curve",
         axiom: "!(0.1) F(l) X",
         constants:[
             ["num_gens", 10],
@@ -196,6 +202,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Sierpiński triangle",
         axiom: "!(0.1) F(l) X",
         constants:[
             ["num_gens", 7],
@@ -227,6 +234,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Monopodial tree",
         axiom: "A(2,0.2)",
         constants: [
             ["num_gens", 10],
@@ -262,6 +270,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Monopodial tree 2",
         axiom: "A(2,0.2)",
         constants: [
             ["num_gens", 10],
@@ -297,6 +306,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Monopodial tree 3",
         axiom: "A(2,0.2)",
         constants: [
             ["num_gens", 10],
@@ -332,6 +342,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Sympodial tree",
         axiom: "A(2,0.2)",
         constants: [
             ["num_gens", 10],
@@ -359,6 +370,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Natural tree",
         axiom: "A(1, 0.15)",
         constants: [
             ["num_gens", 10],
@@ -408,6 +420,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Natural tree w/ leaves",
         axiom: "A(1, 0.15)",
         constants: [
             ["num_gens", 10],
@@ -457,6 +470,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Natural tree w/ leaves 2",
         axiom: "A(1.2, 0.15, 1)",
         constants: [
             ["num_gens", 11],
@@ -514,6 +528,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "gravity test",
         axiom: "!(0.03) F(len) A(len)",
         constants: [
             ["num_gens", 10],
@@ -533,6 +548,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Weeping Willow",
         axiom: "T(T) t(e) !(0.07) F(1) /(45) A",
         constants: [
             ["num_gens", 8],
@@ -569,6 +585,7 @@ export const allPresets = [
         ]
     },
     {
+        name: "Weeping Willow 2",
         axiom: "T(T) t(e) !(0.02) F(0.5) A",
         constants: [
             ["num_gens", 8],

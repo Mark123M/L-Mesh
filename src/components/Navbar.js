@@ -1,16 +1,45 @@
 import React from 'react'
-import { Button, TextField, FormControlLabel, Checkbox, Select, MenuItem, FormControl} from '@mui/material';
+import { Button, TextField, FormControlLabel, Checkbox, Select, MenuItem, FormControl, Divider, Snackbar} from '@mui/material';
 import "@fontsource/open-sans";
 import Typography from '@mui/material/Typography';
 import { useDispatch } from 'react-redux'
 import { login, logout } from '../reducers/userSlice'
 import { apiService } from '../services/apiService';
+import { publicPresets } from '../Presets';
 
-export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, user}) {
+export function Navbar({axiom, constants, productions, meshImports, userPresets, setUserPresets, preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, setIsDeleteModalOpen, setIsSaveAsModalOpen, setSuccessToast, setFailToast, user}) {
     const dispatch = useDispatch();
 
     const logoutUser = () => {
         apiService.post('/users/logout');
+        window.location.reload();
+    }
+
+    const updateLSystem = (lsystem_id, data) => {
+        // console.log(data);
+        if(lsystem_id) {
+            apiService.put(`/lsystems/${lsystem_id}`, data)
+            .then((res)=> {
+                // console.log(res);
+                const newUserPresets = [...userPresets];
+                newUserPresets.splice(preset, 1, data);
+                setUserPresets(newUserPresets);
+                // window.location.reload();
+                if(res.data.severity=="ERROR"){
+                    setFailToast(`Failed to update ${data.name}: ${res.data.detail}`);
+                } else {
+                    setSuccessToast(`Successfully updated ${data.name}`);
+                }
+            })
+            .catch((err) => {
+                setFailToast(`Failed to update ${data.name}: ${err.response.data}`);
+                // console.log("update failed", err);
+            })
+        } else {
+            setFailToast(`Failed to update ${data.name}: Can't edit public presets!`);
+        }
+
+        
     }
 
     return (
@@ -25,34 +54,33 @@ export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOp
                     value={preset}
                     onChange={e=>setPreset(e.target.value)}
                     size="small"
-                    sx={{width: "200px", height: "37px", marginLeft: "8px"}}
+                    MenuProps={{style: {maxHeight: '95vh'}}}
+                    sx={{width: "200px", marginLeft: "8px"}}
                     displayEmpty
                 >
-                    <MenuItem value="">
-                        <em>Select Preset</em>
-                    </MenuItem>
-                    <MenuItem value={1}>Bush</MenuItem>
-                    <MenuItem value={2}>Flower Plant</MenuItem>
-                    <MenuItem value={3}>Koch curve 1</MenuItem>
-                    <MenuItem value={4}>Koch curve 2</MenuItem>
-                    <MenuItem value={5}>Koch curve 3</MenuItem>
-                    <MenuItem value={6}>Koch curve 4</MenuItem>
-                    <MenuItem value={7}>Dragon Curve</MenuItem>
-                    <MenuItem value={8}>Sierpiński triangle</MenuItem>
-                    <MenuItem value={9}>Monopodial tree</MenuItem>
-                    <MenuItem value={10}>Monopodial tree 2</MenuItem>
-                    <MenuItem value={11}>Monopodial tree 3</MenuItem>
-                    <MenuItem value={12}>Sympodial tree</MenuItem>
-                    <MenuItem value={13}>Natural tree</MenuItem>
-                    <MenuItem value={14}>Natural tree w/ leaves</MenuItem>
-                    <MenuItem value={15}>Natural tree w/ leaves 2</MenuItem>
-                    <MenuItem value={16}>gravity test</MenuItem>
-                    <MenuItem value={17}>Weeping Willow</MenuItem>
-                    <MenuItem value={18}>Weeping Willow 2</MenuItem>
+                    {userPresets.map((p, index) => {
+                        if (index < userPresets.length - publicPresets.length) {
+                            return <MenuItem key={`user-preset-${index}`} value={index}>
+                            {p.name}
+                            </MenuItem>
+                        }
+                    })}
+                    <Divider> <Typography variant="caption"> Public </Typography></Divider>
+                    {userPresets.map((p, index) => {
+                        if (index >= userPresets.length - publicPresets.length) {
+                            return <MenuItem key={`user-preset-${index}`} value={index}>
+                            {p.name}
+                            </MenuItem>
+                        }
+                    })}
+
                 </Select>
             </FormControl>
         </div>
         {/*<FormControlLabel control={<Checkbox />} label="Animation" /> */}
+        <div style={{marginLeft: "10px"}}> <Button variant="contained" color='success' onClick={()=>updateLSystem(userPresets[preset].lsystem_id, {lsystem_id: userPresets[preset].lsystem_id, name: userPresets[preset].name, axiom: axiom, constants: constants, productions: productions, imports: meshImports})} >Save </Button> </div>
+        <div style={{marginLeft: "5px"}}> <Button variant="contained" onClick={()=>setIsSaveAsModalOpen(true)} >Save as </Button> </div>
+        <div style={{marginLeft: "5px"}}> <Button variant="contained" color='error' onClick={()=>setIsDeleteModalOpen(true)} >Delete </Button> </div>
         <FormControlLabel sx={{marginLeft: "8px"}} control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid" />
         <TextField
             id="outlined-basic"
@@ -65,7 +93,7 @@ export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOp
             //style={{height: "30px"}}
             required
         />
-        <div style={{width: "160px", marginLeft: "10px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
+        <div style={{width: "160px", marginLeft: "5px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
         <div style={{display: "flex", flexDirection: "column", marginTop: menuOpened ? "70px" : "0px", marginLeft: "5px"}}>
             <div style={{width: "90px"}} onMouseEnter={openMenu} onMouseLeave={closeMenu}> <Button sx={{width: "100%"}} variant="contained" >EXPORT</Button> </div>
             <div onMouseEnter={openMenu} onMouseLeave={closeMenu} style={{display: menuOpened? "inline" : "none", flexDirection: "column", zIndex:  999999, background: "white", borderColor: "gray", borderStyle: "solid solid solid solid", borderWidth: "1px"}}>
@@ -78,7 +106,7 @@ export function Navbar({preset, setPreset, toggleGridHelper, dpr, setDpr, menuOp
                     <>
                         <div style={{display: 'flex'}}>    
                             <Typography sx={{marginRight: '5px'}}>Logged in as {user.username}</Typography>
-                            <Button variant="outlined" onClick={()=>{ logoutUser(); dispatch(logout());}} >Logout</Button>
+                            <Button variant="contained" color='error' onClick={()=>{ logoutUser(); dispatch(logout());}} >Logout</Button>
                         </div>
                     </>
                 ) : (
