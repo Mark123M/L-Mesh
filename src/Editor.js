@@ -45,7 +45,7 @@ const AxiomInput = ({axiom, setAxiom}) => {
             defaultValue={axiom}
             onBlur={(e)=>setAxiom(e.target.value)}
             size="small"
-            style={{width:"150px", marginRight: "8px"}}
+            style={{width:"100%", marginRight: "8px"}}
             required
         />
     )
@@ -87,7 +87,7 @@ const ProductionSymbolInput = ({name, index, handleProductionSymbolChange}) => {
             defaultValue={name}
             onBlur={(e)=>handleProductionSymbolChange(e.target.value.replaceAll(' ', ''), index)}
             size="small"
-            style={{width:"150px"}}
+            style={{width:"250px"}}
             required
         />
     )
@@ -102,7 +102,7 @@ const ProductionConditionInput = ({condition, index, index2, handleProductionCon
             defaultValue={condition}
             onBlur={(e)=>handleProductionConditionChange(e.target.value, index, index2)}
             size="small"
-            style={{width:"150px"}}
+            style={{width:"234px"}}
             required
         />
     )
@@ -521,7 +521,10 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                             
                             <div style={{marginBottom: "8px"}}>
                                 <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px"}}> {`Axiom (starting symbols)`}</div>
-                                <AxiomInput axiom={axiom} setAxiom={setAxiom}/>
+                                <div style={{display: 'flex', flexDirection: 'row'}}>
+                                    <AxiomInput axiom={axiom} setAxiom={setAxiom}/>
+                                    <div style={{width: "15px", marginLeft: "5px", marginTop: "3px"}}></div>
+                                </div>
                             </div>
 
                             <div style={{display: "flex", flexDirection: "row"}}>
