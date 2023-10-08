@@ -1,0 +1,7 @@
+[[redirects]]
+  from = "/api/*"
+  to = "https://l-mesh-server.fly.dev/api/:splat"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+  
