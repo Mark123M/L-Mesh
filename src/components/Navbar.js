@@ -11,13 +11,18 @@ export function Navbar({axiom, constants, productions, meshImports, userPresets,
     const dispatch = useDispatch();
 
     const logoutUser = () => {
-        apiService.post('/users/logout');
-        window.location.reload();
+        apiService.post('/users/logout').then((res) => {
+            setSuccessToast('See you later!');
+            window.location.reload();
+        });
     }
 
     const updateLSystem = (lsystem_id, data) => {
         // console.log(data);
-        if(lsystem_id) {
+        if(!user) {
+            setIsLoginModalOpen(true);
+        }
+        else if(lsystem_id) {
             apiService.put(`/lsystems/${lsystem_id}`, data)
             .then((res)=> {
                 // console.log(res);
@@ -79,8 +84,17 @@ export function Navbar({axiom, constants, productions, meshImports, userPresets,
         </div>
         {/*<FormControlLabel control={<Checkbox />} label="Animation" /> */}
         <div style={{marginLeft: "10px"}}> <Button variant="contained" color='success' onClick={()=>updateLSystem(userPresets[preset].lsystem_id, {lsystem_id: userPresets[preset].lsystem_id, name: userPresets[preset].name, axiom: axiom, constants: constants, productions: productions, imports: meshImports})} >Save </Button> </div>
-        <div style={{marginLeft: "5px"}}> <Button variant="contained" onClick={()=>setIsSaveAsModalOpen(true)} >Save as </Button> </div>
-        <div style={{marginLeft: "5px"}}> <Button variant="contained" color='error' onClick={()=>setIsDeleteModalOpen(true)} >Delete </Button> </div>
+        <div style={{marginLeft: "5px"}}> <Button variant="contained" onClick={()=>{
+            if(!user) {
+                setIsLoginModalOpen(true);
+                return;
+            }
+            setIsSaveAsModalOpen(true);}} >Save as </Button> </div>
+        <div style={{marginLeft: "5px"}}> <Button variant="contained" color='error' onClick={()=>{
+            if(!user) {
+                setIsLoginModalOpen(true);
+                return;
+            }setIsDeleteModalOpen(true);}} >Delete </Button> </div>
         <FormControlLabel sx={{marginLeft: "8px"}} control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid" />
         <TextField
             id="outlined-basic"
