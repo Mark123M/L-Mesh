@@ -184,7 +184,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const [constants, setConstants] = useState(init_constants);
     const [productions, setProductions] = useState(init_productions);
     const [meshImports, setMeshImports] = useState(init_mesh_imports);
-    const [drawerWidth, setDrawerWidth] = useState(650);
+    const [drawerWidth, setDrawerWidth] = useState(640);
     const [productionsSymbolExpand, setProductionsSymbolExpand] = useState(true);
     const [productionsRuleExpand, setProductionsRuleExpand] = useState([])
     const [constantsExpand, setConstantsExpand] = useState(true);
@@ -421,6 +421,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
         apiService.post('/users/login', data)
         .then((res) => {
             // console.log(res);
+            setPreset(0);
             dispatch(login(res.data.token));
             setIsLoginModalOpen(false);
         }).catch((err) => {
@@ -518,7 +519,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                             <div style={{marginBottom: "8px", marginTop: "50px"}}>
                                 {error !="" && <Alert severity="error"> {error} </Alert>}
                             </div>
-                            
+                            <div style={{width: "200px", marginBottom: "10px"}}> <Button variant="contained" type="submit">Generate Model</Button> </div>
                             <div style={{marginBottom: "8px"}}>
                                 <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px"}}> {`Axiom (starting symbols)`}</div>
                                 <div style={{display: 'flex', flexDirection: 'row'}}>
@@ -602,7 +603,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                                     </Collapse>
                                 </div>
                             </div>
-                            <div style={{width: "200px", marginBottom: "20px"}}> <Button variant="contained" type="submit">Generate Model</Button> </div>
+                            
 
                             <div style={{display: "flex", flexDirection: "row"}}>
                                 <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px", marginTop: "8px"}}> {`Mesh Import`}</div>
@@ -633,7 +634,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                 
             </form>
             <Modal open={isLoginModalOpen} onClose={()=>setIsLoginModalOpen(false)}>
-                <Box sx={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "3px 10px 20px 10px", borderRadius: '7px'}}>
+                <Box sx={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "3px 10px 15px 10px", borderRadius: '7px'}}>
                     <form onSubmit={handleLogin}>
                         <div style={{display: 'flex', flexDirection: 'column'}}>
                         <div style={{width: "25px", height: "25px", marginLeft: 'auto', marginBottom: "5px"}}>
@@ -657,7 +658,8 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                                 style={{width:"250px", marginBottom: '15px'}}
                                 required
                             />
-                            <Button variant="contained" type='submit'> Login </Button>
+                            <Button variant="contained" type='submit' sx={{width: '80px'}}> Login </Button>
+                            <Typography sx={{marginTop: "5px", cursor: "pointer"}} onClick={()=>{setIsLoginModalOpen(false); setIsRegisterModalOpen(true);}} variant="body2" color="#1976d2"> Don't have an account?</Typography>
                         </div>
                     </form>
                 </Box>
@@ -695,7 +697,8 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                                 style={{width:"250px", marginBottom: '15px'}}
                                 required
                             />
-                            <Button variant="contained" type='submit'> Register </Button>
+                            <Button variant="contained" type='submit' sx={{width: '110px'}}> Register </Button>
+                            <Typography sx={{marginTop: "5px", cursor: "pointer"}} onClick={()=>{setIsRegisterModalOpen(false); setIsLoginModalOpen(true);}} variant="body2" color="#1976d2"> Have an account?</Typography>
                         </div>
                     </form>
                 </Box>
