@@ -1,5 +1,5 @@
 # L-Mesh
-Try it out: https://mark123m.github.io/L-Mesh/
+Try it out: https://lmesh.netlify.app/
 
 ## Intro
 L-Mesh is a 3D procedural generation tool for self similar structures. It utilizes the principles of stochastic, parametric L-Systems along with 3D turtle graphics. 
