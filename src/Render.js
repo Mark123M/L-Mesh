@@ -705,7 +705,7 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
    * useEffect chain: set params -> generate symbols -> set objects and shapes arrays -> create materials for objects and shapes
    */
   useEffect(()=>{
-    console.log("PRINTING ALL PROPS");
+    console.log("--[ALL PROPS]--");
     console.log(axiom);
     console.log(constants);
     console.log(productions);
@@ -740,10 +740,12 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
   }, [axiom, constants, productions, meshImports])
 
   useEffect(()=>{
-    console.log("All params:",params);
+    console.log("--[ALL PARAMS]--");
+    console.log(params);
       
     let newSymbols = get_axiom(axiom, constants, params, setError); //start with the axiom 
-    console.log("INITIAL SYMBOLS", newSymbols);  
+    console.log("--[INITIAL SYMBOLS]--");
+    console.log(newSymbols);  
     for(let i = 0; i < constants["num_gens"]; i ++) {
       newSymbols = generate(newSymbols);
       //  console.log(symbols, "NEW SYMBOLS");
@@ -753,12 +755,14 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
   }, [params])
 
   useEffect(()=>{
-    console.log("FINAL SYMBOLS", symbols);
+    console.log("--[FINAL SYMBOLS]--");
+    console.log(symbols);
     getAllMeshes();
   }, [symbols])
 
   useEffect(()=>{
-    console.log("FINAL OBJECTS", objects);
+    console.log("--[FINAL OBJECTS]--");
+    console.log(objects);
     const allMaterials = {};
     objects.forEach((o) => {
       //<Branch key={uuidv4()} pos = {o[0]} heading = {o[1]} height = {o[2]} radius = {o[3]} id = {o[4]} parent_id = {o[5]} color = {o[6]}/>
@@ -770,7 +774,8 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
   }, [objects])
 
   useEffect(()=>{
-    console.log("FINAL SHAPES", shapes);
+    console.log("--[FINAL SHAPES]--");
+    console.log(shapes);
     const allShapeMaterials = {};
     shapes.forEach((s) => {
       //<Shape key = {uuidv4()} color = {s[0]} wid = {s[1]} points = {s[4]} id = {s[2]} parent_id = {s[3]}/>
@@ -782,7 +787,8 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
   }, [shapes])
 
   useEffect(() => {
-    console.log("FINAL MESHES", meshes);
+    console.log("--[FINAL MESHES]--");
+    console.log(meshes);
   }, [meshes])
 
   useEffect(()=> {
