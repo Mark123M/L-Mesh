@@ -28,6 +28,7 @@ f (len)                Move len units from its current position with direction v
 / (angle)              Roll right (rotate along the H axis)
 |                      "Turn around", or turn by 180 degrees
 $                      Rotate to vertical (rotates turtle so the up vector is [0 1 0]<sup>T</sup>
+S(x, y, z)             Changes the scaling for U, L, H axes
 [                      Push the current state into a stack (start a branch)
 ]                      Pop a state from the stack (finish a branch)
 {                      Start a polygon
