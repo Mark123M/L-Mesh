@@ -12,7 +12,7 @@ Axiom: A <br/>
 Production rules: <br/>
   A -> A B <br/>
   B -> B B <br/>
-The next generations of symbols are: {A B} -> {A B B B} -> {A B B B B B B B} -> {A B B B B B B B B B B B B B B B}... <br/>
+The next generations of symbols are: (A, B) -> (A, B, B, B) -> (A, B, B, B, B, B, B, B,) -> (A, B, B, B, B, B, B, B, B, B, B, B, B, B, B, B)... <br/>
 
 ## Graphics Interpreter
 To generate 3D structures from a set of symbols, some symbols need to be interpreted with graphics commands. L-Mesh uses a 3D turtle graphics system described in the Algorithmic Beauty of Plants. A "turtle" is similar to a pen that stores it's current position, heading vector (H), left vector (L), up vector (U) where H = L x U. It also stores the stroke width, color, whether or not the "pen" is down, and whether or not to create a vertex. 
