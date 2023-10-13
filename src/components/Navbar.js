@@ -1,11 +1,12 @@
 import React from 'react'
-import { Button, TextField, FormControlLabel, Checkbox, Select, MenuItem, FormControl, Divider, Snackbar} from '@mui/material';
+import { Button, TextField, FormControlLabel, Checkbox, Select, MenuItem, FormControl, Divider, Snackbar, IconButton} from '@mui/material';
 import "@fontsource/open-sans";
 import Typography from '@mui/material/Typography';
 import { useDispatch } from 'react-redux'
 import { login, logout } from '../reducers/userSlice'
 import { apiService } from '../services/apiService';
 import { publicPresets } from '../Presets';
+import GitHubIcon from '@mui/icons-material/GitHub';
 
 export function Navbar({axiom, constants, productions, meshImports, userPresets, setUserPresets, preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, setIsDeleteModalOpen, setIsSaveAsModalOpen, setSuccessToast, setFailToast, user}) {
     const dispatch = useDispatch();
@@ -107,7 +108,6 @@ export function Navbar({axiom, constants, productions, meshImports, userPresets,
             //style={{height: "30px"}}
             required
         />
-        <div style={{width: "160px", marginLeft: "5px"}} className="camera-reset-button"> <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> </div>
         <div style={{display: "flex", flexDirection: "column", marginTop: menuOpened ? "70px" : "0px", marginLeft: "5px"}}>
             <div style={{width: "90px"}} onMouseEnter={openMenu} onMouseLeave={closeMenu}> <Button sx={{width: "100%"}} variant="contained" >EXPORT</Button> </div>
             <div onMouseEnter={openMenu} onMouseLeave={closeMenu} style={{display: menuOpened? "inline" : "none", flexDirection: "column", zIndex:  999999, background: "white", borderColor: "gray", borderStyle: "solid solid solid solid", borderWidth: "1px"}}>
@@ -115,7 +115,12 @@ export function Navbar({axiom, constants, productions, meshImports, userPresets,
                 <div className="scene-export-gltf-button">  <MenuItem>Export as GLTF</MenuItem> </div>
             </div>
         </div>
-        <div style={{marginLeft: "auto", marginRight: "10px"}}> 
+        <div style={{marginLeft: 'auto', marginRight: '5px'}}>
+            <a style={{textDecoration: 'none', color: 'black'}} href="https://www.github.com/Mark123M" target="_blank" rel="noopener noreferrer">
+                <GitHubIcon style={{cursor: "pointer", marginLeft: "5px", fontSize: 40 }}/>
+            </a>
+        </div>
+        <div style={{marginRight: "10px"}}> 
             {user ? (
                     <>
                         <div style={{display: 'flex'}}>    

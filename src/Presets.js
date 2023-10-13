@@ -21,11 +21,11 @@ export const publicPresets = [
             ["F(len,lcol)", 
                 [["*",
                     [
-                        ["S(lcol) /(delta) /(delta) /(delta) /(delta) /(delta) F(len,lcol)", "1.0"], 
+                        ["K(lcol) /(delta) /(delta) /(delta) /(delta) /(delta) F(len,lcol)", "1.0"], 
                     ]
                 ]]
             ],
-            ["S(lcol)", 
+            ["K(lcol)", 
                 [["*",
                     [
                         ["F(edge,lcol) '(lcol) L", "1.0"],
@@ -105,131 +105,60 @@ export const publicPresets = [
         ]
     },
     {
-        name: "Koch curve 1",
-        axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
+        name: "Ash Tree",
+        axiom: "A(1.2, 0.15, 1)",
         constants: [
-            ["num_gens", 3],
-            ["l", 1],
-            ["d", 90],
+            ["num_gens", 11],
+            ["r1", 0.95],
+            ["r2", 0.80],
+            ["a1", 30],
+            ["a2", 45],
+            ["h", 0.707],
+            ["i0", 137.5],
+            ["TURN_T", 12],
+            ["PITCH_T", 12],
+            ["ROLL_T", 20],
         ],
         productions: [
-            ["F(len)", 
+            ["A(len,wid,level)",
                 [["*",
                     [
-                        ["F(l) -(d) F(l) +(d) F(l) +(d) F(l) F(l) -(d) F(l) -(d) F(l) +(d) F(l)", "1.0"],
-                    ]
-                ]]
-            ]
-        ]
-    },
-    {
-        name: "Koch curve 2",
-        axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
-        constants:[
-            ["num_gens", 4],
-            ["l", 1],
-            ["d", 90],
-        ],
-        productions: [
-            ["F(len)", 
-                [["*",
-                    [
-                        ["F(l) F(l) -(d) F(l) -(d) F(l) -(d) F(l) -(d) F(l) F(l)", "1.0"]
-                    ]
-                ]]
-            ]
-        ]
-    },
-    {
-        name: "Koch curve 3",
-        axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
-        constants:[
-            ["num_gens", 4],
-            ["l", 1],
-            ["d", 90],
-        ],
-        productions: [
-            ["F(len)", 
-                [["*",
-                    [
-                        ["F(l) F(l) -(d) F(l) -(d) F(l) -(d) F(l) -(d) F(l) -(d) F(l) +(d) F(l)", "1.0"]
-                    ]
-                ]]
-            ]
-        ]
-    },
-    {
-        name: "Koch curve 4",
-        axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
-        constants:[
-            ["num_gens", 3],
-            ["l", 1],
-            ["d", 90],
-        ],
-        productions: [
-            ["F(len)", 
-                [["*",
-                    [
-                        ["F(l) F(l) -(d) F(l) +(d) F(l) -(d) F(l) -(d) F(l) F(l)", "1.0"]
-                    ]
-                ]]
-            ]
-        ]
-    },
-    {
-        name: "Dragon Curve",
-        axiom: "!(0.1) F(l) X",
-        constants:[
-            ["num_gens", 10],
-            ["l", 1],
-            ["d", 90],
-        ],
-        productions: [
-            ["X", 
-                [["*",
-                    [
-                        ["X +(d) Y F(l) +(d)", "1.0"]
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.5"],
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.5"]
                     ]
                 ]]
             ],
-            ["Y", 
+            ["B(len,wid,level)",
                 [["*",
                     [
-                        ["-(d) F(l) X -(d) Y", "1.0"]
+                        ["!(wid) F(len) [ leaves(level,wid) -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h, level+1)", "0.7"],
+                        ["!(wid) F(len) [ leaves(level,wid) +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h, level+1)", "0.3"],
                     ]
                 ]]
             ],
-        ]
-    },
-    {
-        name: "Sierpiński triangle",
-        axiom: "!(0.1) F(l) X",
-        constants:[
-            ["num_gens", 7],
-            ["l", 1],
-            ["d", 60],
-        ],
-        productions: [
-            ["X", 
+            ["C(len,wid,level)",
                 [["*",
                     [
-                        ["+(d) F(l) Y -(d) F(l) X -(d) F(l) Y +(d)", "1.0"]
+                        ["!(wid) F(len) [ leaves(level,wid) +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h, level+1)", "0.7"],
+                        ["!(wid) F(len) [ leaves(level,wid) -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h, level+1)", "0.3"]
                     ]
                 ]]
             ],
-            ["Y", 
+            ["leaves(level,wid)", 
                 [["*",
                     [
-                        ["-(d) F(l) X +(d) F(l) Y +(d) F(l) X -(d)", "1.0"]
+                        ["[ &(random(-60,60)) /(random(-45, 45)) +(random(-30, 30)) '([125,120,60]) !(min(0.005,wid*h)) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) +(60) L(level/num_gens) ]", "level/num_gens"],
+                        ["[]", "1-level/num_gens"],
                     ]
                 ]]
             ],
-            ["F(len)", 
-                [["*",
+            ["L(sz)",
+                [["*", 
                     [
-                        ["Z", "1.0"]
+                        ["[ /(random(-30, 30)) -(45) '([125,177,60]) { . -(20) f(0.2*sz) . +(20) f(0.2*sz) . +(20) f(0.2*sz) . -(20) | -(20) f(0.2*sz) . +(20) f(0.2*sz) . +(20) f(0.2*sz) } ]", "1.0"]
                     ]
                 ]]
+            
             ]
         ]
     },
@@ -470,60 +399,131 @@ export const publicPresets = [
         ]
     },
     {
-        name: "Natural tree w/ leaves 2",
-        axiom: "A(1.2, 0.15, 1)",
+        name: "Koch curve 1",
+        axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
         constants: [
-            ["num_gens", 11],
-            ["r1", 0.95],
-            ["r2", 0.80],
-            ["a1", 30],
-            ["a2", 45],
-            ["h", 0.707],
-            ["i0", 137.5],
-            ["TURN_T", 12],
-            ["PITCH_T", 12],
-            ["ROLL_T", 20],
+            ["num_gens", 3],
+            ["l", 1],
+            ["d", 90],
         ],
         productions: [
-            ["A(len,wid,level)",
+            ["F(len)", 
                 [["*",
                     [
-                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.5"],
-                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.5"]
+                        ["F(l) -(d) F(l) +(d) F(l) +(d) F(l) F(l) -(d) F(l) -(d) F(l) +(d) F(l)", "1.0"],
+                    ]
+                ]]
+            ]
+        ]
+    },
+    {
+        name: "Koch curve 2",
+        axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
+        constants:[
+            ["num_gens", 4],
+            ["l", 1],
+            ["d", 90],
+        ],
+        productions: [
+            ["F(len)", 
+                [["*",
+                    [
+                        ["F(l) F(l) -(d) F(l) -(d) F(l) -(d) F(l) -(d) F(l) F(l)", "1.0"]
+                    ]
+                ]]
+            ]
+        ]
+    },
+    {
+        name: "Koch curve 3",
+        axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
+        constants:[
+            ["num_gens", 4],
+            ["l", 1],
+            ["d", 90],
+        ],
+        productions: [
+            ["F(len)", 
+                [["*",
+                    [
+                        ["F(l) F(l) -(d) F(l) -(d) F(l) -(d) F(l) -(d) F(l) -(d) F(l) +(d) F(l)", "1.0"]
+                    ]
+                ]]
+            ]
+        ]
+    },
+    {
+        name: "Koch curve 4",
+        axiom: "!(0.1) F(l) -(d) F(l) -(d) F(l) -(d) F(l)",
+        constants:[
+            ["num_gens", 3],
+            ["l", 1],
+            ["d", 90],
+        ],
+        productions: [
+            ["F(len)", 
+                [["*",
+                    [
+                        ["F(l) F(l) -(d) F(l) +(d) F(l) -(d) F(l) -(d) F(l) F(l)", "1.0"]
+                    ]
+                ]]
+            ]
+        ]
+    },
+    {
+        name: "Dragon Curve",
+        axiom: "!(0.1) F(l) X",
+        constants:[
+            ["num_gens", 10],
+            ["l", 1],
+            ["d", 90],
+        ],
+        productions: [
+            ["X", 
+                [["*",
+                    [
+                        ["X +(d) Y F(l) +(d)", "1.0"]
                     ]
                 ]]
             ],
-            ["B(len,wid,level)",
+            ["Y", 
                 [["*",
                     [
-                        ["!(wid) F(len) [ leaves(level,wid) -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h, level+1)", "0.7"],
-                        ["!(wid) F(len) [ leaves(level,wid) +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) C(len*r1, wid*h, level+1)", "0.3"],
+                        ["-(d) F(l) X -(d) Y", "1.0"]
                     ]
                 ]]
             ],
-            ["C(len,wid,level)",
+        ]
+    },
+    {
+        name: "Sierpiński triangle",
+        axiom: "!(0.1) F(l) X",
+        constants:[
+            ["num_gens", 7],
+            ["l", 1],
+            ["d", 60],
+        ],
+        productions: [
+            ["X", 
                 [["*",
                     [
-                        ["!(wid) F(len) [ leaves(level,wid) +(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h, level+1)", "0.7"],
-                        ["!(wid) F(len) [ leaves(level,wid) -(a2+random(-TURN_T, TURN_T)) $ &(random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(random(-ROLL_T, ROLL_T)) B(len*r1, wid*h, level+1)", "0.3"]
+                        ["+(d) F(l) Y -(d) F(l) X -(d) F(l) Y +(d)", "1.0"]
                     ]
                 ]]
             ],
-            ["leaves(level,wid)", 
+            ["Y", 
                 [["*",
                     [
-                        ["[ &(random(-60,60)) /(random(-45, 45)) +(random(-30, 30)) '([125,120,60]) !(min(0.005,wid*h)) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) F(0.1*(level/num_gens)) /(180) L(level/num_gens) +(60) L(level/num_gens) ]", "level/num_gens"],
-                        ["[]", "1-level/num_gens"],
+                        ["-(d) F(l) X +(d) F(l) Y +(d) F(l) X -(d)", "1.0"]
                     ]
                 ]]
             ],
-            ["L(sz)",
-                [["*", 
+            ["F(len)", 
+                [["*",
                     [
-                        ["[ /(random(-30, 30)) -(45) '([125,177,60]) { . -(20) f(0.2*sz) . +(20) f(0.2*sz) . +(20) f(0.2*sz) . -(20) | -(20) f(0.2*sz) . +(20) f(0.2*sz) . +(20) f(0.2*sz) } ]", "1.0"]
+                        ["Z", "1.0"]
                     ]
                 ]]
-            
             ]
         ]
     },

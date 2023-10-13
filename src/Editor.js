@@ -519,7 +519,12 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                             <div style={{marginBottom: "8px", marginTop: "50px"}}>
                                 {error !="" && <Alert severity="error"> {error} </Alert>}
                             </div>
-                            <div style={{width: "200px", marginBottom: "10px"}}> <Button variant="contained" type="submit">Generate Model</Button> </div>
+                            <div style={{display: "flex", flexDirection: "row", marginBottom: "10px"}}>
+                                <Button variant="contained" type="submit">Generate Model</Button> 
+                                <div style={{width: "160px", marginLeft: "5px"}} className="camera-reset-button"> 
+                                    <Button sx={{width: "100%"}} variant="outlined" >Center Camera</Button> 
+                                </div>
+                            </div>
                             <div style={{marginBottom: "8px"}}>
                                 <div style={{fontFamily: "Open Sans", fontWeight: 500, marginBottom: "10px"}}> {`Axiom (starting symbols)`}</div>
                                 <div style={{display: 'flex', flexDirection: 'row'}}>
