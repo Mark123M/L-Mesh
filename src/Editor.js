@@ -23,16 +23,10 @@ import { useSelector, useDispatch } from 'react-redux'
 import { login, logout } from './reducers/userSlice'
 
 const initPreset = {
-    name: "Select a preset",
+    name: "Blank Preset",
     axiom: "",
-    constants: [["num_gens", 4],],
-    productions: [
-        ["", 
-            [["*", 
-                [["", "1.0"],]
-            ],]
-        ],
-    ],
+    constants: [],
+    productions: [],
     meshImports: []
 }
 
@@ -189,13 +183,14 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const [productionsRuleExpand, setProductionsRuleExpand] = useState([])
     const [constantsExpand, setConstantsExpand] = useState(true);
     const [meshImportsExpand, setMeshImportsExpand] = useState(true);
-    const [preset, setPreset] = useState(0);
+    const [preset, setPreset] = useState(1);
     const [animation, setAnimation] = useState(true);
     const [menuOpened, setMenuOpened] = useState(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
     const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
     const [loginError, setLoginError] = useState(null);
     const [registerError, setRegisterError] = useState(null);
     const [saveAsError, setSaveAsError] = useState(null);
@@ -786,7 +781,7 @@ const Editor = () =>{
     const [meshImports, setMeshImports] = useState(initPreset.meshImports)
     const [error, setError] = useState("");
     const [showGridHelper, setShowGridHelper] = useState(true);
-    const [dpr, setDpr] = useState(1);
+    const [dpr, setDpr] = useState(1.5);
     const [seed, setSeed] = useState(0);
 
     useEffect(() => {

@@ -106,9 +106,9 @@ export const publicPresets = [
     },
     {
         name: "Ash Tree",
-        axiom: "A(1.2, 0.15, 1)",
+        axiom: "t(0.02) T([0, -1, 0]) A(1.2, 0.15, 1)",
         constants: [
-            ["num_gens", 11],
+            ["num_gens", 10],
             ["r1", 0.95],
             ["r2", 0.80],
             ["a1", 30],
@@ -121,10 +121,15 @@ export const publicPresets = [
         ],
         productions: [
             ["A(len,wid,level)",
-                [["*",
+                [["level==1",
                     [
-                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.5"],
-                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.5"]
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(random(-TURN_T*2, TURN_T*2)) [ ^(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "1.0"],
+                    ]
+                ],["*",
+                    [
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(random(-TURN_T*2, TURN_T*2)) [ ^(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.2"],
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) B(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.4"],
+                        ["!(wid) F(len) [ &(a1+random(-PITCH_T, PITCH_T)) C(len*r2, wid*h, level+1) ] /(i0+random(-TURN_T, TURN_T)) A(len*r1, wid*h, level+1)", "0.4"]
                     ]
                 ]]
             ],

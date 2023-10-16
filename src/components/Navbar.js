@@ -7,6 +7,7 @@ import { login, logout } from '../reducers/userSlice'
 import { apiService } from '../services/apiService';
 import { publicPresets } from '../Presets';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import HelpIcon from '@mui/icons-material/Help';
 
 export function Navbar({axiom, constants, productions, meshImports, userPresets, setUserPresets, preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, setIsDeleteModalOpen, setIsSaveAsModalOpen, setSuccessToast, setFailToast, user}) {
     const dispatch = useDispatch();
@@ -91,12 +92,12 @@ export function Navbar({axiom, constants, productions, meshImports, userPresets,
                 return;
             }
             setIsSaveAsModalOpen(true);}} >Save as </Button> </div>
-        <div style={{marginLeft: "5px"}}> <Button variant="contained" color='error' onClick={()=>{
+        <div style={{marginLeft: "5px", marginRight: "8px"}}> <Button variant="contained" color='error' onClick={()=>{
             if(!user) {
                 setIsLoginModalOpen(true);
                 return;
             }setIsDeleteModalOpen(true);}} >Delete </Button> </div>
-        <FormControlLabel sx={{marginLeft: "8px"}} control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid" />
+        <FormControlLabel control={<Checkbox onClick={toggleGridHelper} defaultChecked />} label="Show Grid"/>
         <TextField
             id="outlined-basic"
             label="res"
@@ -116,8 +117,11 @@ export function Navbar({axiom, constants, productions, meshImports, userPresets,
             </div>
         </div>
         <div style={{marginLeft: 'auto', marginRight: '5px'}}>
+            <HelpIcon style={{cursor: "pointer", fontSize: 40 }}/>
+        </div>
+        <div style={{marginRight: '5px'}}>
             <a style={{textDecoration: 'none', color: 'black'}} href="https://www.github.com/Mark123M" target="_blank" rel="noopener noreferrer">
-                <GitHubIcon style={{cursor: "pointer", marginLeft: "5px", fontSize: 40 }}/>
+                <GitHubIcon style={{cursor: "pointer", fontSize: 40 }}/>
             </a>
         </div>
         <div style={{marginRight: "10px"}}> 
