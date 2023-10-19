@@ -9,7 +9,7 @@ import { publicPresets } from '../Presets';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import HelpIcon from '@mui/icons-material/Help';
 
-export function Navbar({axiom, constants, productions, meshImports, userPresets, setUserPresets, preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, setIsDeleteModalOpen, setIsSaveAsModalOpen, setSuccessToast, setFailToast, user}) {
+export function Navbar({axiom, constants, productions, meshImports, userPresets, setUserPresets, preset, setPreset, toggleGridHelper, dpr, setDpr, menuOpened, openMenu, closeMenu, setIsLoginModalOpen, setIsRegisterModalOpen, setIsDeleteModalOpen, setIsSaveAsModalOpen, setIsHelpModalOpen, setSuccessToast, setFailToast, user}) {
     const dispatch = useDispatch();
 
     const logoutUser = () => {
@@ -117,7 +117,7 @@ export function Navbar({axiom, constants, productions, meshImports, userPresets,
             </div>
         </div>
         <div style={{marginLeft: 'auto', marginRight: '5px'}}>
-            <HelpIcon style={{cursor: "pointer", fontSize: 40 }}/>
+            <HelpIcon style={{cursor: "pointer", fontSize: 40}} onClick={()=>setIsHelpModalOpen(true)}/>
         </div>
         <div style={{marginRight: '5px'}}>
             <a style={{textDecoration: 'none', color: 'black'}} href="https://www.github.com/Mark123M" target="_blank" rel="noopener noreferrer">

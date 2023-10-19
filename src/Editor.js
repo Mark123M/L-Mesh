@@ -215,9 +215,12 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
 
     useEffect(()=>{
         apiService.get('/users/me').then((res) => {
-            if (res) { 
+            if (res.data) { 
                 // console.log(res);
                 dispatch(login(res.data));
+            } else {
+                // dispatch(logout());
+                setIsHelpModalOpen(true);
             }
         })
     }, [dispatch]);
@@ -416,7 +419,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
         apiService.post('/users/login', data)
         .then((res) => {
             // console.log(res);
-            setPreset(0);
+            setPreset(1);
             dispatch(login(res.data.token));
             setIsLoginModalOpen(false);
         }).catch((err) => {
@@ -495,7 +498,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     return(
         <div style={{height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden"}}>
 
-            <Navbar axiom={axiom} constants={constants} productions={productions} meshImports={meshImports} userPresets={userPresets} setUserPresets={setUserPresets} preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} setIsRegisterModalOpen={setIsRegisterModalOpen} setIsDeleteModalOpen={setIsDeleteModalOpen} setIsSaveAsModalOpen={setIsSaveAsModalOpen} setSuccessToast={setSuccessToast} setFailToast={setFailToast} user={user}/>
+            <Navbar axiom={axiom} constants={constants} productions={productions} meshImports={meshImports} userPresets={userPresets} setUserPresets={setUserPresets} preset={preset} setPreset={setPreset} toggleGridHelper={toggleGridHelper} dpr={dpr} setDpr={setDpr} menuOpened={menuOpened} openMenu={openMenu} closeMenu={closeMenu} setIsLoginModalOpen={setIsLoginModalOpen} setIsRegisterModalOpen={setIsRegisterModalOpen} setIsDeleteModalOpen={setIsDeleteModalOpen} setIsSaveAsModalOpen={setIsSaveAsModalOpen} setIsHelpModalOpen={setIsHelpModalOpen} setSuccessToast={setSuccessToast} setFailToast={setFailToast} user={user}/>
             <form onSubmit={(e)=>handleSubmit(e)} style={{marginLeft: "10px"}}>
                 <Drawer
                     sx={{
@@ -757,6 +760,30 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                         
                         </div>
                     </form>
+                </Box>
+
+            </Modal>
+            <Modal open={isHelpModalOpen} onClose={()=>setIsHelpModalOpen(false)}>
+                <Box sx={{width:"600px", position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "20px 20px 15px 20px", borderRadius: '7px'}}>
+                    <div style={{display: "flex", flexDirection: "column"}}>
+                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "24px", fontWeight: 600}}> {`L-Mesh`}</div>
+                        <Divider />
+                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "18px", fontWeight: 600, marginTop: "10px"}}> {`Getting Started:`}</div>
+                        <Typography variant="body1" style={{marginLeft: "0px"}}>Select a preset from the dropdown and click "Generate Model". Try playing with some of the constants/parameters and generate again. Notice some changes?</Typography>
+                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "18px", fontWeight: 600, marginTop: "10px"}}> {`Managing Models:`}</div>
+                        <Typography variant="body1" style={{marginLeft: "0px"}}> Register an account and Log in. Now, you can save, copy {"(save as)"}, and delete your models. To export 3D models, hover over "Export" and pick a desired format.</Typography>
+                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "18px", fontWeight: 600, marginTop: "10px"}}> {`Creating Formulas:`}</div>
+                        <Typography variant="body1" style={{marginLeft: "0px"}}> From trees, herbacious plants, snowflakes, terrains to even city layouts, L-Systems can be used to generate an endless variety of structures. For a basic introduction on formula writing and graphics commands, check out the {" "}
+                            <a href="https://github.com/Mark123M/L-Mesh" target="_blank" rel="noopener noreferrer">Github Page</a>. 
+                            To dive even deeper, check out the book this project is built with:
+                        </Typography>
+                        <Typography variant="body1">
+                            <a href="http://algorithmicbotany.org/papers/abop/abop.pdf" target="_blank" rel="noopener noreferrer">The Algorithmic Beauty of Plants.</a> 
+                        </Typography>
+                        <div style={{marginLeft: "auto"}}>
+                            <Button variant="contained" sx={{}} onClick={()=>{setIsHelpModalOpen(false)}} > I'm ready</Button> 
+                        </div>
+                    </div>
                 </Box>
 
             </Modal>
