@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import {useEffect, useState, useCallback} from "react";
-import { Button, TextField, IconButton, Collapse, Divider, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl, Typography, Modal, Box, Snackbar} from '@mui/material';
+import { Button, TextField, IconButton, Collapse, Divider, FormControlLabel, Checkbox, Drawer, Alert, Select, MenuItem, FormControl, Typography, Modal, Box, Snackbar, AccordionSummary, AccordionDetails, Accordion} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -178,7 +178,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const [constants, setConstants] = useState(init_constants);
     const [productions, setProductions] = useState(init_productions);
     const [meshImports, setMeshImports] = useState(init_mesh_imports);
-    const [drawerWidth, setDrawerWidth] = useState(640);
+    const [drawerWidth, setDrawerWidth] = useState('45vw');
     const [productionsSymbolExpand, setProductionsSymbolExpand] = useState(true);
     const [productionsRuleExpand, setProductionsRuleExpand] = useState([])
     const [constantsExpand, setConstantsExpand] = useState(true);
@@ -764,21 +764,99 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
 
             </Modal>
             <Modal open={isHelpModalOpen} onClose={()=>setIsHelpModalOpen(false)}>
-                <Box sx={{width:"600px", position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "20px 20px 15px 20px", borderRadius: '7px'}}>
-                    <div style={{display: "flex", flexDirection: "column"}}>
-                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "24px", fontWeight: 600}}> {`L-Mesh`}</div>
+                <Box sx={{height: "600px", width:"600px", position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "20px 5px 15px 20px", borderRadius: '7px'}}>
+                    <div style={{display: "flex", flexDirection: "column", height: "600px", overflow: "auto"}}>
+                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "24px", fontWeight: 600}}> {`Getting Started`}</div>
                         <Divider />
-                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "18px", fontWeight: 600, marginTop: "10px"}}> {`Getting Started:`}</div>
-                        <Typography variant="body1" style={{marginLeft: "0px"}}>Select a preset from the dropdown and click "Generate Model". Try playing with some of the constants/parameters and generate again. Notice some changes?</Typography>
-                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "18px", fontWeight: 600, marginTop: "10px"}}> {`Managing Models:`}</div>
-                        <Typography variant="body1" style={{marginLeft: "0px"}}> Register an account and Log in. Now, you can save, copy {"(save as)"}, and delete your models. To export 3D models, hover over "Export" and pick a desired format.</Typography>
-                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "18px", fontWeight: 600, marginTop: "10px"}}> {`Creating Formulas:`}</div>
-                        <Typography variant="body1" style={{marginLeft: "0px"}}> From trees, herbacious plants, snowflakes, terrains to even city layouts, L-Systems can be used to generate an endless variety of structures. For a basic introduction on formula writing and graphics commands, check out the {" "}
-                            <a href="https://github.com/Mark123M/L-Mesh" target="_blank" rel="noopener noreferrer">Github Page</a>. 
-                            To dive even deeper, check out the book this project is built with:
+                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "18px", fontWeight: 600, marginTop: "10px"}}> {`3D Viewer`}</div>
+                        <Typography variant="body1" style={{marginLeft: "0px"}}>
+                            On the right side is the 3D viewer. It allows you to explore and interact with the generated structure. The topbar contains additional settings for the canvas.
+                        </Typography>
+                        <img src="camera-controls.png" alt="camera controls"/>
+                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "18px", fontWeight: 600, marginTop: "10px"}}> {`Model Manager:`}</div>
+                        <Typography variant="body1" style={{marginLeft: "0px"}}> The preset dropdown menu stores all public and personal models. Login to save, copy {"(save as)"}, and delete your models from the topbar. To export 3D models, hover over "Export" and pick a desired format.</Typography>
+                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "18px", fontWeight: 600, marginTop: "10px"}}> {`Formula Editor`}</div>
+                        <Typography variant="body1" style={{marginLeft: "0px"}}> 
+                            An L-System is a formal grammar mainly consists of three components:
+                            <ul style={{margin:"0px"}}>
+                                <li>Axiom: The initial set of symbols</li>
+                                <li>Constants: fixed values that represent various properties, such as length, angles, color etc. They are typically used as arguments for symbols in production rules.</li>
+                                <li>Production Rules: A set of rewriting rules that dictate how symbols of the current generation are replaced in the next generation. Here's an example:</li>
+                            </ul>  
+                        </Typography>
+                        <Accordion>
+                            <AccordionSummary
+                                expandIcon={<ExpandMore />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                            >
+                            <Typography>Triangle by Paul Bourke:</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body1" style={{marginLeft: "0px"}}> 
+                                    {"Axiom: F(1) +(delta) F(1) +(delta) F(1)"}
+                                </Typography>
+                                <Typography variant="body1" style={{marginLeft: "0px"}}> 
+                                    Constants:
+                                </Typography>
+                                <Typography variant="body1" style={{marginLeft: "0px"}}> 
+                                    <ul style={{margin:"0px"}}>
+                                        <li>Delta: 120</li>
+                                    </ul>
+                                </Typography>
+                                <Typography variant="body1" style={{marginLeft: "0px"}}> 
+                                    Production rules:
+                                </Typography>
+                                <Typography variant="body1" style={{marginLeft: "0px"}}> 
+                                    <ul style={{margin:"0px"}}>
+                                        <li>{"F(len) -> F(len) -(delta) F(len) +(delta) F(len)"}</li>
+                                    </ul>
+                                </Typography>
+                                <Typography variant="body1" style={{marginLeft: "0px"}}> 
+                                    {"Three generations of symbols are:"}
+                                </Typography>
+                                <Typography>
+                                <   ul style={{margin:"0px"}}>
+                                        <li>{"F(1) +(120) F(1) +(120) F(1)"}</li>
+                                        <li>{"F(1) -(120) F(1) +(120) F(1) +(120) F(1) -(120) F(1) +(120) F(1) +(120) F(1) -(120) F(1) +(120) F(1)"}</li>
+                                        <li>{"F(1) -(120) F(1) +(120) F(1) -(120) F(1) -(120) F(1) +(120) F(1) +(120) F(1) -(120) F(1) +(120) F(1) +(120) F(1) -(120) F(1) +(120) F(1) -(120) F(1) -(120) F(1) +(120) F(1) +(120) F(1) -(120) F(1) +(120) F(1) +(120) F(1) -(120) F(1) +(120) F(1) -(120) F(1) -(120) F(1) +(120) F(1) +(120) F(1) -(120) F(1) +(120) F(1)"}</li>
+                                    </ul>
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+                        <Typography>{" "}</Typography>
+                        <Typography sx={{marginTop: "20px"}}>
+                            {"To generate 3D structures from a set of symbols, some symbols need to be interpreted with graphics commands. L-Mesh uses a 3D turtle graphics system that stores the pen's current position, heading vector (Y-axis), left vector (X-axis), up vector (Z-axis), width, color, and tropism. The default symbol interpretations are as follows:"}
+                        </Typography>
+                        <Typography>
+                            <ul style={{margin:"0px"}}>
+                                <li>{"F(len): Move len units from its current position in the heading vector (Y-axis) while drawing a line."}</li>
+                                <li>{"f(len): Move len units from its current position in the heading vector (Y-axis)."}</li>
+                                <li>{"+(angle): Positive rotation around the up vector (Z-axis)"}</li>
+                                <li>{"-(angle): Negative rotation around the up vector (Z-axis)"}</li>
+                                <li>{"^(angle): Positive rotation around the left vector (X-axis)"}</li>
+                                <li>{"&(angle): Negative rotation around the left vector (X-axis)"}</li>
+                                <li>{"\\(angle): Positive rotation around the heading vector (Y-axis)"}</li>
+                                <li>{"/(angle): Negative rotation around the heading vector (Y-axis)"}</li>
+                                <li>{"|: Rotate around up vector (Z-axis) 180 degrees"}</li>
+                                <li>{"$: Rotate the turtle to \"vertical\" -- so up vector (Z-axis) is (0, 1, 0)"}</li>
+                                <li>{"S(x, y, z): Changes scaling for X, Y, and Z axis)"}</li>
+                                <li>{"[: Push the current state into a stack (start a branch)"}</li>
+                                <li>{"]: Pop a state from the stack (finish a branch)"}</li>
+                                <li>{"{: Start a polygon"}</li>
+                                <li>{".: Record a vertex in the current polygon"}</li>
+                                <li>{"}: Complete a polygon"}</li>
+                                <li>{"!(wid): Change the pen's stroke width"}</li>
+                                <li>{"`([r, g, b]): Change the color based on an rgb array"}</li>
+                                <li>{"T([x, y, z]): Change the tropism vector"}</li>
+                                <li>{"t(e): Change the tropism constant "}</li>
+                            </ul>
+                        </Typography>
+                        <Typography>
+                            For more details, check out the <a href="https://github.com/Mark123M/L-Mesh" target="_blank" rel="noopener noreferrer">Github Page</a>  and the book this project is built from:  <a href="http://algorithmicbotany.org/papers/abop/abop.pdf" target="_blank" rel="noopener noreferrer">The Algorithmic Beauty of Plants.</a> 
                         </Typography>
                         <Typography variant="body1">
-                            <a href="http://algorithmicbotany.org/papers/abop/abop.pdf" target="_blank" rel="noopener noreferrer">The Algorithmic Beauty of Plants.</a> 
+                           
                         </Typography>
                         <div style={{marginLeft: "auto"}}>
                             <Button variant="contained" sx={{}} onClick={()=>{setIsHelpModalOpen(false)}} > I'm ready</Button> 
