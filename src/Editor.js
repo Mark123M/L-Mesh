@@ -763,7 +763,12 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                 </Box>
 
             </Modal>
-            <Modal open={isHelpModalOpen} onClose={()=>setIsHelpModalOpen(false)}>
+            <Modal open={isHelpModalOpen} onClose={()=>{
+                setGlobalAxiom(axiom);
+                setGlobalConstants(constants);
+                setGlobalProductions(productions);
+                setGlobalMeshImports(meshImports); 
+                setIsHelpModalOpen(false);}}>
                 <Box sx={{height: "600px", width:"600px", position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'white', padding: "20px 5px 15px 20px", borderRadius: '7px'}}>
                     <div style={{display: "flex", flexDirection: "column", height: "600px", overflow: "auto"}}>
                         <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "24px", fontWeight: 600}}> {`Getting Started`}</div>
@@ -859,7 +864,13 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                            
                         </Typography>
                         <div style={{marginLeft: "auto"}}>
-                            <Button variant="contained" sx={{}} onClick={()=>{setIsHelpModalOpen(false)}} > I'm ready</Button> 
+                            <Button variant="contained" sx={{}} onClick={()=>{
+                                setGlobalAxiom(axiom);
+                                setGlobalConstants(constants);
+                                setGlobalProductions(productions);
+                                setGlobalMeshImports(meshImports); 
+                                setIsHelpModalOpen(false)}} > 
+                            I'm ready</Button> 
                         </div>
                     </div>
                 </Box>
