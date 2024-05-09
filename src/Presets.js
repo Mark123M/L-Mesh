@@ -47,8 +47,8 @@ export const publicPresets = [
         constants: [
             ["num_gens", 5],
             ["delta", 18],
-            ["len", 0.4],
-            ["wid", 0.02],
+            ["len", 0.2],
+            ["wid", 0.01],
             ["lcol", "[29,131,72]"],
             ["fcol", "[255,160,57]"],
         ],
@@ -166,6 +166,12 @@ export const publicPresets = [
             
             ]
         ]
+    },
+    {
+        name: "Animated Tree",
+        axiom: "Animation controls coming soon!",
+        constants: [],
+        productions: []
     },
     {
         name: "Monopodial tree",
