@@ -178,7 +178,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
     const [constants, setConstants] = useState(init_constants);
     const [productions, setProductions] = useState(init_productions);
     const [meshImports, setMeshImports] = useState(init_mesh_imports);
-    const [drawerWidth, setDrawerWidth] = useState('45vw');
+    const [drawerWidth, setDrawerWidth] = useState('35vw');
     const [productionsSymbolExpand, setProductionsSymbolExpand] = useState(true);
     const [productionsRuleExpand, setProductionsRuleExpand] = useState([])
     const [constantsExpand, setConstantsExpand] = useState(true);
@@ -488,6 +488,9 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
             setAxiom(userPresets[preset].axiom);
             setConstants(userPresets[preset].constants);
             setProductions(userPresets[preset].productions);
+            setGlobalAxiom(userPresets[preset].axiom);
+            setGlobalConstants(userPresets[preset].constants);
+            setGlobalProductions(userPresets[preset].productions);
         }
     }, [preset, userPresets]);
     useEffect(()=> {

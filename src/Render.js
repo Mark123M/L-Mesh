@@ -11,6 +11,7 @@ import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { useLoader } from "@react-three/fiber";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import AnimatedRender from "./AnimatedRender";
 
 //3D turtle interpreter
 
@@ -885,9 +886,10 @@ const Render = ({axiom, constants, productions, meshImports, setError, showGridH
 
   return (
     <div ref={canvas_ref} style={{top: "0", bottom: "0", left: "0", right: "0", position: "fixed", width: "100%"}}>
+        {axiom === "Animation controls coming soon!" ? <AnimatedRender/> :
         <Canvas dpr={dpr}>
-          <PerspectiveCamera makeDefault position={[3, 3, 10]}/>
-          <OrbitControls ref={controlsRef} enableZoom enablePan enableRotate/>
+          <PerspectiveCamera makeDefault position={[3, 7, 10]}/>
+          <OrbitControls ref={controlsRef} target={[-3, 5, 0]} enableZoom enablePan enableRotate/>
           {showGridHelper &&
             <>
               <gridHelper args={[50, 50]}/>
@@ -895,7 +897,7 @@ const Render = ({axiom, constants, productions, meshImports, setError, showGridH
             </>
           }
           {renderItems}
-        </Canvas>
+        </Canvas> }
     </div>
   )
 }
