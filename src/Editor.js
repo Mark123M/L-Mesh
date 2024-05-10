@@ -783,13 +783,22 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                         <img src="camera-controls.png" alt="camera controls"/>
                         <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "18px", fontWeight: 600, marginTop: "10px"}}> {`Model Manager:`}</div>
                         <Typography variant="body1" style={{marginLeft: "0px"}}> The preset dropdown menu stores all public and personal models. Login to save, copy {"(save as)"}, and delete your models from the topbar. To export 3D models, hover over "Export" and pick a desired format.</Typography>
-                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "18px", fontWeight: 600, marginTop: "10px"}}> {`Formula Editor`}</div>
+                        <div style={{display:"flex", fontFamily: "Open Sans", color: "black", fontSize: "18px", fontWeight: 600, marginTop: "10px"}}> {`Language Editor`}</div>
                         <Typography variant="body1" style={{marginLeft: "0px"}}> 
-                            An L-System is a formal grammar mainly consists of three components:
+                            {`An L-System is a rewriting system and a type of Formal Grammar that consists of four elements G = (V, ω, C, P):`}
                             <ul style={{margin:"0px"}}>
-                                <li>Axiom: The initial set of symbols</li>
-                                <li>Constants: fixed values that represent various properties, such as length, angles, color etc. They are typically used as arguments for symbols in production rules.</li>
-                                <li>Production Rules: A set of rewriting rules that dictate how symbols of the current generation are replaced in the next generation. Here's an example:</li>
+                                <li>{`Axiom(ω): The string of symbols defining the initial state of the system`}</li>
+                                <li>{`Alphabet(V): A set of symbols containing elements that can be replaced in later generations. These are implicitly defined in the "Symbols" input of "Production Rules" `}</li>
+                                <li>{`Constants(C): Fixed values used to represent properties of symbols, such as length, angles, color, level etc. They can be used as arguments for symbols in production rules`}</li>
+                                <li>
+                                    {`Production Rules(P): A set of rewriting rules that dictate how symbols of the current generation (predecessors) are replaced in the next generation (successors). The format of production rules are:`}
+                                    <ul>
+                                        <li>{`Symbol(<params>): The predeccessor symbol. ex. A(len, wid)`}</li>
+                                        <li>{`Condition: The condition for replacing A(len, wid) with a new string of symbols in "rule". Use * as "true" to ensure A is replaced with a string`}</li>
+                                        <li>{`rule: The string of successor symbols S that replaces A(len, wid) in the next generation. Parametric successor symbols can use functions involving len, wid (parameters of A) as well as constants for its own arguments. ex. A(len, wid) -> B(len * wid, len + wid) C(sin(wid), log(len))`}</li>
+                                        <li>{`p: The probability of replacing A with S. The p values for all S should add up to 1 `}</li>
+                                    </ul>
+                                </li>
                             </ul>  
                         </Typography>
                         <Accordion>
@@ -809,7 +818,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                                 </Typography>
                                 <Typography variant="body1" style={{marginLeft: "0px"}}> 
                                     <ul style={{margin:"0px"}}>
-                                        <li>Delta: 120</li>
+                                        <li>delta: 120</li>
                                     </ul>
                                 </Typography>
                                 <Typography variant="body1" style={{marginLeft: "0px"}}> 
@@ -821,7 +830,7 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                                     </ul>
                                 </Typography>
                                 <Typography variant="body1" style={{marginLeft: "0px"}}> 
-                                    {"Three generations of symbols are:"}
+                                    {"Results of three generations of this system:"}
                                 </Typography>
                                 <Typography>
                                 <   ul style={{margin:"0px"}}>
@@ -834,7 +843,10 @@ const EditorForm = ({init_axiom, init_constants, init_productions, init_mesh_imp
                         </Accordion>
                         <Typography>{" "}</Typography>
                         <Typography sx={{marginTop: "20px"}}>
-                            {"To generate 3D structures from a set of symbols, some symbols need to be interpreted with graphics commands. L-Mesh uses a 3D turtle graphics system that stores the pen's current position, heading vector (Y-axis), left vector (X-axis), up vector (Z-axis), width, color, and tropism. The default symbol interpretations are as follows:"}
+                            {"To generate 3D structures from a set of symbols, some symbols need to be interpreted into commands for drawing and performing linear transformations."}
+                        </Typography>
+                        <Typography>
+                            {`L-Mesh uses a 3D turtle graphics system that stores the pen's current position, heading vector (Y-axis), left vector (X-axis), up vector (Z-axis), width, color, and the force/tropism vector. The default symbol interpretations are as follows:`}
                         </Typography>
                         <Typography>
                             <ul style={{margin:"0px"}}>

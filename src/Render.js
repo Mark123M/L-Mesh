@@ -160,7 +160,7 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
         new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
       }
       catch {
-        setError(`Error setting param of symbol ${type}.`);
+        //setError(`Error setting param of symbol ${type}.`);
       }
       cur_param = "";
       param_idx++;
@@ -182,7 +182,7 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
       new_symbol[params[type][param_idx]] = math.typeOf(val) == "DenseMatrix" ? val.toArray() : val;
     }
     catch {
-      setError(`Error setting param of symbol ${type}.`);
+      //setError(`Error setting param of symbol ${type}.`);
     }
     
     cur_param = "";
@@ -190,7 +190,7 @@ const get_next_symbol = (symbol, rule, constants, params, setError) => {
   }
   //check if the current type is valid in params array and if the number of arguments do not match
   if(!params[type] || param_idx != params[type].length) {
-    setError(`Invalid arguments for ${baseRule}: check arguments with production rule.`);
+    //setError(`Invalid arguments for ${baseRule}: check arguments with production rule.`);
   }
   //console.log(new_symbol);
   return(new_symbol);
@@ -835,9 +835,7 @@ const RenderItems = ({axiom, constants, productions, meshImports, setError, show
         // console.log(err);
       });
   }; 
-
-  //console.log(math.evaluate('[1, 2, 3]').toArray());
-  //console.log(math.evaluate('[[1, 2, 3],[1,2,3]] + [[4, 5, 6],[4,5,6]]').toArray()); 
+ 
   return (
     <>
       <ambientLight />
